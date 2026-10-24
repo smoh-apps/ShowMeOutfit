@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ShowMeOutfit - Architecture Specification v1.0.0 (Native Android in Kotlin)">
+  <title>ShowMeOutfit - Architecture Specification v1.0.0</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #0a0e17;
+      --bg-surface: rgba(17, 24, 39, 0.75);
+      --bg-surface-elevated: rgba(30, 41, 59, 0.85);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(99, 102, 241, 0.35);
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --primary-glow: rgba(99, 102, 241, 0.25);
+      --secondary: #06b6d4;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      line-height: 1.65;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 10%, rgba(6, 182, 212, 0.08) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(139, 92, 246, 0.07) 0px, transparent 50%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app-wrapper { display: flex; min-height: 100vh; }
+
+    .sidebar {
+      width: 290px;
+      background: rgba(10, 14, 23, 0.92);
+      border-right: 1px solid var(--border-subtle);
+      padding: 2rem 1.5rem;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      flex-shrink: 0;
+      backdrop-filter: blur(16px);
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1.25rem;
+      box-shadow: 0 4px 15px var(--primary-glow);
+    }
+
+    .brand-text h1 {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+    }
+
+    .brand-text span {
+      font-size: 0.75rem;
+      color: var(--secondary);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .nav-group { margin-bottom: 1.75rem; }
+
+    .nav-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      padding-left: 0.5rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.55rem 0.75rem;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      margin-bottom: 0.25rem;
+    }
+
+    .nav-item:hover, .nav-item.active {
+      color: var(--text-main);
+      background: rgba(99, 102, 241, 0.12);
+      border-left: 3px solid var(--primary);
+    }
+
+    .nav-item svg { width: 18px; height: 18px; opacity: 0.8; }
+
+    .main-content {
+      flex: 1;
+      padding: 2.5rem 3.5rem;
+      max-width: 1300px;
+      overflow-x: hidden;
+    }
+
+    .hero {
+      margin-bottom: 3.5rem;
+      padding-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .hero-badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+
+    .badge-primary { background: rgba(99, 102, 241, 0.15); color: var(--primary-light); border-color: rgba(99, 102, 241, 0.3); }
+    .badge-teal { background: rgba(6, 182, 212, 0.15); color: var(--secondary); border-color: rgba(6, 182, 212, 0.3); }
+    .badge-green { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); border-color: rgba(16, 185, 129, 0.3); }
+    .badge-amber { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); border-color: rgba(245, 158, 11, 0.3); }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: 2.75rem;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #ffffff 30%, #cbd5e1 70%, #818cf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 1.125rem;
+      color: var(--text-muted);
+      max-width: 850px;
+      font-weight: 400;
+      line-height: 1.7;
+    }
+
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    .card:hover { border-color: var(--border-accent); }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .card-title svg { color: var(--primary); }
+
+    .diagram-wrapper {
+      background: #0f172a;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+    }
+
+    .diagram-wrapper .mermaid { width: 100%; text-align: center; }
+
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      margin: 1.5rem 0;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.875rem;
+    }
+
+    th {
+      background: rgba(30, 41, 59, 0.95);
+      color: var(--text-main);
+      padding: 0.85rem 1rem;
+      font-weight: 600;
+      font-family: var(--font-display);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    td {
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(99, 102, 241, 0.04); color: var(--text-main); }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.825rem;
+      background: rgba(99, 102, 241, 0.12);
+      color: var(--primary-light);
+      padding: 0.15rem 0.4rem;
+      border-radius: 6px;
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .callout {
+      border-left: 4px solid var(--primary);
+      background: rgba(99, 102, 241, 0.08);
+      border-radius: 0 12px 12px 0;
+      padding: 1.25rem 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .callout-title {
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 0.35rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    @media print {
+      body { background: #ffffff; color: #000000; }
+      .sidebar { display: none; }
+      .main-content { padding: 0; max-width: 100%; }
+      .card { box-shadow: none; border: 1px solid #ccc; background: #fff; }
+      .diagram-wrapper { background: #fff; }
+      code { background: #eee; color: #111; }
+    }
+
+    @media (max-width: 1024px) {
+      .app-wrapper { flex-direction: column; }
+      .sidebar { width: 100%; height: auto; position: static; }
+      .main-content { padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <a href="#" class="brand">
+      <div class="brand-icon">🏛️</div>
+      <div class="brand-text">
+        <h1>ShowMeOutfit</h1>
+        <span>Architecture Spec v1.0.0</span>
+      </div>
+    </a>
+
+    <div class="nav-group">
+      <div class="nav-title">Specification</div>
+      <a href="#overview" class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        1. Overview & Scope
+      </a>
+      <a href="#clean-arch" class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+        2. Clean Architecture
+      </a>
+      <a href="#diurnal-engine" class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+        3. Diurnal Algorithm
+      </a>
+      <a href="#tech-stack" class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg>
+        4. Tech Stack Matrix
+      </a>
+      <a href="#background-flow" class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        5. Morning Scheduling
+      </a>
+      <a href="#offline-strategy" class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7C5 4 4 5 4 7z" /></svg>
+        6. Offline-First Cache
+      </a>
+      <a href="#extension-roadmap" class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg>
+        7. Virtual Closet Extensibility
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    <header class="hero">
+      <div class="hero-badge-row">
+        <span class="badge badge-primary">Version 1.0.0</span>
+        <span class="badge badge-teal">Native Android (Kotlin 2.2)</span>
+        <span class="badge badge-green">Git Versioned</span>
+        <span class="badge badge-amber">Clean Architecture</span>
+      </div>
+      <h1 class="hero-title">ShowMeOutfit - Architecture Specification</h1>
+      <p class="hero-subtitle">
+        Official versioned architecture document for the standalone native Android application. Defines Clean Architecture layer boundaries, diurnal swing clothing calculation, zero-backend Open-Meteo integration, and battery-compliant morning scheduling.
+      </p>
+    </header>
+
+    <!-- Section 1 -->
+    <section id="overview" class="card">
+      <div class="card-header">
+        <h2 class="card-title">1. System Overview & Core Capabilities</h2>
+        <span class="badge badge-primary">SMO-ARCH-SPEC v1.0.0</span>
+      </div>
+      <p style="color: var(--text-muted); margin-bottom: 1.25rem;">
+        ShowMeOutfit is designed as a zero-backend, standalone native Android application that prescribes daily attire and essential gear based on comprehensive daytime weather metrics.
+      </p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: rgba(15, 23, 42, 0.6); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-subtle);">
+          <h3 style="color: var(--primary-light); font-size: 1rem; margin-bottom: 0.5rem;">⏰ Mode 1: Scheduled Morning Alert</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Exact wake-up notification (configured by user, e.g. 07:00 AM) using <code>AlarmManager</code> + <code>WorkManager</code> with glanceable outfit layers and urgent accessory alerts.</p>
+        </div>
+        <div style="background: rgba(15, 23, 42, 0.6); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-subtle);">
+          <h3 style="color: var(--secondary); font-size: 1rem; margin-bottom: 0.5rem;">📱 Mode 2: Interactive On-Demand</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Jetpack Compose interactive UI providing diurnal hourly timelines, UV and rain probabilities, and manual city search fallback.</p>
+        </div>
+        <div style="background: rgba(15, 23, 42, 0.6); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-subtle);">
+          <h3 style="color: var(--accent-green); font-size: 1rem; margin-bottom: 0.5rem;">🛡️ Standalone & Zero-Backend</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Direct connection to Open-Meteo REST API (zero client API key leakage risk); Room DB caching with 3-hour freshness.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2 -->
+    <section id="clean-arch" class="card">
+      <div class="card-header">
+        <h2 class="card-title">2. Clean Architecture Layer Breakdown</h2>
+        <span class="badge badge-teal">Decoupled Domain</span>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+graph TD
+    subgraph Presentation_Layer ["Presentation Layer (Jetpack Compose + Material 3)"]
+        UI["Compose UI Screens & Widgets"]
+        VM["ViewModels (StateFlow & SharedFlow)"]
+        UI -->|User Intents| VM
+        VM -->|UIState & UIEffect| UI
+    end
+
+    subgraph Domain_Layer ["Domain Layer (Pure Kotlin - No Android Framework)"]
+        UC1["GetTodayOutfitRecommendationUseCase"]
+        UC2["ScheduleMorningNotificationUseCase"]
+        UC3["ManageUserProfileUseCase"]
+        UC4["SearchLocationUseCase"]
+        Engine["OutfitRecommendationEngine"]
+        UC1 --> Engine
+    end
+
+    subgraph Data_Layer ["Data Layer (Repository Pattern & Offline Caching)"]
+        WeatherRepo["WeatherRepositoryImpl"]
+        UserRepo["UserRepositoryImpl"]
+        LocationRepo["LocationRepositoryImpl"]
+        
+        LocalDS["Local Data Source: Room DB & DataStore"]
+        RemoteDS["Remote Data Source: Open-Meteo REST API via Ktor/Retrofit"]
+        LocationDS["Device Location Source: FusedLocationProvider"]
+        
+        WeatherRepo --> LocalDS
+        WeatherRepo --> RemoteDS
+        UserRepo --> LocalDS
+        LocationRepo --> LocationDS
+        LocationRepo --> RemoteDS
+    end
+
+    subgraph System_Layer ["System & Platform Layer (Android OS Integration)"]
+        AlarmMgr["AlarmManager / Exact Alarms"]
+        WorkMgr["WorkManager / CoroutineWorker"]
+        NotifMgr["NotificationManager"]
+        
+        AlarmMgr --> WorkMgr
+        WorkMgr --> UC1
+        WorkMgr --> NotifMgr
+    end
+
+    VM --> UC1
+    VM --> UC2
+    VM --> UC3
+    VM --> UC4
+
+    UC1 --> WeatherRepo
+    UC1 --> UserRepo
+    UC1 --> LocationRepo
+    UC2 --> UserRepo
+    UC3 --> UserRepo
+    UC4 --> LocationRepo
+        </pre>
+      </div>
+      <div class="callout">
+        <div class="callout-title">Architectural Invariant</div>
+        The <code>domain</code> layer has <strong>zero imports</strong> from <code>android.*</code>. All recommendation rules, thermal adjustments, and domain models are pure Kotlin, enabling fast, isolated JVM unit testing.
+      </div>
+    </section>
+
+    <!-- Section 3 -->
+    <section id="diurnal-engine" class="card">
+      <div class="card-header">
+        <h2 class="card-title">3. Diurnal Outfit Recommendation Algorithm</h2>
+        <span class="badge badge-amber">All-Day Intelligence</span>
+      </div>
+      <p style="color: var(--text-muted); margin-bottom: 1rem;">
+        The recommendation engine evaluates the full daylight spectrum (07:00 – 22:00) rather than a single morning snapshot. It identifies diurnal temperature swings ($\Delta T = T_{\max} - T_{\min} \ge 7^\circ\text{C}$), rain spikes ($P_{\text{rain}} \ge 35\%$), and UV levels.
+      </p>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+flowchart TD
+    Start["Fetch Hourly Forecast: 07:00 - 22:00"] --> AdjustTemp["Apply Thermal Sensitivity Offset: T_eff = T + Offset"]
+    AdjustTemp --> CalcMetrics["Calculate: T_min, T_max, Delta-T = T_max - T_min, Max_Precip_Prob, Max_UV, Max_Wind"]
+    
+    CalcMetrics --> EvalBase["Evaluate Base & Bottoms: Based on T_max & T_avg"]
+    CalcMetrics --> EvalLayers["Evaluate Layering: If Delta-T >= 7°C or T_min < 14°C"]
+    
+    EvalLayers --> LayerDecision{"Delta-T >= 7°C?"}
+    LayerDecision -- Yes --> AddMidLayer["Add Removable Mid/Outer Layer: Cardigan, Light Jacket, or Hoodie"]
+    LayerDecision -- No --> DirectOuter["Evaluate Standard Outer Layer based on T_max"]
+
+    AddMidLayer --> EvalPrecip
+    DirectOuter --> EvalPrecip
+
+    EvalPrecip{"Max Precip Prob >= 35% or Rain Code?"}
+    EvalPrecip -- Yes --> AddUmbrella["Add Accessory: Umbrella / Raincoat + Waterproof Footwear"]
+    EvalPrecip -- No --> CheckUV
+
+    AddUmbrella --> CheckUV
+    CheckUV{"Max UV Index >= 3.0?"}
+    CheckUV -- Yes --> AddSunProtection["Add Accessory: Sunglasses + Sunscreen (if UV >= 6: Sun Hat)"]
+    CheckUV -- No --> CheckWind
+
+    AddSunProtection --> CheckWind
+    CheckWind{"Max Wind >= 35 km/h?"}
+    CheckWind -- Yes --> AddWindbreaker["Upgrade Outer Layer to Windbreaker"]
+    CheckWind -- No --> CompileOutput["Generate OutfitRecommendation"]
+    AddWindbreaker --> CompileOutput
+        </pre>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Effective Temp ($T_{\text{eff}}$)</th>
+              <th>Base Layer</th>
+              <th>Mid / Outer Layer</th>
+              <th>Bottoms & Footwear</th>
+              <th>Key Accessory Triggers</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>&lt; 0°C (Extreme Cold)</code></td>
+              <td>Thermal Undershirt</td>
+              <td>Heavy Wool Sweater + Down Parka</td>
+              <td>Thermal Pants + Winter Boots</td>
+              <td>Beanie, Thermal Gloves, Scarf</td>
+            </tr>
+            <tr>
+              <td><code>0°C – 10°C (Cold)</code></td>
+              <td>Long-sleeve Cotton Shirt</td>
+              <td>Sweater + Wool Coat / Puffer</td>
+              <td>Heavy Jeans/Chinos + Boots</td>
+              <td>Light Scarf; Umbrella if rain &gt; 35%</td>
+            </tr>
+            <tr>
+              <td><code>10°C – 16°C (Cool)</code></td>
+              <td>Cotton T-Shirt</td>
+              <td>Cardigan or Denim/Leather Jacket</td>
+              <td>Trousers + Sneakers</td>
+              <td><strong>Removable Layer</strong> (if $\Delta T \ge 7^\circ\text{C}$)</td>
+            </tr>
+            <tr>
+              <td><code>16°C – 22°C (Mild)</code></td>
+              <td>Breathable T-Shirt / Polo</td>
+              <td>Optional Light Overshirt</td>
+              <td>Chinos + Casual Shoes</td>
+              <td>Sunglasses (if UV $\ge 3$)</td>
+            </tr>
+            <tr>
+              <td><code>22°C – 28°C (Warm)</code></td>
+              <td>Short-sleeve T-shirt / Linen</td>
+              <td>None</td>
+              <td>Shorts / Chinos + Loafers</td>
+              <td>Sunglasses + Sunscreen</td>
+            </tr>
+            <tr>
+              <td><code>&gt; 28°C (Hot)</code></td>
+              <td>Ultra-light Linen / Tank</td>
+              <td>None</td>
+              <td>Shorts + Canvas Shoes</td>
+              <td>Sun Hat, UV Sunglasses, Sunscreen</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section 4 -->
+    <section id="tech-stack" class="card">
+      <div class="card-header">
+        <h2 class="card-title">4. Technical Stack Decision Matrix</h2>
+        <span class="badge badge-primary">Trade-off Analysis</span>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Selected Stack</th>
+              <th>Alternative</th>
+              <th>Pros & Advantages</th>
+              <th>Cons & Trade-offs</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>UI Framework</strong></td>
+              <td>Jetpack Compose (Material 3)</td>
+              <td>XML Views</td>
+              <td>Declarative state modeling, frictionless animations, modern dynamic theming.</td>
+              <td>Slightly higher initial clean compilation overhead.</td>
+            </tr>
+            <tr>
+              <td><strong>Dependency Injection</strong></td>
+              <td>Koin 4.x</td>
+              <td>Hilt / Dagger</td>
+              <td>Pure Kotlin DSL, zero KSP/kapt annotation processing overhead, rapid builds.</td>
+              <td>Runtime graph resolution rather than compile-time verification.</td>
+            </tr>
+            <tr>
+              <td><strong>Weather Provider</strong></td>
+              <td>Open-Meteo REST API</td>
+              <td>OpenWeatherMap</td>
+              <td><strong>No API key required</strong> (eliminates client secret leakage), free, hourly metrics.</td>
+              <td>10,000 calls/day per IP rate limit (ample for client app).</td>
+            </tr>
+            <tr>
+              <td><strong>Networking</strong></td>
+              <td>Ktor Client 3.x</td>
+              <td>Retrofit + OkHttp</td>
+              <td>Multiplatform coroutines, lightweight footprint, Kotlinx.serialization integration.</td>
+              <td>Slightly different configuration syntax than traditional Retrofit.</td>
+            </tr>
+            <tr>
+              <td><strong>Persistence</strong></td>
+              <td>Room DB + DataStore</td>
+              <td>SharedPreferences</td>
+              <td>Type-safe SQLite with Flow observation; DataStore provides transactional writes.</td>
+              <td>Schema migration planning required for future structural changes.</td>
+            </tr>
+            <tr>
+              <td><strong>Morning Trigger</strong></td>
+              <td>AlarmManager + WorkManager</td>
+              <td>Periodic WorkManager</td>
+              <td>Guaranteed exact wake-up even in deep Doze mode; reliable network retry backoff.</td>
+              <td>Requires Android 12+ <code>SCHEDULE_EXACT_ALARM</code> handling.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section 5 -->
+    <section id="background-flow" class="card">
+      <div class="card-header">
+        <h2 class="card-title">5. Morning Notification Delivery Sequence</h2>
+        <span class="badge badge-teal">OS Power-Aware</span>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor User
+    participant Settings as UI / SettingsScreen
+    participant AlarmMgr as Android AlarmManager
+    participant Receiver as MorningAlarmReceiver
+    participant Worker as MorningOutfitWorker
+    participant Repo as WeatherRepository
+    participant Notif as NotificationManager
+
+    User->>Settings: Configures Morning Alert (07:00 AM)
+    Settings->>AlarmMgr: setExactAndAllowWhileIdle(RTC_WAKEUP, 07:00, PendingIntent)
+    Note over AlarmMgr: Device sleeps / Doze mode active
+    
+    AlarmMgr->>Receiver: Alarm triggers at 07:00 AM
+    Receiver->>Worker: Enqueue OneTimeWorkRequest (Expedited / Immediate)
+    
+    Worker->>Repo: Fetch Weather (Cache fallback on failure)
+    Repo-->>Worker: WeatherSnapshot
+    Worker->>Worker: Run OutfitRecommendationEngine
+    Worker->>Notif: Build & Post Rich Notification
+    Worker->>AlarmMgr: Schedule next day alarm (24h recurrence)
+    Notif-->>User: Delivers Outfit & Accessory Alert Notification
+        </pre>
+      </div>
+    </section>
+
+    <!-- Section 6 -->
+    <section id="offline-strategy" class="card">
+      <div class="card-header">
+        <h2 class="card-title">6. Offline-First Caching Strategy</h2>
+        <span class="badge badge-green">Resilience</span>
+      </div>
+      <p style="color: var(--text-muted); margin-bottom: 1rem;">
+        Because ShowMeOutfit is a standalone client with no intermediate proxy:
+      </p>
+      <ul style="color: var(--text-muted); margin-left: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem;">
+        <li><strong>Local Cache Persistence:</strong> Every fetched weather forecast snapshot is saved to Room DB with a millisecond timestamp.</li>
+        <li><strong>Freshness TTL:</strong> Snapshots are fresh for 3 hours. If offline within 12 hours, cached data generates the recommendation with an indicator.</li>
+        <li><strong>Location Coordinates:</strong> Last resolved GPS coordinates are preserved in DataStore, eliminating timeout delays during background execution.</li>
+      </ul>
+    </section>
+
+    <!-- Section 7 -->
+    <section id="extension-roadmap" class="card">
+      <div class="card-header">
+        <h2 class="card-title">7. Extensibility: Virtual Wardrobe Roadmap</h2>
+        <span class="badge badge-primary">v2.0 Evolution</span>
+      </div>
+      <p style="color: var(--text-muted); margin-bottom: 1rem;">
+        The system defines a decoupled domain interface <code>IOutfitRecommendationEngine</code>. Upgrading from rule presets to a user-cataloged wardrobe requires zero modifications to UI, networking, or background workers:
+      </p>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+classDiagram
+    class IOutfitRecommendationEngine {
+        <<interface>>
+        +recommend(weather, profile) OutfitRecommendation
+    }
+
+    class RuleBasedPresetEngine {
+        -presetCatalog: PresetOutfitCatalog
+        +recommend(weather, profile) OutfitRecommendation
+    }
+
+    class PersonalWardrobeEngine {
+        -wardrobeRepository: WardrobeRepository
+        -matchingAlgorithm: WardrobeCompatibilityMatcher
+        +recommend(weather, profile) OutfitRecommendation
+    }
+
+    IOutfitRecommendationEngine <|.. RuleBasedPresetEngine : Phase 1 MVP
+    IOutfitRecommendationEngine <|.. PersonalWardrobeEngine : Phase 2 Extension
+        </pre>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      darkMode: true,
+      background: '#0f172a',
+      primaryColor: '#6366f1',
+      primaryTextColor: '#f8fafc',
+      primaryBorderColor: '#818cf8',
+      lineColor: '#94a3b8',
+      secondaryColor: '#0ea5e9',
+      tertiaryColor: '#1e293b'
+    }
+  });
+
+  const navLinks = document.querySelectorAll('.nav-item');
+  const sections = document.querySelectorAll('section');
+
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop;
+      if (pageYOffset >= sectionTop - 150) {
+        current = section.getAttribute('id');
+      }
+    });
+
+    navLinks.forEach(link => {
+      link.classList.remove('active');
+      if (link.getAttribute('href') === `#${current}`) {
+        link.classList.add('active');
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

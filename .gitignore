@@ -1,6 +1,11 @@
 *.iml
 .gradle
 /local.properties
+
+# Sprint Actions & Operational Planning (kept outside git tracking)
+.sprint/
+sprint-planning/
+
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
@@ -15,3 +20,8 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Sprint Actions & Operational Planning (kept outside git tracking)
+.sprint/
+sprint-planning/
+
