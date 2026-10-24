@@ -12,8 +12,9 @@ navigationCompose = "2.8.7"
 coil = "3.0.4"
 coroutines = "1.10.1"
 koin = "4.0.2"
+ksp = "2.2.10-2.0.2"
 ktor = "3.1.1"
-room = "2.6.1"
+room = "2.8.5"
 datastore = "1.1.2"
 playServicesLocation = "21.3.0"
 mockk = "1.13.16"
@@ -78,5 +79,6 @@ turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
 
