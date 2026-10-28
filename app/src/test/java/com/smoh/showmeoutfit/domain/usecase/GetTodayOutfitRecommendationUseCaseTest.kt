@@ -207,7 +207,7 @@ class GetTodayOutfitRecommendationUseCaseTest {
         var lastKnownResult: Result<LocationInfo> =
             Result.success(LocationInfo(48.8566, 2.3522, "Paris", "France"))
 
-        override suspend fun getLastKnownLocation(): Result<LocationInfo> = lastKnownResult
+        override suspend fun getCurrentLocation(): Result<LocationInfo> = lastKnownResult
 
         override suspend fun searchLocation(query: String): Result<List<LocationInfo>> =
             Result.success(emptyList())

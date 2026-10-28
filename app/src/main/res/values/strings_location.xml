@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copy owned by the location search sheet (SMO-S2-04).
+  Kept in a dedicated file so it does not conflict with strings.xml / strings_components.xml.
+-->
+<resources>
+    <string name="location_search_title">Choose a city</string>
+    <string name="location_search_hint">Search for a city</string>
+    <string name="location_search_clear">Clear search</string>
+    <string name="location_search_use_current">Use my location</string>
+    <string name="location_search_locating">Finding your location…</string>
+    <string name="location_search_searching">Searching…</string>
+    <string name="location_search_dismiss">Close</string>
+    <string name="location_search_retry">Try again</string>
+
+    <string name="location_search_empty">No cities match “%1$s”.</string>
+    <string name="location_search_prompt">Type at least two characters, or use your current location.</string>
+    <plurals name="location_search_result_count">
+        <item quantity="one">%1$d city found</item>
+        <item quantity="other">%1$d cities found</item>
+    </plurals>
+    <string name="location_search_city_with_country">%1$s, %2$s</string>
+    <string name="location_search_result_content_description">%1$s. Double tap to use this city.</string>
+
+    <string name="location_search_error_offline">You’re offline. Check your connection and try again.</string>
+    <string name="location_search_error_api">The city search is unavailable right now. Try again in a moment.</string>
+    <string name="location_search_error_malformed">The city search returned something we couldn’t read. Try a different spelling.</string>
+    <string name="location_search_error_unknown">Something went wrong while searching. Try again.</string>
+    <string name="location_search_error_permission_denied">Location permission is off. You can still search for a city below.</string>
+    <string name="location_search_error_disabled">Location services are turned off on this device. Search for a city, or turn them on in settings.</string>
+    <string name="location_search_error_unavailable">We couldn’t get a location fix. Search for a city instead.</string>
+
+    <string name="location_search_permission_title">Find your local weather</string>
+    <string name="location_search_permission_body">ShowMeOutfit uses your approximate location to pick the right forecast. You can also search for a city manually.</string>
+    <string name="location_search_permission_continue">Continue</string>
+    <string name="location_search_permission_not_now">Not now</string>
+    <string name="location_search_permission_open_settings">Open settings</string>
+</resources>

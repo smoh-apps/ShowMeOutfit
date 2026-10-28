@@ -161,6 +161,34 @@ class HomeViewModelTest {
     }
 
     @Test
+    fun `denied location permission still leaves a manual city path`() = runTest {
+        userRepository.setProfile(UserProfile(selectedLocation = null))
+        locationRepository.lastKnown = Result.failure(DomainError.LocationPermissionDenied())
+
+        val vm = viewModel()
+
+        // Not a dead-end error: the empty state offers "choose a city".
+        assertEquals(HomeUiState.Empty, vm.state.value)
+
+        vm.onIntent(HomeIntent.OpenLocationSearch)
+
+        vm.effects.test {
+            assertEquals(HomeEffect.OpenLocationSearch, awaitItem())
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `location services disabled still leaves a manual city path`() = runTest {
+        userRepository.setProfile(UserProfile(selectedLocation = null))
+        locationRepository.lastKnown = Result.failure(DomainError.LocationDisabled())
+
+        val vm = viewModel()
+
+        assertEquals(HomeUiState.Empty, vm.state.value)
+    }
+
+    @Test
     fun `refresh marks content as refreshing and clears the flag when done`() = runTest {
         val vm = viewModel()
         val gate = CompletableDeferred<Unit>()
@@ -375,7 +403,7 @@ class HomeViewModelTest {
         var lastKnown: Result<LocationInfo> =
             Result.success(LocationInfo(48.8566, 2.3522, "Paris", "France"))
 
-        override suspend fun getLastKnownLocation(): Result<LocationInfo> = lastKnown
+        override suspend fun getCurrentLocation(): Result<LocationInfo> = lastKnown
 
         override suspend fun searchLocation(query: String): Result<List<LocationInfo>> =
             Result.success(emptyList())

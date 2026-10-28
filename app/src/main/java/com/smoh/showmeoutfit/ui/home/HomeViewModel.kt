@@ -115,8 +115,12 @@ class HomeViewModel(
             onFailure = { failure ->
                 val error = failure.toDomainError()
                 when {
-                    // Nothing to recover: the user must choose a city.
-                    error is DomainError.NoLocation -> HomeUiState.Empty
+                    // No usable position and no saved city: picking a city is the only recovery,
+                    // whether the user denied the permission, turned location off, or got no fix.
+                    error is DomainError.NoLocation ||
+                        error is DomainError.LocationPermissionDenied ||
+                        error is DomainError.LocationDisabled ||
+                        error is DomainError.LocationUnavailable -> HomeUiState.Empty
 
                     // Keep the last good dashboard on screen; staleness is the banner's job.
                     previous is HomeUiState.Content -> {
