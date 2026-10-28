@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copy owned by the design-system components (SMO-S2-01).
+  Kept in a dedicated file so it does not conflict with strings.xml.
+-->
+<resources>
+    <!-- AccessoryBadge -->
+    <string name="component_accessory_priority_critical">Essential</string>
+    <string name="component_accessory_priority_recommended">Recommended</string>
+    <string name="component_accessory_priority_optional">Optional</string>
+    <string name="component_accessory_badge_content_description">%1$s accessory: %2$s</string>
+
+    <!-- WeatherMetricChip -->
+    <string name="component_metric_chip_content_description">%1$s: %2$s</string>
+
+    <!-- DiurnalTimelineBar -->
+    <string name="component_timeline_content_description">Diurnal forecast from %1$s to %2$s. Temperatures between %3$.0f and %4$.0f degrees Celsius. Rain probability peaks at %5$d percent. UV index peaks at %6$.1f.</string>
+    <string name="component_timeline_range">%1$.0f° to %2$.0f°</string>
+    <string name="component_timeline_legend_temperature">Temperature</string>
+    <string name="component_timeline_legend_rain">Rain chance</string>
+    <string name="component_timeline_legend_uv">UV index</string>
+    <string name="component_timeline_empty">No hourly forecast available yet</string>
+</resources>
