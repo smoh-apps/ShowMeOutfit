@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.smoh.showmeoutfit.domain.model.AgeBand
 import com.smoh.showmeoutfit.domain.model.GenderPreference
 import com.smoh.showmeoutfit.domain.model.LocationInfo
 import com.smoh.showmeoutfit.domain.model.ThermalSensitivity
@@ -19,7 +20,11 @@ class UserPreferencesStore(
     private val dataStore: DataStore<Preferences>
 ) {
     companion object {
+        /** Used when a persisted notification time cannot be parsed. */
+        private val DEFAULT_NOTIFICATION_TIME: LocalTime = LocalTime.of(7, 0)
         private val KEY_GENDER = stringPreferencesKey("gender_preference")
+        private val KEY_AGE_BAND = stringPreferencesKey("age_band")
+        private val KEY_IS_CONFIGURED = booleanPreferencesKey("profile_is_configured")
         private val KEY_THERMAL = stringPreferencesKey("thermal_sensitivity")
         private val KEY_NOTIF_ENABLED = booleanPreferencesKey("notification_enabled")
         private val KEY_NOTIF_HOUR = intPreferencesKey("notification_hour")
@@ -39,10 +44,14 @@ class UserPreferencesStore(
             genderPreference = prefs[KEY_GENDER]
                 ?.let { runCatching { GenderPreference.valueOf(it) }.getOrNull() }
                 ?: GenderPreference.ALL,
+            ageBand = prefs[KEY_AGE_BAND]
+                ?.let { runCatching { AgeBand.valueOf(it) }.getOrNull() }
+                ?: AgeBand.UNSPECIFIED,
+            isConfigured = prefs[KEY_IS_CONFIGURED] ?: false,
             thermalSensitivity = prefs[KEY_THERMAL]
                 ?.let { runCatching { ThermalSensitivity.valueOf(it) }.getOrNull() }
                 ?: ThermalSensitivity.NEUTRAL,
-            morningNotificationTime = LocalTime.of(hour, minute),
+            morningNotificationTime = safeLocalTime(hour, minute),
             isNotificationEnabled = prefs[KEY_NOTIF_ENABLED] ?: true,
             selectedLocation = if (hasLocation) {
                 LocationInfo(
@@ -59,6 +68,8 @@ class UserPreferencesStore(
     suspend fun saveUserProfile(profile: UserProfile) {
         dataStore.edit { prefs ->
             prefs[KEY_GENDER] = profile.genderPreference.name
+            prefs[KEY_AGE_BAND] = profile.ageBand.name
+            prefs[KEY_IS_CONFIGURED] = profile.isConfigured
             prefs[KEY_THERMAL] = profile.thermalSensitivity.name
             prefs[KEY_NOTIF_ENABLED] = profile.isNotificationEnabled
             prefs[KEY_NOTIF_HOUR] = profile.morningNotificationTime.hour
@@ -79,4 +90,11 @@ class UserPreferencesStore(
             }
         }
     }
+
+    /**
+     * Persisted notification times can be corrupt (manual edit, partial write, future version).
+     * A single bad value must not take the whole profile flow down, so fall back to the default.
+     */
+    private fun safeLocalTime(hour: Int, minute: Int): LocalTime =
+        runCatching { LocalTime.of(hour, minute) }.getOrElse { DEFAULT_NOTIFICATION_TIME }
 }

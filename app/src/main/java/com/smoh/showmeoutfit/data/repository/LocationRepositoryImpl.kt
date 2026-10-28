@@ -2,9 +2,11 @@ package com.smoh.showmeoutfit.data.repository
 
 import com.smoh.showmeoutfit.core.datastore.UserPreferencesStore
 import com.smoh.showmeoutfit.data.remote.datasource.RemoteWeatherDataSource
+import com.smoh.showmeoutfit.domain.model.DomainError
 import com.smoh.showmeoutfit.domain.model.LocationInfo
 import com.smoh.showmeoutfit.domain.repository.LocationRepository
 import kotlinx.coroutines.flow.first
+import kotlin.coroutines.cancellation.CancellationException
 
 class LocationRepositoryImpl(
     private val remoteDataSource: RemoteWeatherDataSource,
@@ -19,9 +21,13 @@ class LocationRepositoryImpl(
 ) : LocationRepository {
 
     override suspend fun getLastKnownLocation(): Result<LocationInfo> {
-        return runCatching {
+        return try {
             val userProfile = preferencesStore.getUserProfile().first()
-            userProfile.selectedLocation ?: defaultLocation
+            Result.success(userProfile.selectedLocation ?: defaultLocation)
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (error: Throwable) {
+            Result.failure(DomainError.Unknown(error))
         }
     }
 

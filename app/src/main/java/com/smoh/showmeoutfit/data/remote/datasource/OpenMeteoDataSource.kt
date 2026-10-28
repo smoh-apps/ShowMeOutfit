@@ -9,6 +9,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import kotlin.coroutines.cancellation.CancellationException
 
 class OpenMeteoDataSource(
     private val httpClient: HttpClient
@@ -26,7 +27,7 @@ class OpenMeteoDataSource(
     }
 
     override suspend fun fetchForecast(location: LocationInfo): Result<WeatherSnapshot> {
-        return runCatching {
+        return try {
             val response = httpClient.get("$BASE_URL/forecast") {
                 parameter("latitude", location.latitude)
                 parameter("longitude", location.longitude)
@@ -38,12 +39,16 @@ class OpenMeteoDataSource(
                 parameter("forecast_days", 1)
             }
             val dto: OpenMeteoForecastDto = response.body()
-            WeatherNetworkMapper.mapToDomain(dto, location)
+            Result.success(WeatherNetworkMapper.mapToDomain(dto, location))
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (error: Throwable) {
+            Result.failure(error)
         }
     }
 
     override suspend fun geocodeLocation(query: String): Result<List<LocationInfo>> {
-        return runCatching {
+        return try {
             val response = httpClient.get("$GEOCODING_URL/search") {
                 parameter("name", query)
                 parameter("count", 10)
@@ -51,7 +56,11 @@ class OpenMeteoDataSource(
                 parameter("format", "json")
             }
             val dto: OpenMeteoGeocodingResponseDto = response.body()
-            dto.results?.map { WeatherNetworkMapper.mapGeocodingResultToDomain(it) } ?: emptyList()
+            Result.success(dto.results?.map { WeatherNetworkMapper.mapGeocodingResultToDomain(it) } ?: emptyList())
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (error: Throwable) {
+            Result.failure(error)
         }
     }
 }
