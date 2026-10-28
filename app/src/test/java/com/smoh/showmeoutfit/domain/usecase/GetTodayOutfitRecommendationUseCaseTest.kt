@@ -4,6 +4,8 @@ import com.smoh.showmeoutfit.domain.engine.RuleBasedPresetEngine
 import com.smoh.showmeoutfit.domain.model.CurrentCondition
 import com.smoh.showmeoutfit.domain.model.DailySummary
 import com.smoh.showmeoutfit.domain.model.DomainError
+import com.smoh.showmeoutfit.domain.model.GarmentFit
+import com.smoh.showmeoutfit.domain.model.GarmentId
 import com.smoh.showmeoutfit.domain.model.HourlyCondition
 import com.smoh.showmeoutfit.domain.model.LocationInfo
 import com.smoh.showmeoutfit.domain.model.ThermalSensitivity
@@ -102,8 +104,8 @@ class GetTodayOutfitRecommendationUseCaseTest {
 
         assertTrue(result.isSuccess)
         val todayOutfit = result.getOrThrow()
-        assertNotNull(todayOutfit.recommendation.headline)
-        assertEquals("Breathable Cotton T-Shirt", todayOutfit.recommendation.baseLayer.name)
+        assertEquals(GarmentId.COTTON_TEE, todayOutfit.recommendation.baseLayer.id)
+        assertEquals(GarmentFit.UNISEX, todayOutfit.recommendation.baseLayer.fit)
         assertEquals(customLoc, fakeWeatherRepo.lastRequestedLocation)
         assertEquals(WeatherOrigin.NETWORK, todayOutfit.weather.origin)
     }
