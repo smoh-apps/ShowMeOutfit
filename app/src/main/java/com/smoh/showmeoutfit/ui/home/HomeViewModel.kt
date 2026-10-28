@@ -3,6 +3,7 @@ package com.smoh.showmeoutfit.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smoh.showmeoutfit.domain.model.DomainError
+import com.smoh.showmeoutfit.domain.model.LocationInfo
 import com.smoh.showmeoutfit.domain.repository.UserRepository
 import com.smoh.showmeoutfit.domain.usecase.GetTodayOutfitRecommendationUseCase
 import kotlinx.coroutines.CoroutineDispatcher
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -23,9 +25,12 @@ import kotlinx.coroutines.withContext
  * Drives the Home screen through a single state stream.
  *
  * Guarantees:
- * - At most one recommendation request is in flight; extra [HomeIntent.Load]/[HomeIntent.Refresh]
- *   calls are dropped instead of queued (no duplicate network calls on recomposition/rotation).
+ * - At most one recommendation request is in flight. A trigger that arrives while a request is
+ *   running is coalesced into exactly one follow-up request instead of being dropped, so a city
+ *   change or a profile edit made mid-refresh is never lost.
  * - Profile changes (fit, age band, sensitivity) recompute the recommendation automatically.
+ * - A failed refresh keeps the last good dashboard visible and reports the problem as an effect;
+ *   the full-screen [HomeUiState.Error] is reserved for the case with nothing to show.
  * - No `Context`, `Resources`, or formatted copy is produced here; the UI resolves all text.
  */
 class HomeViewModel(
@@ -42,6 +47,12 @@ class HomeViewModel(
 
     private var loadJob: Job? = null
 
+    /** A trigger arrived while a request was running and still needs to be served. */
+    private var reloadPending = false
+
+    /** Whether the coalesced follow-up request should bypass the cache. */
+    private var pendingForceRefresh = false
+
     init {
         observeProfileChanges()
         onIntent(HomeIntent.Load)
@@ -53,44 +64,82 @@ class HomeViewModel(
 
             HomeIntent.Refresh -> load(forceRefresh = true)
 
-            is HomeIntent.SelectLocation -> selectLocation(intent)
+            is HomeIntent.SelectLocation -> selectLocation(intent.location)
 
             HomeIntent.DismissError -> {
                 if (_state.value is HomeUiState.Error) {
                     load(forceRefresh = false)
                 }
             }
+
+            HomeIntent.OpenLocationSearch -> _effects.trySend(HomeEffect.OpenLocationSearch)
         }
     }
 
     private fun load(forceRefresh: Boolean) {
-        if (loadJob?.isActive == true) return
+        if (loadJob?.isActive == true) {
+            reloadPending = true
+            pendingForceRefresh = pendingForceRefresh || forceRefresh
+            return
+        }
 
         loadJob = viewModelScope.launch {
-            val current = _state.value
-            _state.value = when {
-                current is HomeUiState.Content && forceRefresh -> current.copy(isRefreshing = true)
-                current is HomeUiState.Content -> current
-                else -> HomeUiState.Loading
-            }
+            var force = forceRefresh
+            while (isActive) {
+                reloadPending = false
+                pendingForceRefresh = false
 
-            val result = withContext(ioDispatcher) {
-                getTodayOutfit(forceRefresh = forceRefresh)
-            }
+                fetchOnce(forceRefresh = force)
 
-            _state.value = result.fold(
-                onSuccess = { HomeUiState.Content(outfit = it) },
-                onFailure = { failure -> failure.toUiState() }
-            )
+                if (!reloadPending) break
+                force = pendingForceRefresh
+            }
         }
     }
 
-    private fun selectLocation(intent: HomeIntent.SelectLocation) {
+    private suspend fun fetchOnce(forceRefresh: Boolean) {
+        val current = _state.value
+        _state.value = when {
+            current is HomeUiState.Content && forceRefresh -> current.copy(isRefreshing = true)
+            current is HomeUiState.Content -> current
+            else -> HomeUiState.Loading
+        }
+
+        val result = withContext(ioDispatcher) {
+            getTodayOutfit(forceRefresh = forceRefresh)
+        }
+
+        val previous = _state.value
+        _state.value = result.fold(
+            onSuccess = { HomeUiState.Content(outfit = it) },
+            onFailure = { failure ->
+                val error = failure.toDomainError()
+                when {
+                    // Nothing to recover: the user must choose a city.
+                    error is DomainError.NoLocation -> HomeUiState.Empty
+
+                    // Keep the last good dashboard on screen; staleness is the banner's job.
+                    previous is HomeUiState.Content -> {
+                        _effects.trySend(HomeEffect.ShowMessage(error))
+                        previous.copy(isRefreshing = false)
+                    }
+
+                    else -> {
+                        _effects.trySend(HomeEffect.ShowMessage(error))
+                        HomeUiState.Error(error)
+                    }
+                }
+            }
+        )
+    }
+
+    private fun selectLocation(location: LocationInfo) {
         viewModelScope.launch {
             val profile = userRepository.getUserProfile().first()
-            if (profile.selectedLocation == intent.location) return@launch
-            userRepository.updateUserProfile(profile.copy(selectedLocation = intent.location))
-            // The profile observer triggers the reload, so a new city is fetched exactly once.
+            if (profile.selectedLocation == location) return@launch
+            userRepository.updateUserProfile(profile.copy(selectedLocation = location))
+            // The profile observer triggers the reload. If a request is already running the
+            // trigger is coalesced, not dropped.
         }
     }
 
@@ -99,14 +148,6 @@ class HomeViewModel(
             userRepository.getUserProfile()
                 .drop(1) // The initial emission is covered by the first Load.
                 .collect { load(forceRefresh = false) }
-        }
-    }
-
-    private fun Throwable.toUiState(): HomeUiState = when (val error = toDomainError()) {
-        is DomainError.NoLocation -> HomeUiState.Empty
-        else -> {
-            _effects.trySend(HomeEffect.ShowMessage(error))
-            HomeUiState.Error(error)
         }
     }
 

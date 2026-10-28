@@ -33,6 +33,9 @@ sealed interface HomeIntent {
     data class SelectLocation(val location: LocationInfo) : HomeIntent
 
     data object DismissError : HomeIntent
+
+    /** Asks the UI to open the city search screen (used by the empty/no-location state). */
+    data object OpenLocationSearch : HomeIntent
 }
 
 sealed interface HomeEffect {

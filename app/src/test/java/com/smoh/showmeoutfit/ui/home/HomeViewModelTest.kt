@@ -2,6 +2,7 @@ package com.smoh.showmeoutfit.ui.home
 
 import app.cash.turbine.test
 import com.smoh.showmeoutfit.domain.engine.RuleBasedPresetEngine
+import com.smoh.showmeoutfit.domain.model.AgeBand
 import com.smoh.showmeoutfit.domain.model.CurrentCondition
 import com.smoh.showmeoutfit.domain.model.DailySummary
 import com.smoh.showmeoutfit.domain.model.DomainError
@@ -178,18 +179,19 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `duplicate load while a request is in flight is dropped`() = runTest {
+    fun `concurrent triggers are coalesced into exactly one follow-up request`() = runTest {
         val vm = viewModel()
         val gate = CompletableDeferred<Unit>()
         weatherRepository.gate = gate
 
+        // Three triggers while the first request is blocked must not queue three requests.
         vm.onIntent(HomeIntent.Load)
         vm.onIntent(HomeIntent.Load)
         vm.onIntent(HomeIntent.Refresh)
 
         gate.complete(Unit)
 
-        assertEquals(2, weatherRepository.calls) // initial load + one refresh
+        assertEquals(3, weatherRepository.calls) // initial + blocked + one coalesced follow-up
     }
 
     @Test
@@ -205,20 +207,91 @@ class HomeViewModelTest {
     }
 
     @Test
+    fun `selecting a location during an in-flight fetch still fetches the new city`() = runTest {
+        val vm = viewModel()
+        val gate = CompletableDeferred<Unit>()
+        weatherRepository.gate = gate
+
+        vm.onIntent(HomeIntent.SelectLocation(berlin))
+        assertEquals(berlin, userRepository.profile.value.selectedLocation)
+
+        gate.complete(Unit)
+
+        assertEquals(2, weatherRepository.calls)
+        assertEquals(berlin, weatherRepository.lastRequestedLocation)
+    }
+
+    @Test
+    fun `profile change during an in-flight fetch is not lost`() = runTest {
+        val vm = viewModel()
+        val gate = CompletableDeferred<Unit>()
+        weatherRepository.gate = gate
+
+        userRepository.setProfile(
+            userRepository.profile.value.copy(ageBand = AgeBand.SENIOR_60_PLUS)
+        )
+        gate.complete(Unit)
+
+        assertEquals(2, weatherRepository.calls)
+        val content = vm.state.value as HomeUiState.Content
+        assertEquals(AgeBand.SENIOR_60_PLUS, content.outfit.profile.ageBand)
+    }
+
+    @Test
+    fun `a failed refresh keeps the last dashboard and reports the failure as an effect`() = runTest {
+        val vm = viewModel()
+        val before = vm.state.value as HomeUiState.Content
+
+        weatherRepository.result = Result.failure(DomainError.Offline(IOException("offline")))
+        vm.onIntent(HomeIntent.Refresh)
+
+        vm.effects.test {
+            assertTrue(awaitItem() is HomeEffect.ShowMessage)
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        val after = vm.state.value
+        assertTrue("a failed refresh must not wipe usable content", after is HomeUiState.Content)
+        assertEquals(before.outfit, (after as HomeUiState.Content).outfit)
+        assertTrue(!after.isRefreshing)
+    }
+
+    @Test
+    fun `an initial failure still surfaces the full-screen error state`() = runTest {
+        weatherRepository.result = Result.failure(DomainError.ApiFailure(IllegalStateException("500")))
+
+        val vm = viewModel()
+
+        assertTrue(vm.state.value is HomeUiState.Error)
+    }
+
+    @Test
+    fun `open location search is exposed as an effect and is recoverable from empty`() = runTest {
+        userRepository.setProfile(UserProfile(selectedLocation = null))
+        locationRepository.lastKnown = Result.failure(IOException("no fix"))
+        val vm = viewModel()
+        assertEquals(HomeUiState.Empty, vm.state.value)
+
+        vm.onIntent(HomeIntent.OpenLocationSearch)
+
+        vm.effects.test {
+            assertEquals(HomeEffect.OpenLocationSearch, awaitItem())
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
     fun `profile changes recompute the recommendation`() = runTest {
         val vm = viewModel()
         assertEquals(1, weatherRepository.calls)
 
         userRepository.setProfile(
-            userRepository.profile.value.copy(ageBand = com.smoh.showmeoutfit.domain.model.AgeBand.SENIOR_60_PLUS)
+            userRepository.profile.value.copy(ageBand = AgeBand.SENIOR_60_PLUS)
         )
 
         assertEquals(2, weatherRepository.calls)
         val content = vm.state.value as HomeUiState.Content
-        assertEquals(
-            com.smoh.showmeoutfit.domain.model.AgeBand.SENIOR_60_PLUS,
-            content.outfit.profile.ageBand
-        )
+        assertEquals(AgeBand.SENIOR_60_PLUS, content.outfit.profile.ageBand)
     }
 
     @Test
@@ -235,11 +308,17 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `state never exposes Android context or resources`() = runTest {
+    fun `state is a single hot stream that does not re-trigger IO per collector`() = runTest {
         val vm = viewModel()
+        val callsAfterLoad = weatherRepository.calls
 
-        val content = vm.state.value as HomeUiState.Content
-        assertTrue(content.outfit is TodayOutfit)
+        // A second collector (e.g. rotation, a nested composable) must not cause work.
+        vm.state.test {
+            assertTrue(awaitItem() is HomeUiState.Content)
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        assertEquals(callsAfterLoad, weatherRepository.calls)
     }
 
     // --- Fakes ---
