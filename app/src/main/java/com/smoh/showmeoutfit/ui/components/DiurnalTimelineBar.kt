@@ -13,15 +13,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.smoh.showmeoutfit.R
 import com.smoh.showmeoutfit.ui.theme.DesignTokens
@@ -98,30 +101,37 @@ fun DiurnalTimelineBar(
             color = secondaryTextColor,
         )
 
-        DiurnalTimelineChart(
-            points = points,
-            curveColor = curveColor,
-            rainColor = rainColor,
-            uvColor = uvColor,
-            gridColor = gridColor,
-            chartHeight = chartHeight,
-        )
-
-        val labelIndices = listOf(0, points.lastIndex / 2, points.lastIndex).distinct()
-        Row(modifier = Modifier.fillMaxWidth()) {
-            labelIndices.forEachIndexed { position, index ->
-                Text(
-                    text = points[index].hourLabel,
-                    modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = secondaryTextColor,
-                    textAlign = when (position) {
-                        0 -> TextAlign.Start
-                        labelIndices.lastIndex -> TextAlign.End
-                        else -> TextAlign.Center
-                    },
-                    maxLines = 1,
+        // The axis is a physical left -> right time axis by product decision (ADR-S2-03): pin the
+        // plot and the hour labels to LTR so an RTL locale never mirrors time. The range text and
+        // the legend above/below keep the ambient direction and use start/end.
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+            Column(verticalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.sm)) {
+                DiurnalTimelineChart(
+                    points = points,
+                    curveColor = curveColor,
+                    rainColor = rainColor,
+                    uvColor = uvColor,
+                    gridColor = gridColor,
+                    chartHeight = chartHeight,
                 )
+
+                val labelIndices = listOf(0, points.lastIndex / 2, points.lastIndex).distinct()
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    labelIndices.forEachIndexed { position, index ->
+                        Text(
+                            text = points[index].hourLabel,
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = secondaryTextColor,
+                            textAlign = when (position) {
+                                0 -> TextAlign.Start
+                                labelIndices.lastIndex -> TextAlign.End
+                                else -> TextAlign.Center
+                            },
+                            maxLines = 1,
+                        )
+                    }
+                }
             }
         }
 
