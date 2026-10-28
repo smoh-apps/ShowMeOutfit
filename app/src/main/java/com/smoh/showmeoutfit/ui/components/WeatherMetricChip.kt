@@ -40,9 +40,9 @@ import com.smoh.showmeoutfit.ui.theme.ShowMeOutfitTheme
 fun WeatherMetricChip(
     label: String,
     value: String,
+    modifier: Modifier = Modifier,
     unit: String? = null,
     icon: (@Composable () -> Unit)? = null,
-    modifier: Modifier = Modifier,
 ) {
     val hasUnit = !unit.isNullOrBlank()
     val spokenValue = if (hasUnit) "$value $unit" else value

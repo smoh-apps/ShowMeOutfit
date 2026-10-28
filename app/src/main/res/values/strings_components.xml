@@ -3,7 +3,7 @@
   Copy owned by the design-system components (SMO-S2-01).
   Kept in a dedicated file so it does not conflict with strings.xml.
 -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- AccessoryBadge -->
     <string name="component_accessory_priority_critical">Essential</string>
     <string name="component_accessory_priority_recommended">Recommended</string>
@@ -14,7 +14,10 @@
     <string name="component_metric_chip_content_description">%1$s: %2$s</string>
 
     <!-- DiurnalTimelineBar -->
-    <string name="component_timeline_content_description">Diurnal forecast from %1$s to %2$s. Temperatures between %3$.0f and %4$.0f degrees Celsius. Rain probability peaks at %5$d percent. UV index peaks at %6$.1f.</string>
+    <!-- PluralsCandidate false positive: "%5$d percent" is a percentage quantity, not a countable
+         noun. English uses the same form for every value ("1 percent", "2 percent"), so a <plurals>
+         resource would produce identical text for all quantities and add translation noise. -->
+    <string name="component_timeline_content_description" tools:ignore="PluralsCandidate">Diurnal forecast from %1$s to %2$s. Temperatures between %3$.0f and %4$.0f degrees Celsius. Rain probability peaks at %5$d percent. UV index peaks at %6$.1f.</string>
     <string name="component_timeline_range">%1$.0f° to %2$.0f°</string>
     <string name="component_timeline_legend_temperature">Temperature</string>
     <string name="component_timeline_legend_rain">Rain chance</string>

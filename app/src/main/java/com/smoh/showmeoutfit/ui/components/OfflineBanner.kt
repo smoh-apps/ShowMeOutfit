@@ -32,9 +32,9 @@ import com.smoh.showmeoutfit.ui.theme.ShowMeOutfitTheme
 @Composable
 fun OfflineBanner(
     text: String,
+    modifier: Modifier = Modifier,
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
-    modifier: Modifier = Modifier,
 ) {
     val action = onAction
     Surface(

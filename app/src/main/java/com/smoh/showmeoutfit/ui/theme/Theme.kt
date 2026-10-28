@@ -38,8 +38,9 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun ShowMeOutfitTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // Dynamic color is available on Android 12+, but is opt-in only (ADR-S2-01):
+    // the fixed weather-reactive brand palette is the product identity.
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

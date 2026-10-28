@@ -43,9 +43,9 @@ fun OutfitLayerCard(
     title: String,
     description: String,
     layerLabel: String,
+    modifier: Modifier = Modifier,
     accentColor: Color? = null,
     minHeight: Dp = 96.dp,
-    modifier: Modifier = Modifier,
 ) {
     val accent = accentColor ?: MaterialTheme.colorScheme.primary
     Surface(
