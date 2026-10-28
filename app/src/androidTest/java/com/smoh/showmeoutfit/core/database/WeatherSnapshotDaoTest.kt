@@ -105,7 +105,7 @@ class WeatherSnapshotDaoTest {
         dao.insert(buildEntity(fetchedAtMs = 9000L, city = "NewCity"))
 
         val deleted = dao.deleteOlderThan(cutoffEpochMs = 5000L)
-        assertTrue(deleted >= 0)
+        assertEquals(1, deleted)
 
         val latest = dao.getLatest()
         assertNotNull(latest)
