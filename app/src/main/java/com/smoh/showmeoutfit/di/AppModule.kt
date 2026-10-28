@@ -25,9 +25,11 @@ import com.smoh.showmeoutfit.domain.repository.WeatherRepository
 import com.smoh.showmeoutfit.domain.usecase.GetTodayOutfitRecommendationUseCase
 import com.smoh.showmeoutfit.domain.usecase.ManageUserProfileUseCase
 import com.smoh.showmeoutfit.domain.usecase.SearchLocationUseCase
+import com.smoh.showmeoutfit.ui.home.HomeViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import org.koin.android.ext.koin.androidContext
+import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val networkModule = module {
@@ -107,11 +109,21 @@ val useCaseModule = module {
     }
 }
 
+val presentationModule = module {
+    viewModel {
+        HomeViewModel(
+            getTodayOutfit = get(),
+            userRepository = get()
+        )
+    }
+}
+
 val appModules = listOf(
     networkModule,
     databaseModule,
     storageModule,
     repositoryModule,
     engineModule,
-    useCaseModule
+    useCaseModule,
+    presentationModule
 )
