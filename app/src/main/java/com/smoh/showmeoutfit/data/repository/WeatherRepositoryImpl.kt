@@ -52,7 +52,7 @@ class WeatherRepositoryImpl(
         val today = todayIn(location, now)
 
         if (!forceRefresh) {
-            val cached = localDataSource.getLatest()
+            val cached = readCached()
             if (cached != null) {
                 val age = Duration.between(cached.fetchedAt, now)
                 if (cached.isUsableFor(location, today, age, CACHE_FRESHNESS_DURATION)) {
@@ -69,14 +69,14 @@ class WeatherRepositoryImpl(
 
         return remoteDataSource.fetchForecast(location).fold(
             onSuccess = { snapshot ->
-                localDataSource.save(snapshot)
+                persist(snapshot)
                 pruneExpiredRows(now)
                 Result.success(WeatherData(snapshot = snapshot, origin = WeatherOrigin.NETWORK))
             },
             onFailure = { failure ->
                 if (failure is CancellationException) throw failure
 
-                val cached = localDataSource.getLatest()
+                val cached = readCached()
                 if (cached != null) {
                     val age = Duration.between(cached.fetchedAt, now)
                     if (cached.isUsableFor(location, today, age, CACHE_MAX_FALLBACK_DURATION)) {
@@ -97,7 +97,7 @@ class WeatherRepositoryImpl(
     }
 
     override suspend fun getCachedWeather(): WeatherData? {
-        val cached = localDataSource.getLatest() ?: return null
+        val cached = readCached() ?: return null
         val age = Duration.between(cached.fetchedAt, Instant.now(clock))
         val safeAge = if (age.isNegative) Duration.ZERO else age
         val origin = if (safeAge < CACHE_FRESHNESS_DURATION) {
@@ -106,6 +106,31 @@ class WeatherRepositoryImpl(
             WeatherOrigin.CACHE_STALE
         }
         return WeatherData(snapshot = cached, origin = origin, cacheAge = safeAge)
+    }
+
+    /**
+     * Reads the cache, degrading to "no cache" when the database itself fails.
+     *
+     * A corrupt or unreadable local database must not surface as an unmapped exception: the
+     * worst case is a cache miss, which still leaves the network path available.
+     */
+    private suspend fun readCached(): WeatherSnapshot? = try {
+        localDataSource.getLatest()
+    } catch (cancellation: CancellationException) {
+        throw cancellation
+    } catch (_: Throwable) {
+        null
+    }
+
+    /** Best-effort write; a failed cache write must not fail a successful network fetch. */
+    private suspend fun persist(snapshot: WeatherSnapshot) {
+        try {
+            localDataSource.save(snapshot)
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (_: Throwable) {
+            // Fall through with the freshly fetched snapshot in hand.
+        }
     }
 
     private fun WeatherSnapshot.isUsableFor(

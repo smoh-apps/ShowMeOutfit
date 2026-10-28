@@ -20,6 +20,8 @@ class UserPreferencesStore(
     private val dataStore: DataStore<Preferences>
 ) {
     companion object {
+        /** Used when a persisted notification time cannot be parsed. */
+        private val DEFAULT_NOTIFICATION_TIME: LocalTime = LocalTime.of(7, 0)
         private val KEY_GENDER = stringPreferencesKey("gender_preference")
         private val KEY_AGE_BAND = stringPreferencesKey("age_band")
         private val KEY_IS_CONFIGURED = booleanPreferencesKey("profile_is_configured")
@@ -49,7 +51,7 @@ class UserPreferencesStore(
             thermalSensitivity = prefs[KEY_THERMAL]
                 ?.let { runCatching { ThermalSensitivity.valueOf(it) }.getOrNull() }
                 ?: ThermalSensitivity.NEUTRAL,
-            morningNotificationTime = LocalTime.of(hour, minute),
+            morningNotificationTime = safeLocalTime(hour, minute),
             isNotificationEnabled = prefs[KEY_NOTIF_ENABLED] ?: true,
             selectedLocation = if (hasLocation) {
                 LocationInfo(
@@ -88,4 +90,11 @@ class UserPreferencesStore(
             }
         }
     }
+
+    /**
+     * Persisted notification times can be corrupt (manual edit, partial write, future version).
+     * A single bad value must not take the whole profile flow down, so fall back to the default.
+     */
+    private fun safeLocalTime(hour: Int, minute: Int): LocalTime =
+        runCatching { LocalTime.of(hour, minute) }.getOrElse { DEFAULT_NOTIFICATION_TIME }
 }

@@ -35,11 +35,29 @@ class DomainPurityTest {
 
     @Test
     fun `domain does not format user-facing text`() {
-        val forbidden = listOf("String.format(", "java.util.Locale", "Locale.", "DateTimeFormatter")
+        // `"...".format("arg")` and NumberFormat are the easy ways to smuggle formatting past a
+        // check that only looks for `String.format(` and `Locale.`.
+        val forbidden = listOf(
+            "String.format(",
+            ".format(",
+            "NumberFormat",
+            "SimpleDateFormat",
+            "java.util.Locale",
+            "Locale.",
+            "DateTimeFormatter",
+            "getString(",
+            "R.string"
+        )
         val violations = domainSources().flatMap { file ->
             file.readLines()
                 .withIndex()
-                .filter { (_, line) -> forbidden.any { line.contains(it) } }
+                .filter { (_, line) ->
+                    val trimmed = line.trim()
+                    // Comments are allowed to mention the banned APIs.
+                    !trimmed.startsWith("//") &&
+                        !trimmed.startsWith("*") &&
+                        forbidden.any { trimmed.contains(it) }
+                }
                 .map { (index, line) -> "${file.name}:${index + 1}: ${line.trim()}" }
         }
 

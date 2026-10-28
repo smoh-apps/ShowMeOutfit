@@ -304,6 +304,57 @@ class WeatherRepositoryImplTest {
         assertEquals(WeatherOrigin.NETWORK, result.getOrThrow().origin)
     }
 
+    // --- Local database failures degrade instead of escaping ---
+
+    @Test
+    fun `an unreadable cache is treated as a cache miss instead of escaping`() = runTest {
+        fakeLocal.failReads = true
+        fakeRemote.nextForecastResult = Result.success(buildSnapshot(fetchedAt = fixedNow))
+
+        val result = repository.getTodayWeather(berlin)
+
+        assertTrue(result.isSuccess)
+        assertEquals(WeatherOrigin.NETWORK, result.getOrThrow().origin)
+        assertEquals(1, fakeRemote.fetchCallCount)
+    }
+
+    @Test
+    fun `an unreadable cache does not mask the network error`() = runTest {
+        fakeLocal.failReads = true
+        fakeRemote.nextForecastResult = Result.failure(IOException("No internet connection"))
+
+        val result = repository.getTodayWeather(berlin)
+
+        assertTrue(result.exceptionOrNull() is DomainError.Offline)
+    }
+
+    @Test
+    fun `a failed cache write still returns the freshly fetched data`() = runTest {
+        fakeLocal.failWrites = true
+        fakeRemote.nextForecastResult = Result.success(buildSnapshot(fetchedAt = fixedNow))
+
+        val result = repository.getTodayWeather(berlin)
+
+        assertTrue(result.isSuccess)
+        assertEquals(WeatherOrigin.NETWORK, result.getOrThrow().origin)
+    }
+
+    @Test
+    fun `getCachedWeather returns null when the database cannot be read`() = runTest {
+        fakeLocal.failReads = true
+
+        assertEquals(null, repository.getCachedWeather())
+    }
+
+    @Test
+    fun `a cancelled cache read is rethrown`() = runTest {
+        fakeLocal.readCancellation = true
+
+        val caught = runCatching { repository.getTodayWeather(berlin) }
+
+        assertTrue(caught.exceptionOrNull() is CancellationException)
+    }
+
     // --- getCachedWeather ---
 
     @Test
@@ -352,12 +403,20 @@ class WeatherRepositoryImplTest {
         private var latest: WeatherSnapshot? = null
         var lastPruneThresholdMs: Long? = null
         var failPrune: Boolean = false
+        var failReads: Boolean = false
+        var failWrites: Boolean = false
+        var readCancellation: Boolean = false
 
         override suspend fun save(snapshot: WeatherSnapshot) {
+            if (failWrites) throw IllegalStateException("disk full")
             latest = snapshot
         }
 
-        override suspend fun getLatest(): WeatherSnapshot? = latest
+        override suspend fun getLatest(): WeatherSnapshot? {
+            if (readCancellation) throw CancellationException("cancelled")
+            if (failReads) throw IllegalStateException("database closed")
+            return latest
+        }
 
         override fun observeLatest(): Flow<WeatherSnapshot?> = flowOf(latest)
 
