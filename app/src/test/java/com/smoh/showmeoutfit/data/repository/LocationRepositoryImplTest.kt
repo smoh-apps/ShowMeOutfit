@@ -9,6 +9,7 @@ import com.smoh.showmeoutfit.domain.model.HourlyCondition
 import com.smoh.showmeoutfit.domain.model.LocationInfo
 import com.smoh.showmeoutfit.domain.model.WeatherCode
 import com.smoh.showmeoutfit.domain.model.WeatherSnapshot
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.SerializationException
 import org.junit.Assert.assertEquals
@@ -131,6 +132,16 @@ class LocationRepositoryImplTest {
     }
 
     @Test
+    fun `a hanging location source is bounded by the overall deadline instead of blocking`() = runTest {
+        // The platform never answers: the whole resolution must still finish and stay recoverable.
+        fakeLocationSource.hangLastKnownMillis = Long.MAX_VALUE
+
+        val result = repository.getCurrentLocation()
+
+        assertTrue(result.exceptionOrNull() is DomainError.LocationUnavailable)
+    }
+
+    @Test
     fun `there is no implicit default city when location is unavailable`() = runTest {
         fakeLocationSource.lastKnown = null
         fakeLocationSource.currentResult = Result.failure(DomainError.LocationPermissionDenied())
@@ -198,13 +209,17 @@ class LocationRepositoryImplTest {
 
     private class FakeDeviceLocationSource : DeviceLocationSource {
         var lastKnown: LocationInfo? = null
+        var hangLastKnownMillis: Long? = null
         var currentResult: Result<LocationInfo> =
             Result.failure(DomainError.LocationUnavailable())
         var throwOnCurrent: Throwable? = null
         var currentCalls = 0
         var lastTimeoutMillis: Long? = null
 
-        override suspend fun getLastKnown(): LocationInfo? = lastKnown
+        override suspend fun getLastKnown(): LocationInfo? {
+            hangLastKnownMillis?.let { delay(it) }
+            return lastKnown
+        }
 
         override suspend fun getCurrent(timeoutMillis: Long): Result<LocationInfo> {
             currentCalls++

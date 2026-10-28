@@ -104,26 +104,32 @@ class LocationSearchViewModelTest {
     }
 
     @Test
-    fun `a stale response never overwrites a newer query's results`() = runTest(dispatcher) {
+    fun `an in-flight search never overwrites the results of a newer query`() = runTest(dispatcher) {
         val vm = viewModel()
         val gate = CompletableDeferred<Unit>()
         locationRepository.gateForQuery = "Ber" to gate
+        locationRepository.resultFor = { query ->
+            if (query == "Ber") listOf(berlin) else listOf(paris)
+        }
 
         vm.onIntent(LocationSearchIntent.QueryChanged("Ber"))
         advanceTimeBy(LocationSearchViewModel.DEBOUNCE_MILLIS + 1)
         runCurrent() // "Ber" is now blocked inside the repository
 
-        vm.onIntent(LocationSearchIntent.QueryChanged("Berlin"))
+        vm.onIntent(LocationSearchIntent.QueryChanged("Paris"))
         advanceTimeBy(LocationSearchViewModel.DEBOUNCE_MILLIS + 1)
         runCurrent()
 
-        assertEquals(listOf(berlin), vm.state.value.results)
+        assertEquals("Paris", vm.state.value.query)
+        assertEquals(listOf(paris), vm.state.value.results)
 
+        // Release the abandoned request; it must not land.
         gate.complete(Unit)
         runCurrent()
 
-        assertEquals("the late answer for 'Ber' must be discarded", listOf(berlin), vm.state.value.results)
-        assertEquals("Berlin", vm.state.value.query)
+        assertEquals("Paris", vm.state.value.query)
+        assertEquals(listOf(paris), vm.state.value.results)
+        assertTrue(!vm.state.value.isSearching)
     }
 
     // --- Query lifecycle ---
@@ -245,6 +251,46 @@ class LocationSearchViewModelTest {
     }
 
     @Test
+    fun `a failed persistence is reported and never emits a selection`() = runTest(dispatcher) {
+        val vm = viewModel()
+        userRepository.writeResult = Result.failure(DomainError.Unknown(IOException("disk full")))
+
+        vm.onIntent(LocationSearchIntent.SelectLocation(paris))
+        runCurrent()
+
+        // The sheet must stay open, so the dashboard cannot end up showing the old city.
+        vm.effects.test {
+            expectNoEvents()
+        }
+        assertTrue(vm.state.value.error != null)
+        assertNull(userRepository.profile.value.selectedLocation)
+    }
+
+    @Test
+    fun `a throwing profile store does not crash the view model`() = runTest(dispatcher) {
+        val vm = viewModel()
+        userRepository.throwOnWrite = IOException("datastore closed")
+
+        vm.onIntent(LocationSearchIntent.SelectLocation(paris))
+        runCurrent()
+
+        vm.effects.test { expectNoEvents() }
+        assertTrue(vm.state.value.error != null)
+    }
+
+    @Test
+    fun `a throwing location repository is surfaced as an error, not a crash`() = runTest(dispatcher) {
+        val vm = viewModel()
+        locationRepository.throwOnCurrent = IllegalStateException("binder died")
+
+        vm.onIntent(LocationSearchIntent.UseCurrentLocation)
+        runCurrent()
+
+        assertTrue(vm.state.value.error != null)
+        assertTrue(!vm.state.value.isLocating)
+    }
+
+    @Test
     fun `dismissing an error leaves the query and results intact`() = runTest(dispatcher) {
         val vm = viewModel()
         locationRepository.searchHandler = { Result.failure(IOException("offline")) }
@@ -264,16 +310,20 @@ class LocationSearchViewModelTest {
     private class FakeLocationRepository(
         private val defaultResults: List<LocationInfo>
     ) : LocationRepository {
-        var searchHandler: suspend (String) -> Result<List<LocationInfo>> = {
-            Result.success(defaultResults)
-        }
+        /** Overrides the default success path when set; otherwise [resultFor] decides. */
+        var searchHandler: (suspend (String) -> Result<List<LocationInfo>>)? = null
         var gateForQuery: Pair<String, CompletableDeferred<Unit>>? = null
+        var resultFor: (String) -> List<LocationInfo> = { defaultResults }
         var searchCalls = 0
         var lastQuery: String? = null
         var currentResult: Result<LocationInfo> =
             Result.failure(DomainError.LocationUnavailable())
+        var throwOnCurrent: Throwable? = null
 
-        override suspend fun getCurrentLocation(): Result<LocationInfo> = currentResult
+        override suspend fun getCurrentLocation(): Result<LocationInfo> {
+            throwOnCurrent?.let { throw it }
+            return currentResult
+        }
 
         override suspend fun searchLocation(query: String): Result<List<LocationInfo>> {
             searchCalls++
@@ -281,18 +331,23 @@ class LocationSearchViewModelTest {
             gateForQuery?.let { (gatedQuery, gate) ->
                 if (query == gatedQuery) gate.await()
             }
-            return searchHandler(query)
+            searchHandler?.let { return it(query) }
+            return Result.success(resultFor(query))
         }
     }
 
     private class FakeUserRepository(initial: UserProfile) : UserRepository {
         val profile = MutableStateFlow(initial)
+        var writeResult: Result<Unit> = Result.success(Unit)
+        var throwOnWrite: Throwable? = null
 
         override fun getUserProfile(): Flow<UserProfile> = profile
 
         override suspend fun updateUserProfile(profile: UserProfile): Result<Unit> {
-            this.profile.value = profile
-            return Result.success(Unit)
+            throwOnWrite?.let { throw it }
+            return writeResult.also {
+                if (it.isSuccess) this.profile.value = profile
+            }
         }
     }
 }

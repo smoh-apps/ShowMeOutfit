@@ -39,7 +39,16 @@ class FusedDeviceLocationSource(
     @SuppressLint("MissingPermission") // Guarded by hasPermission() before every call.
     override suspend fun getLastKnown(): LocationInfo? {
         if (!hasLocationPermission()) return null
-        val location = client.lastLocation.awaitOrNull() ?: return null
+
+        // Bounded: a platform "last known" that never answers must not stall the dashboard.
+        val location = withTimeoutOrNull(LAST_KNOWN_TIMEOUT_MILLIS) {
+            client.lastLocation.awaitOrNull()
+        } ?: return null
+
+        // A cached fix is only representative of where the user is now if it is recent. Older
+        // fixes are discarded so the caller requests a fresh one instead of showing another city.
+        if (!location.isRecentEnough()) return null
+
         return location.toLocationInfo()
     }
 
@@ -62,7 +71,9 @@ class FusedDeviceLocationSource(
             if (location == null) {
                 Result.failure(DomainError.LocationUnavailable())
             } else {
-                Result.success(location.toLocationInfo())
+                // Reverse geocoding gets its own small budget so a slow geocoder cannot eat the
+                // location deadline; coordinates alone are still a usable answer.
+                Result.success(location.toLocationInfo(RESOLVE_CITY_TIMEOUT_MILLIS))
             }
         } catch (cancellationException: CancellationException) {
             throw cancellationException
@@ -75,6 +86,12 @@ class FusedDeviceLocationSource(
             runCatching { cancellation.cancel() }
         }
     }
+
+    /** True when the platform fix is recent enough to describe where the user is right now. */
+    private fun Location.isRecentEnough(): Boolean = LocationFixFreshness.isRecentEnough(
+        fixTimeMillis = time,
+        nowMillis = System.currentTimeMillis()
+    )
 
     private fun hasLocationPermission(): Boolean {
         val coarse = ContextCompat.checkSelfPermission(
@@ -95,8 +112,10 @@ class FusedDeviceLocationSource(
     }
 
     /** Converts a platform fix into a domain location, reverse-geocoding the city name on a best-effort basis. */
-    private suspend fun Location.toLocationInfo(): LocationInfo {
-        val address = reverseGeocode(latitude, longitude)
+    private suspend fun Location.toLocationInfo(
+        resolveCityTimeoutMillis: Long = RESOLVE_CITY_TIMEOUT_MILLIS
+    ): LocationInfo {
+        val address = reverseGeocode(latitude, longitude, resolveCityTimeoutMillis)
         return LocationInfo(
             latitude = latitude,
             longitude = longitude,
@@ -108,24 +127,32 @@ class FusedDeviceLocationSource(
         )
     }
 
-    private suspend fun reverseGeocode(latitude: Double, longitude: Double): Triple<String, String?, String?>? =
+    private suspend fun reverseGeocode(
+        latitude: Double,
+        longitude: Double,
+        timeoutMillis: Long
+    ): Triple<String, String?, String?>? =
         withContext(Dispatchers.IO) {
-            try {
-                if (!Geocoder.isPresent()) return@withContext null
-                @Suppress("DEPRECATION") // The listener overload is API 33+; the sync one still works.
-                val results = Geocoder(context, Locale.getDefault())
-                    .getFromLocation(latitude, longitude, 1)
-                val address = results?.firstOrNull() ?: return@withContext null
-                val city = address.locality
-                    ?: address.subAdminArea
-                    ?: address.adminArea
-                    ?: return@withContext null
-                Triple(city, address.countryName, address.adminArea)
-            } catch (cancellation: CancellationException) {
-                throw cancellation
-            } catch (_: Throwable) {
-                // No network / no geocoder service: the coordinates are still usable.
-                null
+            // The synchronous geocoder can block on a network round trip; bound it so a slow
+            // service never stretches the location path past its budget.
+            withTimeoutOrNull(timeoutMillis) {
+                try {
+                    if (!Geocoder.isPresent()) return@withTimeoutOrNull null
+                    @Suppress("DEPRECATION") // The listener overload is API 33+; the sync one still works.
+                    val results = Geocoder(context, Locale.getDefault())
+                        .getFromLocation(latitude, longitude, 1)
+                    val address = results?.firstOrNull() ?: return@withTimeoutOrNull null
+                    val city = address.locality
+                        ?: address.subAdminArea
+                        ?: address.adminArea
+                        ?: return@withTimeoutOrNull null
+                    Triple(city, address.countryName, address.adminArea)
+                } catch (cancellation: CancellationException) {
+                    throw cancellation
+                } catch (_: Throwable) {
+                    // No network / no geocoder service: the coordinates are still usable.
+                    null
+                }
             }
         }
 
@@ -140,5 +167,13 @@ class FusedDeviceLocationSource(
             if (!continuation.isActive) return@addOnCompleteListener
             continuation.resume(if (task.isSuccessful) task.result else null)
         }
+    }
+
+    companion object {
+        /** `lastLocation` is a delivery of an existing value; it must never be the bottleneck. */
+        const val LAST_KNOWN_TIMEOUT_MILLIS: Long = 2_000L
+
+        /** Budget for turning coordinates into a city name; coordinates alone are still usable. */
+        const val RESOLVE_CITY_TIMEOUT_MILLIS: Long = 3_000L
     }
 }

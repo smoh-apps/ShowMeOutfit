@@ -7,6 +7,7 @@ import com.smoh.showmeoutfit.domain.model.LocationInfo
 import com.smoh.showmeoutfit.domain.repository.LocationRepository
 import com.smoh.showmeoutfit.domain.repository.UserRepository
 import com.smoh.showmeoutfit.domain.usecase.SearchLocationUseCase
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -49,7 +50,6 @@ class LocationSearchViewModel(
     val effects: Flow<LocationSearchEffect> = _effects.receiveAsFlow()
 
     private var searchJob: Job? = null
-    private var searchSequence = 0L
 
     fun onIntent(intent: LocationSearchIntent) {
         when (intent) {
@@ -94,13 +94,18 @@ class LocationSearchViewModel(
     }
 
     private suspend fun runSearch(query: String) {
-        val sequence = ++searchSequence
         _state.value = _state.value.copy(isSearching = true, error = null)
 
-        val result = withContext(ioDispatcher) { searchLocation(query) }
-
-        // A newer query started while this one was in flight: drop the stale answer.
-        if (sequence != searchSequence) return
+        // Cancellation is what makes a stale answer impossible: every new keystroke cancels the
+        // job that owns the previous request, and the repository rethrows CancellationException,
+        // so an answer for an old query can never reach the state below.
+        val result = try {
+            withContext(ioDispatcher) { searchLocation(query) }
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (error: Throwable) {
+            Result.failure(error.toDomainError())
+        }
 
         _state.value = result.fold(
             onSuccess = { locations ->
@@ -126,7 +131,13 @@ class LocationSearchViewModel(
         viewModelScope.launch {
             _state.value = _state.value.copy(isLocating = true, error = null, permissionDenied = false)
 
-            val result = withContext(ioDispatcher) { locationRepository.getCurrentLocation() }
+            val result = try {
+                withContext(ioDispatcher) { locationRepository.getCurrentLocation() }
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (error: Throwable) {
+                Result.failure(error.toDomainError())
+            }
 
             result.fold(
                 onSuccess = { location ->
@@ -157,12 +168,33 @@ class LocationSearchViewModel(
         viewModelScope.launch { persistAndEmit(location) }
     }
 
+    /**
+     * Persists [location] and only then tells the caller it is safe to dismiss.
+     *
+     * A failed write must never emit a selection: the sheet would close and the dashboard would
+     * show weather for the old city, which looks like the pick was ignored.
+     */
     private suspend fun persistAndEmit(location: LocationInfo) {
-        val profile = withContext(ioDispatcher) { userRepository.getUserProfile().first() }
-        withContext(ioDispatcher) {
-            userRepository.updateUserProfile(profile.copy(selectedLocation = location))
+        val saved = try {
+            val profile = withContext(ioDispatcher) { userRepository.getUserProfile().first() }
+            withContext(ioDispatcher) {
+                userRepository.updateUserProfile(profile.copy(selectedLocation = location))
+            }
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (error: Throwable) {
+            Result.failure(error.toDomainError())
         }
-        _effects.send(LocationSearchEffect.LocationSelected(location))
+
+        saved.fold(
+            onSuccess = { _effects.send(LocationSearchEffect.LocationSelected(location)) },
+            onFailure = { failure ->
+                _state.value = _state.value.copy(
+                    isLocating = false,
+                    error = failure.toDomainError()
+                )
+            }
+        )
     }
 
     private fun Throwable.toDomainError(): DomainError =

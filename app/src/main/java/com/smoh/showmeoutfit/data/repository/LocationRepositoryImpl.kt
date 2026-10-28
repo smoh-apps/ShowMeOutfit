@@ -5,6 +5,7 @@ import com.smoh.showmeoutfit.data.remote.datasource.RemoteWeatherDataSource
 import com.smoh.showmeoutfit.domain.model.DomainError
 import com.smoh.showmeoutfit.domain.model.LocationInfo
 import com.smoh.showmeoutfit.domain.repository.LocationRepository
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
@@ -27,13 +28,19 @@ class LocationRepositoryImpl(
 
     override suspend fun getCurrentLocation(): Result<LocationInfo> {
         return try {
-            // A cached fix is instantaneous and good enough for a weather forecast.
-            val lastKnown = deviceLocationSource.getLastKnown()
-            if (lastKnown != null) {
-                Result.success(lastKnown)
-            } else {
-                deviceLocationSource.getCurrent(currentLocationTimeoutMillis).toLocationResult()
+            // One deadline for the whole resolution: a slow cached fix plus a slow fresh request
+            // must not add up to a wait the user notices.
+            val result = withTimeoutOrNull(currentLocationTimeoutMillis) {
+                // A cached fix is instantaneous and good enough for a weather forecast; the
+                // source itself rejects fixes that are too old to describe where the user is.
+                val lastKnown = deviceLocationSource.getLastKnown()
+                if (lastKnown != null) {
+                    Result.success(lastKnown)
+                } else {
+                    deviceLocationSource.getCurrent(currentLocationTimeoutMillis).toLocationResult()
+                }
             }
+            result ?: Result.failure(DomainError.LocationUnavailable())
         } catch (cancellation: CancellationException) {
             throw cancellation
         } catch (error: Throwable) {
