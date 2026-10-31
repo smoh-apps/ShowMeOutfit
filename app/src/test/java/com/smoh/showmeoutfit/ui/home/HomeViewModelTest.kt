@@ -134,21 +134,18 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `failure publishes error and emits a message effect`() = runTest {
+    fun `an initial failure publishes the error state without a duplicate snackbar`() = runTest {
         weatherRepository.result = Result.failure(DomainError.Offline(IOException("offline")))
 
         val vm = viewModel()
 
-        vm.effects.test {
-            val effect = awaitItem()
-            assertTrue(effect is HomeEffect.ShowMessage)
-            assertEquals(
-                DomainError.Offline::class,
-                (effect as HomeEffect.ShowMessage).error::class
-            )
-            cancelAndIgnoreRemainingEvents()
-        }
+        // The screen shows the message inline; a snackbar with the same copy read as a duplicate.
+        vm.effects.test { expectNoEvents() }
         assertTrue(vm.state.value is HomeUiState.Error)
+        assertEquals(
+            DomainError.Offline::class,
+            ((vm.state.value as HomeUiState.Error).error)::class
+        )
     }
 
     @Test
@@ -282,7 +279,7 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `a failed refresh keeps the last dashboard and reports the failure as an effect`() = runTest {
+    fun `a failed refresh keeps the last dashboard and marks it as unrefreshed`() = runTest {
         val vm = viewModel()
         val before = vm.state.value as HomeUiState.Content
 
@@ -298,6 +295,25 @@ class HomeViewModelTest {
         assertTrue("a failed refresh must not wipe usable content", after is HomeUiState.Content)
         assertEquals(before.outfit, (after as HomeUiState.Content).outfit)
         assertTrue(!after.isRefreshing)
+        // Without this the previous (network) snapshot would look live again once the snackbar
+        // disappears, because a non-cached snapshot carries no provenance banner.
+        assertTrue("a failed refresh must be visible in the state", after.refreshFailed)
+    }
+
+    @Test
+    fun `a successful refresh clears the unrefreshed marker`() = runTest {
+        val vm = viewModel()
+        val good = weatherRepository.result
+
+        weatherRepository.result = Result.failure(DomainError.Offline(IOException("offline")))
+        vm.onIntent(HomeIntent.Refresh)
+        runCurrent()
+        assertTrue((vm.state.value as HomeUiState.Content).refreshFailed)
+
+        weatherRepository.result = good
+        vm.onIntent(HomeIntent.Refresh)
+        runCurrent()
+        assertTrue(!(vm.state.value as HomeUiState.Content).refreshFailed)
     }
 
     @Test
@@ -306,6 +322,9 @@ class HomeViewModelTest {
 
         val vm = viewModel()
 
+        // The screen renders this error inline, so it must not also fire a snackbar with the same
+        // copy: that showed the same sentence twice.
+        vm.effects.test { expectNoEvents() }
         assertTrue(vm.state.value is HomeUiState.Error)
     }
 
@@ -339,13 +358,13 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `dismissing an error retries the load`() = runTest {
+    fun `retrying after an error recovers the dashboard`() = runTest {
         weatherRepository.result = Result.failure(DomainError.Offline(IOException("offline")))
         val vm = viewModel()
         assertTrue(vm.state.value is HomeUiState.Error)
 
         weatherRepository.result = Result.success(weatherData())
-        vm.onIntent(HomeIntent.DismissError)
+        vm.onIntent(HomeIntent.Refresh)
 
         assertTrue(vm.state.value is HomeUiState.Content)
         assertEquals(2, weatherRepository.calls)

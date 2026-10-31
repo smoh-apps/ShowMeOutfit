@@ -86,6 +86,12 @@ fun LocationSearchSheet(
         }
     }
 
+    // The ViewModel is activity-scoped, so it survives the sheet. Opening the sheet always starts
+    // from a clean search instead of the query the user abandoned last time.
+    LaunchedEffect(Unit) {
+        viewModel.onIntent(LocationSearchIntent.Reset)
+    }
+
     // Only actionable after a denial: settings is the sole recovery path once the system stops
     // showing the permission dialog.
     val permanentlyDenied = state.permissionDenied &&
@@ -312,6 +318,13 @@ private fun LocationErrorMessage(
     onRetry: () -> Unit,
     onOpenSettings: (() -> Unit)?
 ) {
+    // A search retry cannot fix a location failure: with an empty query it would do nothing at all.
+    // Those errors already have the "use my location" action right above, so no dead button is
+    // rendered for them.
+    val isLocationFailure = error is DomainError.LocationPermissionDenied ||
+        error is DomainError.LocationDisabled ||
+        error is DomainError.LocationUnavailable
+
     Column(verticalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.xs)) {
         Text(
             text = error.messageRes(),
@@ -319,8 +332,13 @@ private fun LocationErrorMessage(
             color = MaterialTheme.colorScheme.error
         )
         Row(horizontalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.sm)) {
-            TextButton(onClick = onRetry) {
-                Text(stringResource(R.string.location_search_retry))
+            if (!isLocationFailure) {
+                TextButton(
+                    onClick = onRetry,
+                    modifier = Modifier.heightIn(min = DesignTokens.MinTouchTarget)
+                ) {
+                    Text(stringResource(R.string.location_search_retry))
+                }
             }
             if (onOpenSettings != null) {
                 TextButton(onClick = onOpenSettings) {

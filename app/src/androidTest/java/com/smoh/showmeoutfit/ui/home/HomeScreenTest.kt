@@ -227,8 +227,8 @@ class HomeScreenTest {
 
     @Test
     fun empty_explains_the_missing_location_and_opens_the_search() {
-        var effect: HomeEffect? = null
-        setState(HomeUiState.Empty, onEffect = { effect = it })
+        var intent: HomeIntent? = null
+        setState(HomeUiState.Empty, onIntent = { intent = it })
 
         composeRule.onNodeWithText(text(R.string.home_empty_title)).assertIsDisplayed()
         composeRule.onNodeWithText(text(R.string.home_empty_body)).assertIsDisplayed()
@@ -237,7 +237,7 @@ class HomeScreenTest {
             .assertIsDisplayed()
             .performClick()
 
-        assertEquals(HomeEffect.OpenLocationSearch, effect)
+        assertEquals(HomeIntent.OpenLocationSearch, intent)
     }
 
     // --- Error -----------------------------------------------------------------------------
@@ -260,10 +260,10 @@ class HomeScreenTest {
 
     @Test
     fun error_offers_the_city_picker_as_a_way_out_when_retry_keeps_failing() {
-        var effect: HomeEffect? = null
+        var intent: HomeIntent? = null
         setState(
             HomeUiState.Error(DomainError.CacheExpired()),
-            onEffect = { effect = it }
+            onIntent = { intent = it }
         )
 
         composeRule.onNodeWithText(text(R.string.home_error_cache_expired)).assertIsDisplayed()
@@ -272,7 +272,7 @@ class HomeScreenTest {
             .assertIsDisplayed()
             .performClick()
 
-        assertEquals(HomeEffect.OpenLocationSearch, effect)
+        assertEquals(HomeIntent.OpenLocationSearch, intent)
     }
 
     @Test
@@ -294,6 +294,46 @@ class HomeScreenTest {
         composeRule.onNodeWithText(text(R.string.home_error_location_permission)).assertIsDisplayed()
         composeRule.onNodeWithText(text(R.string.home_error_retry)).assertIsDisplayed()
         composeRule.onNodeWithText(text(R.string.home_error_change_city)).assertIsDisplayed()
+    }
+
+    @Test
+    fun an_unrefreshed_dashboard_says_so_and_offers_the_retry() {
+        var intent: HomeIntent? = null
+        val outfit = previewTodayOutfit(origin = WeatherOrigin.NETWORK)
+        setState(
+            HomeUiState.Content(outfit = outfit, refreshFailed = true),
+            onIntent = { intent = it }
+        )
+
+        // NETWORK provenance alone would show no banner, so this is the only hint that the data is
+        // older than the screen suggests.
+        composeRule.onNodeWithText(text(R.string.home_banner_refresh_failed)).assertIsDisplayed()
+        composeRule.onNodeWithTag(HomeTestTags.CACHE_BANNER).assertDoesNotExist()
+
+        composeRule.onNodeWithText(text(R.string.home_error_retry))
+            .assertIsDisplayed()
+            .performClick()
+
+        assertEquals(HomeIntent.Refresh, intent)
+    }
+
+    @Test
+    fun an_unrefreshed_dashboard_is_announced_to_talkback() {
+        val outfit = previewTodayOutfit(origin = WeatherOrigin.NETWORK)
+        setState(HomeUiState.Content(outfit = outfit, refreshFailed = true))
+
+        composeRule.onNodeWithTag(HomeTestTags.REFRESH_FAILED_BANNER)
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite))
+    }
+
+    @Test
+    fun a_cached_dashboard_does_not_stack_two_banners_when_the_refresh_fails() {
+        val outfit = previewTodayOutfit(origin = WeatherOrigin.CACHE_STALE, cacheAge = Duration.ofHours(4))
+        setState(HomeUiState.Content(outfit = outfit, refreshFailed = true))
+
+        // Provenance already says the data is old; a second banner would repeat it.
+        composeRule.onNodeWithTag(HomeTestTags.CACHE_BANNER).assertIsDisplayed()
+        composeRule.onNodeWithTag(HomeTestTags.REFRESH_FAILED_BANNER).assertDoesNotExist()
     }
 
     @Test

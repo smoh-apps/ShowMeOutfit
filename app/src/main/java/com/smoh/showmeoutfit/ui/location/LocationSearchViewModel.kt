@@ -64,6 +64,11 @@ class LocationSearchViewModel(
             is LocationSearchIntent.SelectLocation -> selectLocation(intent.location)
 
             LocationSearchIntent.DismissError -> _state.value = _state.value.copy(error = null)
+
+            LocationSearchIntent.Reset -> {
+                searchJob?.cancel()
+                _state.value = LocationSearchUiState()
+            }
         }
     }
 

@@ -66,12 +66,6 @@ class HomeViewModel(
 
             is HomeIntent.SelectLocation -> selectLocation(intent.location)
 
-            HomeIntent.DismissError -> {
-                if (_state.value is HomeUiState.Error) {
-                    load(forceRefresh = false)
-                }
-            }
-
             HomeIntent.OpenLocationSearch -> _effects.trySend(HomeEffect.OpenLocationSearch)
         }
     }
@@ -122,16 +116,17 @@ class HomeViewModel(
                         error is DomainError.LocationDisabled ||
                         error is DomainError.LocationUnavailable -> HomeUiState.Empty
 
-                    // Keep the last good dashboard on screen; staleness is the banner's job.
+                    // Keep the last good dashboard on screen and mark it as unrefreshed: the banner
+                    // is persistent, whereas a snackbar would vanish and leave stale data looking
+                    // live. The snackbar still confirms the user's own refresh attempt.
                     previous is HomeUiState.Content -> {
                         _effects.trySend(HomeEffect.ShowMessage(error))
-                        previous.copy(isRefreshing = false)
+                        previous.copy(isRefreshing = false, refreshFailed = true)
                     }
 
-                    else -> {
-                        _effects.trySend(HomeEffect.ShowMessage(error))
-                        HomeUiState.Error(error)
-                    }
+                    // Nothing to keep. The screen shows this error inline, so a snackbar with the
+                    // same copy would only duplicate it.
+                    else -> HomeUiState.Error(error)
                 }
             }
         )

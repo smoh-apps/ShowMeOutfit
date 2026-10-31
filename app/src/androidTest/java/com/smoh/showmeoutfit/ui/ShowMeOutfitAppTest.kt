@@ -32,6 +32,7 @@ import com.smoh.showmeoutfit.ui.home.previewTodayOutfit
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -102,7 +103,10 @@ class ShowMeOutfitAppTest {
         waitForText(text(R.string.home_empty_title))
         composeRule.onNodeWithText(text(R.string.home_empty_action)).performClick()
 
-        waitForText(text(R.string.location_search_title))
+        // Wait on the search field, not on the sheet title: the title and the empty state's button
+        // are both "Choose a city", so waiting for that text would pass before the sheet opened.
+        waitForSheet()
+        composeRule.onNodeWithText(text(R.string.location_search_hint)).assertIsDisplayed()
         composeRule.onNode(hasSetTextAction()).performTextInput("Ber")
 
         // The 350 ms debounce runs on the real clock, so poll rather than assume a frame.
@@ -114,7 +118,11 @@ class ShowMeOutfitAppTest {
             composeRule.onAllNodesWithTag(HomeTestTags.CONTENT).fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithText("Berlin").assertIsDisplayed()
-        composeRule.onNodeWithText(text(R.string.location_search_title)).assertDoesNotExist()
+        // The sheet is gone: no editable field is left on screen.
+        assertTrue(
+            "the search sheet must be dismissed after selecting a city",
+            composeRule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().isEmpty()
+        )
 
         // The network snapshot must not be dressed up as cached data.
         composeRule.onNodeWithTag(HomeTestTags.CACHE_BANNER).assertDoesNotExist()
@@ -142,6 +150,12 @@ class ShowMeOutfitAppTest {
     private fun waitForText(value: String) {
         composeRule.waitUntil(TIMEOUT_MILLIS) {
             composeRule.onAllNodesWithText(value).fetchSemanticsNodes().isNotEmpty()
+        }
+    }
+
+    private fun waitForSheet() {
+        composeRule.waitUntil(TIMEOUT_MILLIS) {
+            composeRule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().isNotEmpty()
         }
     }
 
