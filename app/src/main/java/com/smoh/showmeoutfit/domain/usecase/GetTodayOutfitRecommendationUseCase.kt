@@ -32,7 +32,7 @@ class GetTodayOutfitRecommendationUseCase(
 
             val location = targetLocation
                 ?: profile.selectedLocation
-                ?: locationRepository.getLastKnownLocation().getOrElse { cause ->
+                ?: locationRepository.getCurrentLocation().getOrElse { cause ->
                     throw if (cause is DomainError) cause else DomainError.NoLocation(cause)
                 }
 
