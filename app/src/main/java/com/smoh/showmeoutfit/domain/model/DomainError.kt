@@ -18,6 +18,18 @@ sealed class DomainError(
     class NoLocation(cause: Throwable? = null) :
         DomainError("No location available", cause)
 
+    /** The user has not granted a location permission; manual search is the fallback. */
+    class LocationPermissionDenied(cause: Throwable? = null) :
+        DomainError("Location permission not granted", cause)
+
+    /** Location services are switched off system-wide. */
+    class LocationDisabled(cause: Throwable? = null) :
+        DomainError("Location services are disabled", cause)
+
+    /** Permission was granted but no fix arrived in time, or the provider failed. */
+    class LocationUnavailable(cause: Throwable? = null) :
+        DomainError("Location is unavailable", cause)
+
     /** The device cannot reach the weather service. */
     class Offline(cause: Throwable? = null) :
         DomainError("Network unavailable", cause)
