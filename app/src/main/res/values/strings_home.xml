@@ -214,6 +214,7 @@
     <!-- Error state -->
     <string name="home_error_title">Couldn\'t build today\'s outfit</string>
     <string name="home_error_retry">Retry</string>
+    <string name="home_error_change_city">Choose a city instead</string>
     <string name="home_error_no_location">No city selected yet. Add one to get today\'s outfit.</string>
     <string name="home_error_offline">You\'re offline. Check your connection and try again.</string>
     <string name="home_error_api">The weather service didn\'t answer. Try again in a moment.</string>

@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
@@ -186,6 +187,21 @@ class HomeViewModelTest {
         val vm = viewModel()
 
         assertEquals(HomeUiState.Empty, vm.state.value)
+    }
+
+    @Test
+    fun `refreshing after an expired cache asks for the network, not the cache`() = runTest {
+        // CacheExpired means the stored row is from another day, another city, or older than the
+        // 12 h fallback. A non-forced reload would read that same row and fail identically.
+        weatherRepository.result = Result.failure(DomainError.CacheExpired())
+        val vm = viewModel()
+
+        assertTrue(vm.state.value is HomeUiState.Error)
+
+        vm.onIntent(HomeIntent.Refresh)
+        runCurrent()
+
+        assertEquals(true, weatherRepository.lastForceRefresh)
     }
 
     @Test
@@ -369,6 +385,7 @@ class HomeViewModelTest {
         ))
         var calls = 0
         var lastRequestedLocation: LocationInfo? = null
+        var lastForceRefresh: Boolean? = null
         var gate: CompletableDeferred<Unit>? = null
 
         override suspend fun getTodayWeather(
@@ -377,6 +394,7 @@ class HomeViewModelTest {
         ): Result<WeatherData> {
             calls++
             lastRequestedLocation = location
+            lastForceRefresh = forceRefresh
             gate?.await()
             return result
         }

@@ -2,6 +2,12 @@ package com.smoh.showmeoutfit.ui.home
 
 import androidx.activity.ComponentActivity
 import androidx.annotation.StringRes
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -9,6 +15,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.unit.Density
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.smoh.showmeoutfit.R
@@ -247,7 +254,70 @@ class HomeScreenTest {
             .assertIsDisplayed()
             .performClick()
 
-        assertEquals(HomeIntent.DismissError, intent)
+        // A plain reload would read the same unusable cache row again.
+        assertEquals(HomeIntent.Refresh, intent)
+    }
+
+    @Test
+    fun error_offers_the_city_picker_as_a_way_out_when_retry_keeps_failing() {
+        var effect: HomeEffect? = null
+        setState(
+            HomeUiState.Error(DomainError.CacheExpired()),
+            onEffect = { effect = it }
+        )
+
+        composeRule.onNodeWithText(text(R.string.home_error_cache_expired)).assertIsDisplayed()
+
+        composeRule.onNodeWithText(text(R.string.home_error_change_city))
+            .assertIsDisplayed()
+            .performClick()
+
+        assertEquals(HomeEffect.OpenLocationSearch, effect)
+    }
+
+    @Test
+    fun error_state_stays_usable_at_two_hundred_percent_font() {
+        composeRule.setContent {
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale = 2f)) {
+                ShowMeOutfitTheme(darkTheme = false, dynamicColor = false) {
+                    HomeScreen(
+                        state = HomeUiState.Error(DomainError.LocationPermissionDenied()),
+                        onIntent = {},
+                        onEffect = {}
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithText(text(R.string.home_error_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.home_error_location_permission)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.home_error_retry)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.home_error_change_city)).assertIsDisplayed()
+    }
+
+    @Test
+    fun cache_banner_is_a_live_region_and_survives_two_hundred_percent_font() {
+        val outfit = previewTodayOutfit(
+            origin = WeatherOrigin.CACHE_STALE,
+            cacheAge = Duration.ofHours(5).plusMinutes(20)
+        )
+
+        composeRule.setContent {
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale = 2f)) {
+                ShowMeOutfitTheme(darkTheme = false, dynamicColor = false) {
+                    HomeScreen(state = HomeUiState.Content(outfit), onIntent = {}, onEffect = {})
+                }
+            }
+        }
+
+        // TalkBack announces a provenance change without moving focus.
+        composeRule.onNodeWithTag(HomeTestTags.CACHE_BANNER)
+            .assertIsDisplayed()
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite))
+
+        composeRule.onNodeWithText("5 hours 20 minutes", substring = true).assertIsDisplayed()
     }
 
     @Test

@@ -36,8 +36,11 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -171,7 +174,10 @@ fun HomeScreen(
 
             is HomeUiState.Error -> HomeErrorState(
                 error = state.error,
-                onRetry = { onIntent(HomeIntent.DismissError) },
+                // The retry must hit the network: repeating a cache read would hand back the same
+                // expired snapshot, and the copy promises today's data.
+                onRetry = { onIntent(HomeIntent.Refresh) },
+                onOpenLocationSearch = { onEffect(HomeEffect.OpenLocationSearch) },
                 modifier = stateModifier
             )
         }
@@ -354,7 +360,11 @@ private fun CacheProvenanceBanner(origin: WeatherOrigin, cacheAge: Duration?) {
     if (message.isNotEmpty()) {
         OfflineBanner(
             text = message,
-            modifier = Modifier.testTag(HomeTestTags.CACHE_BANNER)
+            modifier = Modifier
+                .testTag(HomeTestTags.CACHE_BANNER)
+                // A status change (fresh -> stale, or the banner appearing at all) should be
+                // announced without stealing focus from whatever the user is reading.
+                .semantics { liveRegion = LiveRegionMode.Polite }
         )
     }
 }
@@ -569,6 +579,7 @@ private fun HomeEmptyState(
 private fun HomeErrorState(
     error: DomainError,
     onRetry: () -> Unit,
+    onOpenLocationSearch: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -596,6 +607,14 @@ private fun HomeErrorState(
             modifier = Modifier.heightIn(min = DesignTokens.MinTouchTarget)
         ) {
             Text(text = stringResource(R.string.home_error_retry))
+        }
+        // Offline, a failing API or a revoked permission all make retry fail the same way. The
+        // city picker is the one action that can still get the user to a dashboard.
+        TextButton(
+            onClick = onOpenLocationSearch,
+            modifier = Modifier.heightIn(min = DesignTokens.MinTouchTarget)
+        ) {
+            Text(text = stringResource(R.string.home_error_change_city))
         }
     }
 }
