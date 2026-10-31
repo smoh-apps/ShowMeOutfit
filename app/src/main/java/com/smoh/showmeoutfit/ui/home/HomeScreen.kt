@@ -36,8 +36,11 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -74,6 +77,7 @@ object HomeTestTags {
     const val EMPTY = "home_empty"
     const val ERROR = "home_error"
     const val CACHE_BANNER = "home_cache_banner"
+    const val REFRESH_FAILED_BANNER = "home_refresh_failed_banner"
     const val TIMELINE = "home_timeline"
 }
 
@@ -135,9 +139,10 @@ fun HomeRoute(
  * Stateless dashboard: every state is renderable from the arguments alone, so Compose tests and
  * previews can drive it without Koin, coroutines or a repository.
  *
- * Navigation requests leave through [onEffect] (currently [HomeEffect.OpenLocationSearch]), which
- * keeps the screen free of a navigation dependency. [HomeIntent.OpenLocationSearch] remains the
- * ViewModel-level equivalent for hosts that prefer to route the request through state.
+ * Every action leaves through [onIntent]. A navigation request becomes
+ * [HomeIntent.OpenLocationSearch], the ViewModel answers with [HomeEffect.OpenLocationSearch] and
+ * the host opens the sheet, so the screen keeps no navigation dependency and there is exactly one
+ * way to ask for the picker.
  */
 @Composable
 fun HomeScreen(
@@ -165,13 +170,16 @@ fun HomeScreen(
             )
 
             HomeUiState.Empty -> HomeEmptyState(
-                onOpenLocationSearch = { onEffect(HomeEffect.OpenLocationSearch) },
+                onOpenLocationSearch = { onIntent(HomeIntent.OpenLocationSearch) },
                 modifier = stateModifier
             )
 
             is HomeUiState.Error -> HomeErrorState(
                 error = state.error,
-                onRetry = { onIntent(HomeIntent.DismissError) },
+                // The retry must hit the network: repeating a cache read would hand back the same
+                // expired snapshot, and the copy promises today's data.
+                onRetry = { onIntent(HomeIntent.Refresh) },
+                onOpenLocationSearch = { onIntent(HomeIntent.OpenLocationSearch) },
                 modifier = stateModifier
             )
         }
@@ -219,6 +227,23 @@ private fun HomeContentState(
                 isRefreshing = state.isRefreshing,
                 onRefresh = { onIntent(HomeIntent.Refresh) }
             )
+
+            // A refresh that failed leaves the *previous* snapshot on screen. Without this banner
+            // that data (possibly hours old) would look live as soon as the snackbar disappears.
+            // Cached snapshots already carry their own provenance banner, so this one is only for
+            // the case provenance cannot express: a network snapshot that could not be refreshed.
+            if (state.refreshFailed && weather.origin == WeatherOrigin.NETWORK) {
+                OfflineBanner(
+                    text = stringResource(R.string.home_banner_refresh_failed),
+                    actionLabel = stringResource(R.string.home_error_retry),
+                    onAction = { onIntent(HomeIntent.Refresh) },
+                    modifier = Modifier
+                        .testTag(HomeTestTags.REFRESH_FAILED_BANNER)
+                        .semantics(mergeDescendants = true) {
+                            liveRegion = LiveRegionMode.Polite
+                        }
+                )
+            }
 
             if (weather.origin != WeatherOrigin.NETWORK) {
                 CacheProvenanceBanner(origin = weather.origin, cacheAge = weather.cacheAge)
@@ -354,7 +379,12 @@ private fun CacheProvenanceBanner(origin: WeatherOrigin, cacheAge: Duration?) {
     if (message.isNotEmpty()) {
         OfflineBanner(
             text = message,
-            modifier = Modifier.testTag(HomeTestTags.CACHE_BANNER)
+            modifier = Modifier
+                .testTag(HomeTestTags.CACHE_BANNER)
+                // A status change (fresh -> stale, or the banner appearing at all) should be
+                // announced without stealing focus from whatever the user is reading. Merging the
+                // message into the node gives the live region text to announce.
+                .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite }
         )
     }
 }
@@ -569,6 +599,7 @@ private fun HomeEmptyState(
 private fun HomeErrorState(
     error: DomainError,
     onRetry: () -> Unit,
+    onOpenLocationSearch: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -596,6 +627,14 @@ private fun HomeErrorState(
             modifier = Modifier.heightIn(min = DesignTokens.MinTouchTarget)
         ) {
             Text(text = stringResource(R.string.home_error_retry))
+        }
+        // Offline, a failing API or a revoked permission all make retry fail the same way. The
+        // city picker is the one action that can still get the user to a dashboard.
+        TextButton(
+            onClick = onOpenLocationSearch,
+            modifier = Modifier.heightIn(min = DesignTokens.MinTouchTarget)
+        ) {
+            Text(text = stringResource(R.string.home_error_change_city))
         }
     }
 }

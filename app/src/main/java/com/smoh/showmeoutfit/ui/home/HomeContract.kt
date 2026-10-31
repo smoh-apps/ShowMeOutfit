@@ -16,7 +16,14 @@ sealed interface HomeUiState {
 
     data class Content(
         val outfit: TodayOutfit,
-        val isRefreshing: Boolean = false
+        val isRefreshing: Boolean = false,
+        /**
+         * The last refresh failed and [outfit] is the previous answer, kept on screen.
+         *
+         * Provenance alone cannot express this: a `NETWORK` snapshot that could not be refreshed
+         * is stale in time but not cached, so the UI needs this flag to say so.
+         */
+        val refreshFailed: Boolean = false
     ) : HomeUiState
 
     /** No location and no cached recommendation; the user must pick a city. */
@@ -32,9 +39,7 @@ sealed interface HomeIntent {
 
     data class SelectLocation(val location: LocationInfo) : HomeIntent
 
-    data object DismissError : HomeIntent
-
-    /** Asks the UI to open the city search screen (used by the empty/no-location state). */
+    /** Asks for the city picker; the ViewModel answers with [HomeEffect.OpenLocationSearch]. */
     data object OpenLocationSearch : HomeIntent
 }
 

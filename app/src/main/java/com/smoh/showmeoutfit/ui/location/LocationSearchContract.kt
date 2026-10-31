@@ -37,6 +37,14 @@ sealed interface LocationSearchIntent {
     data class SelectLocation(val location: LocationInfo) : LocationSearchIntent
 
     data object DismissError : LocationSearchIntent
+
+    /**
+     * Clears the sheet back to its opening state.
+     *
+     * The sheet's ViewModel outlives the sheet (it is activity-scoped), so without this a
+     * dismissed-and-reopened sheet would still show the previous query and its results.
+     */
+    data object Reset : LocationSearchIntent
 }
 
 sealed interface LocationSearchEffect {

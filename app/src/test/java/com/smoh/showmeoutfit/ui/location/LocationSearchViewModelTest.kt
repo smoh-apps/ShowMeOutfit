@@ -305,6 +305,23 @@ class LocationSearchViewModelTest {
         assertEquals("Berlin", vm.state.value.query)
     }
 
+    @Test
+    fun `reopening the sheet starts from a clean search`() = runTest(dispatcher) {
+        val vm = viewModel()
+        vm.onIntent(LocationSearchIntent.QueryChanged("Ber"))
+        advanceTimeBy(LocationSearchViewModel.DEBOUNCE_MILLIS + 1)
+        runCurrent()
+        assertEquals(listOf(berlin), vm.state.value.results)
+
+        // The ViewModel is activity-scoped, so the sheet sends Reset every time it opens; without
+        // it the previous query and its results would greet the user.
+        vm.onIntent(LocationSearchIntent.Reset)
+
+        assertEquals("", vm.state.value.query)
+        assertTrue(vm.state.value.results.isEmpty())
+        assertTrue(!vm.state.value.hasSearched)
+    }
+
     // --- Fakes ---
 
     private class FakeLocationRepository(
