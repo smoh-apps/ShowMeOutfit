@@ -150,11 +150,11 @@ class GarmentTextMapperTest {
         }
 
         assertEquals(
-            listOf("15:00", "17:00"),
+            listOf(isolated("15:00"), isolated("17:00")),
             GarmentTextMapper.accessoryReason(reasons[0]).resolve(locale).toList()
         )
         assertEquals(
-            listOf("55"),
+            listOf(isolated("55")),
             GarmentTextMapper.accessoryReason(reasons[1]).resolve(locale).toList()
         )
         assertEquals(
@@ -162,15 +162,15 @@ class GarmentTextMapperTest {
             GarmentTextMapper.accessoryReason(reasons[2]).resolve(locale).toList()
         )
         assertEquals(
-            listOf("38"),
+            listOf(isolated("38")),
             GarmentTextMapper.accessoryReason(reasons[3]).resolve(locale).toList()
         )
         assertEquals(
-            listOf("6.2"),
+            listOf(isolated("6.2")),
             GarmentTextMapper.accessoryReason(reasons[4]).resolve(locale).toList()
         )
         assertEquals(
-            listOf("9"),
+            listOf(isolated("9")),
             GarmentTextMapper.accessoryReason(reasons[5]).resolve(locale).toList()
         )
     }
@@ -241,7 +241,7 @@ class GarmentTextMapperTest {
         }
 
         assertEquals(
-            listOf("9"),
+            listOf(isolated("9")),
             GarmentTextMapper.headline(HeadlineReason.LargeTempSwing(9.4)).resolve(locale).toList()
         )
         assertTrue(
@@ -288,9 +288,41 @@ class GarmentTextMapperTest {
             base.copy(rainReason = AccessoryReason.RainProbability(peakPercent = 55))
         )
 
-        assertEquals(listOf("13", "22"), dry.resolve(locale).toList())
-        assertEquals(listOf("13", "22", "15:00", "17:00"), window.resolve(locale).toList())
-        assertEquals(listOf("13", "22", "55"), chance.resolve(locale).toList())
+        assertEquals(listOf(isolated("13"), isolated("22")), dry.resolve(locale).toList())
+        assertEquals(listOf(isolated("13"), isolated("22"), isolated("15:00"), isolated("17:00")), window.resolve(locale).toList())
+        assertEquals(listOf(isolated("13"), isolated("22"), isolated("55")), chance.resolve(locale).toList())
         assertEquals(3, setOf(dry.resId, window.resId, chance.resId).size)
     }
+
+    @Test
+    fun `substituted values are direction-isolated so RTL cannot reorder them`() {
+        val locale = Locale.US
+        val window = GarmentTextMapper.summary(
+            SummaryData(
+                tempMinCelsius = 12.6,
+                tempMaxCelsius = 22.0,
+                hasLargeTempSwing = true,
+                rainReason = AccessoryReason.RainWindow(
+                    start = LocalTime.of(15, 0),
+                    end = LocalTime.of(17, 0)
+                ),
+                peakUvIndex = 6.2
+            )
+        )
+
+        val args = window.resolve(locale)
+
+        // U+2066 LRI … U+2069 PDI around every value: without it an RTL layout renders
+        // "17:00 and 15:00" and drags the sentence's full stop to the front.
+        assertTrue("each value must be isolated", args.all { it.toString().startsWith("\u2066") })
+        assertTrue("each isolate must be closed", args.all { it.toString().endsWith("\u2069") })
+        assertEquals(
+            "the template order must survive",
+            listOf(isolated("13"), isolated("22"), isolated("15:00"), isolated("17:00")),
+            args.toList()
+        )
+    }
 }
+
+/** Mirrors the presentation contract for values substituted into a template. */
+private fun isolated(value: String): String = "\u2066$value\u2069"

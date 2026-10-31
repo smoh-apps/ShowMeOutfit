@@ -44,6 +44,13 @@ object HomeMessageMapper {
     @StringRes
     fun errorMessageRes(error: DomainError): Int = when (error) {
         is DomainError.NoLocation -> R.string.home_error_no_location
+
+        // The three location failures keep their own copy: "choose a city" is the recovery, but the
+        // user needs to know *why* the device could not place them.
+        is DomainError.LocationPermissionDenied -> R.string.home_error_location_permission
+        is DomainError.LocationDisabled -> R.string.home_error_location_disabled
+        is DomainError.LocationUnavailable -> R.string.home_error_location_unavailable
+
         is DomainError.Offline -> R.string.home_error_offline
         is DomainError.ApiFailure -> R.string.home_error_api
         is DomainError.MalformedData -> R.string.home_error_malformed

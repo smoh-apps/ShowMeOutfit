@@ -23,6 +23,9 @@ class HomeMessageMapperTest {
     fun `every domain error maps to distinct localized copy`() {
         val errors = listOf(
             DomainError.NoLocation(),
+            DomainError.LocationPermissionDenied(),
+            DomainError.LocationDisabled(),
+            DomainError.LocationUnavailable(),
             DomainError.Offline(),
             DomainError.ApiFailure(),
             DomainError.MalformedData(),
@@ -34,6 +37,25 @@ class HomeMessageMapperTest {
 
         assertTrue("zero error resource", resources.none { it == 0 })
         assertEquals("each subtype needs its own message", errors.size, resources.distinct().size)
+    }
+
+    @Test
+    fun `the location failures explain the recovery instead of reusing the generic message`() {
+        // Adding a DomainError subtype must be a deliberate act: the compiler forces a branch, and
+        // this test stops that branch from silently pointing at the catch-all copy.
+        val unknown = HomeMessageMapper.errorMessageRes(DomainError.Unknown())
+
+        listOf(
+            DomainError.LocationPermissionDenied(),
+            DomainError.LocationDisabled(),
+            DomainError.LocationUnavailable()
+        ).forEach { error ->
+            assertNotEquals(
+                "${error::class.simpleName} must not reuse the generic message",
+                unknown,
+                HomeMessageMapper.errorMessageRes(error)
+            )
+        }
     }
 
     @Test

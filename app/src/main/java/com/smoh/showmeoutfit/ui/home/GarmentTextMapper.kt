@@ -28,9 +28,21 @@ data class MappedText(
     @get:StringRes val resId: Int,
     val args: List<TextArg> = emptyList()
 ) {
-    /** Formats every argument for [locale], ready to spread into `stringResource`/`getString`. */
-    fun resolve(locale: Locale): Array<Any> = args.map { it.format(locale) }.toTypedArray()
+    /**
+     * Formats every argument for [locale], ready to spread into `stringResource`/`getString`.
+     *
+     * Each value is wrapped in a LTR isolate (U+2066 … U+2069). Every argument the catalog uses is
+     * a number, a percentage or a 24-hour time, so pinning their direction is always correct, and
+     * without it an RTL layout reorders them: "15:00 and 17:00" renders as "17:00 and 15:00" and
+     * the sentence's full stop jumps to the front. Isolating the *value* rather than the sentence
+     * leaves translated templates free to be right-to-left.
+     */
+    fun resolve(locale: Locale): Array<Any> =
+        args.map { isolateForLtr(it.format(locale)) }.toTypedArray()
 }
+
+/** U+2066 LEFT-TO-RIGHT ISOLATE … U+2069 POP DIRECTIONAL ISOLATE. */
+private fun isolateForLtr(value: String): String = "\u2066$value\u2069"
 
 /**
  * A number or a time that the UI must format.

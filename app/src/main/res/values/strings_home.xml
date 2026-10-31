@@ -219,6 +219,9 @@
     <string name="home_error_api">The weather service didn\'t answer. Try again in a moment.</string>
     <string name="home_error_malformed">The forecast came back unreadable. Try again.</string>
     <string name="home_error_cache_expired">The saved forecast is out of date. Refresh for today\'s data.</string>
+    <string name="home_error_location_permission">Location permission is off. You can still choose a city.</string>
+    <string name="home_error_location_disabled">Location services are turned off. Choose a city, or turn them on in settings.</string>
+    <string name="home_error_location_unavailable">We couldn\'t get a location fix. Choose a city instead.</string>
     <string name="home_error_unknown">Something went wrong. Try again.</string>
 
 </resources>
