@@ -1,19 +1,27 @@
 package com.smoh.showmeoutfit.domain.engine
 
 import com.smoh.showmeoutfit.domain.model.AccessoryAlert
+import com.smoh.showmeoutfit.domain.model.AccessoryReason
 import com.smoh.showmeoutfit.domain.model.AccessoryType
+import com.smoh.showmeoutfit.domain.model.AgeBand
 import com.smoh.showmeoutfit.domain.model.Garment
+import com.smoh.showmeoutfit.domain.model.GarmentFit
+import com.smoh.showmeoutfit.domain.model.HeadlineReason
 import com.smoh.showmeoutfit.domain.model.HourlyCondition
 import com.smoh.showmeoutfit.domain.model.OutfitRecommendation
 import com.smoh.showmeoutfit.domain.model.PriorityLevel
+import com.smoh.showmeoutfit.domain.model.SummaryData
 import com.smoh.showmeoutfit.domain.model.UserProfile
 import com.smoh.showmeoutfit.domain.model.WeatherHighlights
 import com.smoh.showmeoutfit.domain.model.WeatherSnapshot
-import java.time.format.DateTimeFormatter
-import java.util.Locale
-import kotlin.math.max
-import kotlin.math.min
+import com.smoh.showmeoutfit.domain.personalization.PersonalizationPolicy
 
+/**
+ * Pure, deterministic diurnal recommendation engine.
+ *
+ * The engine produces structured results only: no display copy, no `String.format`, no locale
+ * or date formatting. The presentation layer resolves names, descriptions, and sentences.
+ */
 class RuleBasedPresetEngine : IOutfitRecommendationEngine {
 
     override fun recommend(
@@ -21,24 +29,26 @@ class RuleBasedPresetEngine : IOutfitRecommendationEngine {
         profile: UserProfile
     ): OutfitRecommendation {
         val daytimeHours = filterDaytimeHours(weather.hourlyForecast)
-        val sensitivityOffset = profile.thermalSensitivity.tempOffsetCelsius
+        val personalOffset = PersonalizationPolicy.thermalOffsetCelsius(profile)
+        val fit = PersonalizationPolicy.fitFor(profile.genderPreference)
 
-        // Effective temperatures applied per hour
-        val effectiveHourly = daytimeHours.map { hourly ->
-            val effTemp = hourly.temperatureCelsius - sensitivityOffset
-            val effApparent = hourly.apparentTemperatureCelsius - sensitivityOffset
-            hourly to effApparent
+        // Positive offset => feels cold => evaluate as if it were colder.
+        val effectiveTemperatures = daytimeHours.map {
+            it.apparentTemperatureCelsius - personalOffset
         }
+        val effectiveCurrent = weather.current.apparentTemperatureCelsius - personalOffset
 
-        val effTemperatures = effectiveHourly.map { it.second }
-        val minEffTemp = effTemperatures.minOrNull() ?: (weather.current.apparentTemperatureCelsius - sensitivityOffset)
-        val maxEffTemp = effTemperatures.maxOrNull() ?: (weather.current.apparentTemperatureCelsius - sensitivityOffset)
+        val minEffTemp = effectiveTemperatures.minOrNull() ?: effectiveCurrent
+        val maxEffTemp = effectiveTemperatures.maxOrNull() ?: effectiveCurrent
         val deltaT = maxEffTemp - minEffTemp
         val hasLargeTempSwing = deltaT >= 7.0 || (minEffTemp < 14.0 && maxEffTemp >= 16.0)
 
-        val maxPrecipProb = daytimeHours.maxOfOrNull { it.precipitationProbability } ?: weather.dailyForecast.maxPrecipitationProbability
-        val hasRainCode = daytimeHours.any { it.weatherCode.isRain } || weather.dailyForecast.weatherCode.isRain
-        val hasSnowCode = daytimeHours.any { it.weatherCode.isSnow } || weather.dailyForecast.weatherCode.isSnow
+        val maxPrecipProb = daytimeHours.maxOfOrNull { it.precipitationProbability }
+            ?: weather.dailyForecast.maxPrecipitationProbability
+        val hasRainCode = daytimeHours.any { it.weatherCode.isRain } ||
+            weather.dailyForecast.weatherCode.isRain
+        val hasSnowCode = daytimeHours.any { it.weatherCode.isSnow } ||
+            weather.dailyForecast.weatherCode.isSnow
         val hasRainSpike = maxPrecipProb >= 35 || hasRainCode
         val maxUv = daytimeHours.maxOfOrNull { it.uvIndex } ?: 0.0
         val maxWind = daytimeHours.maxOfOrNull { it.windSpeedKmh } ?: weather.current.windSpeedKmh
@@ -54,45 +64,51 @@ class RuleBasedPresetEngine : IOutfitRecommendationEngine {
             hasLargeTempSwing = hasLargeTempSwing
         )
 
-        // Determine Garments
-        val (baseLayer, midLayer, outerLayer, bottomLayer, footwear) = selectLayers(
+        val layers = selectLayers(
             minEffTemp = minEffTemp,
             maxEffTemp = maxEffTemp,
             hasLargeTempSwing = hasLargeTempSwing,
             maxWind = maxWind,
             hasRain = hasRainSpike,
             hasSnow = hasSnowCode
-        )
+        ).withFit(fit)
 
-        // Determine Accessories
         val accessories = selectAccessories(
             daytimeHours = daytimeHours,
+            ageBand = profile.ageBand,
             minEffTemp = minEffTemp,
-            maxEffTemp = maxEffTemp,
-            deltaT = deltaT,
-            hasLargeTempSwing = hasLargeTempSwing,
             maxPrecipProb = maxPrecipProb,
             hasRainCode = hasRainCode,
             hasSnow = hasSnowCode,
+            hasLargeTempSwing = hasLargeTempSwing,
+            deltaT = deltaT,
             maxUv = maxUv,
             maxWind = maxWind
         )
 
-        // Headlines and description
-        val (headline, summary) = buildSummary(
-            highlights = highlights,
-            accessories = accessories,
-            hasSnow = hasSnowCode
+        val headline = headlineFor(
+            hasSnow = hasSnowCode,
+            highlights = highlights
+        )
+
+        val summary = SummaryData(
+            tempMinCelsius = minEffTemp,
+            tempMaxCelsius = maxEffTemp,
+            hasLargeTempSwing = hasLargeTempSwing,
+            rainReason = accessories
+                .firstOrNull { it.type == AccessoryType.UMBRELLA }
+                ?.reason,
+            peakUvIndex = maxUv
         )
 
         return OutfitRecommendation(
             headline = headline,
-            summaryDescription = summary,
-            baseLayer = baseLayer,
-            midLayer = midLayer,
-            outerLayer = outerLayer,
-            bottomLayer = bottomLayer,
-            footwear = footwear,
+            summary = summary,
+            baseLayer = layers.base,
+            midLayer = layers.mid,
+            outerLayer = layers.outer,
+            bottomLayer = layers.bottom,
+            footwear = layers.footwear,
             accessories = accessories,
             weatherHighlights = highlights
         )
@@ -112,164 +128,144 @@ class RuleBasedPresetEngine : IOutfitRecommendationEngine {
         hasSnow: Boolean
     ): LayerSelection {
         return when {
-            maxEffTemp < 0.0 || hasSnow -> {
-                LayerSelection(
-                    base = GarmentCatalog.THERMAL_UNDERSHIRT,
-                    mid = GarmentCatalog.WOOL_SWEATER,
-                    outer = GarmentCatalog.DOWN_PARKA,
-                    bottom = GarmentCatalog.THERMAL_PANTS,
-                    footwear = GarmentCatalog.WINTER_BOOTS
-                )
-            }
-            maxEffTemp < 10.0 -> {
-                LayerSelection(
-                    base = GarmentCatalog.LONG_SLEEVE_TEE,
-                    mid = GarmentCatalog.KNITTED_SWEATER,
-                    outer = if (maxWind >= 35.0) GarmentCatalog.WINDBREAKER else GarmentCatalog.WOOL_COAT,
-                    bottom = GarmentCatalog.JEANS,
-                    footwear = if (hasRain) GarmentCatalog.WATERPROOF_SHOES else GarmentCatalog.LEATHER_BOOTS
-                )
-            }
-            maxEffTemp < 16.0 -> {
-                LayerSelection(
-                    base = GarmentCatalog.COTTON_TEE,
-                    mid = if (hasLargeTempSwing) GarmentCatalog.CARDIGAN else GarmentCatalog.HOODIE,
-                    outer = if (maxWind >= 35.0) GarmentCatalog.WINDBREAKER else GarmentCatalog.LIGHT_JACKET,
-                    bottom = GarmentCatalog.TROUSERS,
-                    footwear = if (hasRain) GarmentCatalog.WATERPROOF_SHOES else GarmentCatalog.SNEAKERS
-                )
-            }
-            maxEffTemp < 22.0 -> {
-                LayerSelection(
-                    base = GarmentCatalog.COTTON_TEE,
-                    mid = if (hasLargeTempSwing) GarmentCatalog.CARDIGAN else null,
-                    outer = if (maxWind >= 35.0) GarmentCatalog.WINDBREAKER else if (minEffTemp < 12.0) GarmentCatalog.LIGHT_JACKET else null,
-                    bottom = GarmentCatalog.CHINOS,
-                    footwear = if (hasRain) GarmentCatalog.WATERPROOF_SHOES else GarmentCatalog.SNEAKERS
-                )
-            }
-            maxEffTemp < 28.0 -> {
-                LayerSelection(
-                    base = GarmentCatalog.LINEN_TEE,
-                    mid = if (hasLargeTempSwing) GarmentCatalog.CARDIGAN else null,
-                    outer = if (maxWind >= 35.0) GarmentCatalog.WINDBREAKER else null,
-                    bottom = GarmentCatalog.SHORTS,
-                    footwear = if (hasRain) GarmentCatalog.WATERPROOF_SHOES else GarmentCatalog.LOAFERS
-                )
-            }
-            else -> {
-                // Hot > 28°C
-                LayerSelection(
-                    base = GarmentCatalog.ULTRA_LIGHT_TANK,
-                    mid = null,
-                    outer = null,
-                    bottom = GarmentCatalog.SHORTS,
-                    footwear = GarmentCatalog.SANDALS
-                )
-            }
+            maxEffTemp < 0.0 || hasSnow -> LayerSelection(
+                base = GarmentCatalog.THERMAL_UNDERSHIRT,
+                mid = GarmentCatalog.WOOL_SWEATER,
+                outer = GarmentCatalog.DOWN_PARKA,
+                bottom = GarmentCatalog.THERMAL_PANTS,
+                footwear = GarmentCatalog.WINTER_BOOTS
+            )
+
+            maxEffTemp < 10.0 -> LayerSelection(
+                base = GarmentCatalog.LONG_SLEEVE_TEE,
+                mid = GarmentCatalog.KNITTED_SWEATER,
+                outer = if (maxWind >= 35.0) GarmentCatalog.WINDBREAKER else GarmentCatalog.WOOL_COAT,
+                bottom = GarmentCatalog.JEANS,
+                footwear = if (hasRain) GarmentCatalog.WATERPROOF_SHOES else GarmentCatalog.LEATHER_BOOTS
+            )
+
+            maxEffTemp < 16.0 -> LayerSelection(
+                base = GarmentCatalog.COTTON_TEE,
+                mid = if (hasLargeTempSwing) GarmentCatalog.CARDIGAN else GarmentCatalog.HOODIE,
+                outer = if (maxWind >= 35.0) GarmentCatalog.WINDBREAKER else GarmentCatalog.LIGHT_JACKET,
+                bottom = GarmentCatalog.TROUSERS,
+                footwear = if (hasRain) GarmentCatalog.WATERPROOF_SHOES else GarmentCatalog.SNEAKERS
+            )
+
+            maxEffTemp < 22.0 -> LayerSelection(
+                base = GarmentCatalog.COTTON_TEE,
+                mid = if (hasLargeTempSwing) GarmentCatalog.CARDIGAN else null,
+                outer = when {
+                    maxWind >= 35.0 -> GarmentCatalog.WINDBREAKER
+                    minEffTemp < 12.0 -> GarmentCatalog.LIGHT_JACKET
+                    else -> null
+                },
+                bottom = GarmentCatalog.CHINOS,
+                footwear = if (hasRain) GarmentCatalog.WATERPROOF_SHOES else GarmentCatalog.SNEAKERS
+            )
+
+            maxEffTemp < 28.0 -> LayerSelection(
+                base = GarmentCatalog.LINEN_TEE,
+                mid = if (hasLargeTempSwing) GarmentCatalog.CARDIGAN else null,
+                outer = if (maxWind >= 35.0) GarmentCatalog.WINDBREAKER else null,
+                bottom = GarmentCatalog.SHORTS,
+                footwear = if (hasRain) GarmentCatalog.WATERPROOF_SHOES else GarmentCatalog.LOAFERS
+            )
+
+            else -> LayerSelection(
+                base = GarmentCatalog.ULTRA_LIGHT_TANK,
+                mid = null,
+                outer = null,
+                bottom = GarmentCatalog.SHORTS,
+                footwear = GarmentCatalog.SANDALS
+            )
         }
     }
 
     private fun selectAccessories(
         daytimeHours: List<HourlyCondition>,
+        ageBand: AgeBand,
         minEffTemp: Double,
-        maxEffTemp: Double,
-        deltaT: Double,
-        hasLargeTempSwing: Boolean,
         maxPrecipProb: Int,
         hasRainCode: Boolean,
         hasSnow: Boolean,
+        hasLargeTempSwing: Boolean,
+        deltaT: Double,
         maxUv: Double,
         maxWind: Double
     ): List<AccessoryAlert> {
         val alerts = mutableListOf<AccessoryAlert>()
 
-        // 1. Rain / Precipitation Alert
+        // 1. Rain / precipitation
         if (maxPrecipProb >= 35 || hasRainCode) {
-            val rainWindow = findRainWindow(daytimeHours)
-            val reason = if (rainWindow != null) {
-                "Rain expected between ${rainWindow.first} – ${rainWindow.second}"
-            } else {
-                "Precipitation probability reaches $maxPrecipProb%"
-            }
-            val priority = if (maxPrecipProb >= 60 || hasRainCode) PriorityLevel.CRITICAL else PriorityLevel.RECOMMENDED
-            alerts.add(
-                AccessoryAlert(
-                    type = AccessoryType.UMBRELLA,
-                    name = "Compact Umbrella",
-                    reason = reason,
-                    priority = priority
-                )
+            val rainReason = findRainWindow(daytimeHours)
+                ?.let { AccessoryReason.RainWindow(start = it.first, end = it.second) }
+                ?: AccessoryReason.RainProbability(peakPercent = maxPrecipProb)
+            alerts += AccessoryAlert(
+                type = AccessoryType.UMBRELLA,
+                reason = rainReason,
+                priority = if (maxPrecipProb >= 60 || hasRainCode) {
+                    PriorityLevel.CRITICAL
+                } else {
+                    PriorityLevel.RECOMMENDED
+                }
             )
         }
 
-        // 2. Snow / Extreme Cold
+        // 2. Snow / extreme cold
         if (hasSnow || minEffTemp <= 0.0) {
-            alerts.add(
-                AccessoryAlert(
-                    type = AccessoryType.GLOVES,
-                    name = "Thermal Gloves",
-                    reason = "Sub-zero or freezing conditions expected",
-                    priority = PriorityLevel.CRITICAL
-                )
+            alerts += AccessoryAlert(
+                type = AccessoryType.GLOVES,
+                reason = AccessoryReason.FreezingConditions,
+                priority = PriorityLevel.CRITICAL
             )
-            alerts.add(
-                AccessoryAlert(
-                    type = AccessoryType.SCARF,
-                    name = "Heavy Winter Scarf",
-                    reason = "Protects against biting cold air",
-                    priority = PriorityLevel.CRITICAL
-                )
+            alerts += AccessoryAlert(
+                type = AccessoryType.SCARF,
+                reason = AccessoryReason.FreezingConditions,
+                priority = PriorityLevel.CRITICAL
             )
-        } else if (maxWind >= 35.0 && maxEffTemp < 15.0) {
-            alerts.add(
-                AccessoryAlert(
-                    type = AccessoryType.SCARF,
-                    name = "Wind Scarf",
-                    reason = "Gusty winds reaching ${maxWind.toInt()} km/h",
-                    priority = PriorityLevel.RECOMMENDED
-                )
+        } else if (maxWind >= 35.0 && minEffTemp < 15.0) {
+            alerts += AccessoryAlert(
+                type = AccessoryType.SCARF,
+                reason = AccessoryReason.Wind(speedKmh = maxWind.toInt()),
+                priority = PriorityLevel.RECOMMENDED
             )
         }
 
-        // 3. UV Sun Protection
+        // 3. UV protection
         if (maxUv >= 3.0) {
-            alerts.add(
-                AccessoryAlert(
-                    type = AccessoryType.SUNGLASSES,
-                    name = "UV Sunglasses",
-                    reason = "Peak UV index reaches ${String.format(Locale.US, "%.1f", maxUv)}",
-                    priority = if (maxUv >= 6.0) PriorityLevel.CRITICAL else PriorityLevel.RECOMMENDED
-                )
+            alerts += AccessoryAlert(
+                type = AccessoryType.SUNGLASSES,
+                reason = AccessoryReason.UvIndex(peakUv = maxUv),
+                priority = if (maxUv >= 6.0) PriorityLevel.CRITICAL else PriorityLevel.RECOMMENDED
             )
-            alerts.add(
-                AccessoryAlert(
-                    type = AccessoryType.SUNSCREEN,
-                    name = "Sunscreen SPF 30+",
-                    reason = "UV protection recommended during peak afternoon hours",
-                    priority = PriorityLevel.RECOMMENDED
+            alerts += AccessoryAlert(
+                type = AccessoryType.SUNSCREEN,
+                reason = AccessoryReason.UvIndex(peakUv = maxUv),
+                priority = safetyPriority(
+                    base = PriorityLevel.RECOMMENDED,
+                    ageBand = ageBand,
+                    escalate = maxUv >= 6.0
                 )
             )
         }
         if (maxUv >= 6.0) {
-            alerts.add(
-                AccessoryAlert(
-                    type = AccessoryType.SUN_HAT,
-                    name = "Wide-Brim Sun Hat",
-                    reason = "Very high UV radiation (${String.format(Locale.US, "%.1f", maxUv)}) requires head shade",
-                    priority = PriorityLevel.CRITICAL
-                )
+            alerts += AccessoryAlert(
+                type = AccessoryType.SUN_HAT,
+                reason = AccessoryReason.UvIndex(peakUv = maxUv),
+                priority = PriorityLevel.CRITICAL
             )
         }
 
-        // 4. Diurnal Temperature Swing
+        // 4. Diurnal temperature swing
         if (hasLargeTempSwing) {
-            alerts.add(
-                AccessoryAlert(
-                    type = AccessoryType.EXTRA_EVENING_LAYER,
-                    name = "Removable Layer",
-                    reason = "Large diurnal swing of ${String.format(Locale.US, "%.1f", deltaT)}°C between day and night",
-                    priority = PriorityLevel.RECOMMENDED
+            alerts += AccessoryAlert(
+                type = AccessoryType.EXTRA_EVENING_LAYER,
+                reason = AccessoryReason.DiurnalSwing(deltaCelsius = deltaT),
+                priority = safetyPriority(
+                    base = PriorityLevel.RECOMMENDED,
+                    ageBand = ageBand,
+                    escalate = true
                 )
             )
         }
@@ -277,49 +273,41 @@ class RuleBasedPresetEngine : IOutfitRecommendationEngine {
         return alerts
     }
 
-    private fun findRainWindow(hours: List<HourlyCondition>): Pair<String, String>? {
-        val rainHours = hours.filter { it.precipitationProbability >= 35 || it.weatherCode.isRain }
-        if (rainHours.isEmpty()) return null
-
-        val start = rainHours.first().time.format(DateTimeFormatter.ofPattern("HH:mm"))
-        val end = rainHours.last().time.format(DateTimeFormatter.ofPattern("HH:mm"))
-        return if (start == end) {
-            start to "${rainHours.first().time.plusHours(1).format(DateTimeFormatter.ofPattern("HH:mm"))}"
-        } else {
-            start to end
-        }
+    private fun safetyPriority(
+        base: PriorityLevel,
+        ageBand: AgeBand,
+        escalate: Boolean
+    ): PriorityLevel = if (escalate) {
+        PersonalizationPolicy.escalateForSafety(base, ageBand)
+    } else {
+        base
     }
 
-    private fun buildSummary(
-        highlights: WeatherHighlights,
-        accessories: List<AccessoryAlert>,
-        hasSnow: Boolean
-    ): Pair<String, String> {
-        val headline = when {
-            hasSnow -> "Sub-Zero Snow & Frost Alert"
-            highlights.hasLargeTempSwing -> "Large Diurnal Temperature Swing (${String.format(Locale.US, "%.1f", highlights.deltaTCelsius)}°C)"
-            highlights.hasRainSpike -> "Rain & Showers Expected Today"
-            highlights.maxUvIndex >= 6.0 -> "Hot & Intense UV Day"
-            highlights.tempMaxCelsius >= 24.0 -> "Warm and Pleasant Weather"
-            highlights.tempMaxCelsius < 10.0 -> "Chilly Day - Layer Up"
-            else -> "Mild Conditions Ahead"
+    private fun findRainWindow(
+        hours: List<HourlyCondition>
+    ): Pair<java.time.LocalTime, java.time.LocalTime>? {
+        val rainHours = hours.filter {
+            it.precipitationProbability >= 35 || it.weatherCode.isRain
         }
+        if (rainHours.isEmpty()) return null
 
-        val summary = buildString {
-            append("Temperatures span from ${String.format(Locale.US, "%.1f", highlights.tempMinCelsius)}°C to ${String.format(Locale.US, "%.1f", highlights.tempMaxCelsius)}°C. ")
-            if (highlights.hasLargeTempSwing) {
-                append("Significant temperature shift anticipated; keep a removable layer handy. ")
-            }
-            if (highlights.hasRainSpike) {
-                val rain = accessories.find { it.type == AccessoryType.UMBRELLA }
-                if (rain != null) append("${rain.reason}. ")
-            }
-            if (highlights.maxUvIndex >= 3.0) {
-                append("UV index peaks at ${String.format(Locale.US, "%.1f", highlights.maxUvIndex)}. ")
-            }
-        }
+        val start = rainHours.first().time.toLocalTime()
+        val end = rainHours.last().time.toLocalTime()
+        return if (start == end) start to start.plusHours(1) else start to end
+    }
 
-        return headline to summary.trim()
+    private fun headlineFor(
+        hasSnow: Boolean,
+        highlights: WeatherHighlights
+    ): HeadlineReason = when {
+        hasSnow -> HeadlineReason.SnowAndFrost
+        highlights.hasLargeTempSwing ->
+            HeadlineReason.LargeTempSwing(deltaCelsius = highlights.deltaTCelsius)
+        highlights.hasRainSpike -> HeadlineReason.RainExpected
+        highlights.maxUvIndex >= 6.0 -> HeadlineReason.HotAndIntenseUv
+        highlights.tempMaxCelsius >= 24.0 -> HeadlineReason.WarmAndPleasant
+        highlights.tempMaxCelsius < 10.0 -> HeadlineReason.Chilly
+        else -> HeadlineReason.Mild
     }
 
     private data class LayerSelection(
@@ -328,5 +316,13 @@ class RuleBasedPresetEngine : IOutfitRecommendationEngine {
         val outer: Garment?,
         val bottom: Garment,
         val footwear: Garment
-    )
+    ) {
+        fun withFit(fit: GarmentFit): LayerSelection = copy(
+            base = base.copy(fit = fit),
+            mid = mid?.copy(fit = fit),
+            outer = outer?.copy(fit = fit),
+            bottom = bottom.copy(fit = fit),
+            footwear = footwear.copy(fit = fit)
+        )
+    }
 }

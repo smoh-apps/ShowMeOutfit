@@ -1,6 +1,12 @@
 package com.smoh.showmeoutfit.core.datastore
 
+import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import com.smoh.showmeoutfit.domain.model.AgeBand
 import com.smoh.showmeoutfit.domain.model.GenderPreference
 import com.smoh.showmeoutfit.domain.model.LocationInfo
 import com.smoh.showmeoutfit.domain.model.ThermalSensitivity
@@ -26,13 +32,21 @@ class UserPreferencesStoreTest {
     @get:Rule
     val tmpFolder = TemporaryFolder()
 
+    private lateinit var dataStore: DataStore<Preferences>
     private lateinit var store: UserPreferencesStore
+
+    // Mirrors the private keys in UserPreferencesStore so the tests can write payloads that the
+    // store itself would never produce (corrupt writes, Sprint 1 payloads).
+    private val rawGender = stringPreferencesKey("gender_preference")
+    private val rawThermal = stringPreferencesKey("thermal_sensitivity")
+    private val rawHour = intPreferencesKey("notification_hour")
+    private val rawMinute = intPreferencesKey("notification_minute")
 
     @Before
     fun setUp() {
         val testDispatcher = UnconfinedTestDispatcher()
         val testScope = TestScope(testDispatcher)
-        val dataStore = PreferenceDataStoreFactory.create(
+        dataStore = PreferenceDataStoreFactory.create(
             scope = testScope,
             produceFile = { tmpFolder.newFile("user_prefs_test.preferences_pb") }
         )
@@ -47,6 +61,7 @@ class UserPreferencesStoreTest {
         assertTrue(profile.isNotificationEnabled)
         assertEquals(LocalTime.of(7, 0), profile.morningNotificationTime)
         assertNull(profile.selectedLocation)
+        assertEquals(AgeBand.UNSPECIFIED, profile.ageBand)
     }
 
     @Test
@@ -98,5 +113,58 @@ class UserPreferencesStoreTest {
         val retrieved = store.getUserProfile().first()
         assertEquals(ThermalSensitivity.FEELS_WARM_EASILY, retrieved.thermalSensitivity)
         assertEquals(-2.5, retrieved.thermalSensitivity.tempOffsetCelsius, 0.001)
+    }
+
+    @Test
+    fun `age band and configuration flag round-trip`() = runTest {
+        store.saveUserProfile(
+            UserProfile(ageBand = AgeBand.CHILD_6_12, isConfigured = true)
+        )
+
+        val retrieved = store.getUserProfile().first()
+
+        assertEquals(AgeBand.CHILD_6_12, retrieved.ageBand)
+        assertTrue(retrieved.isConfigured)
+    }
+
+    @Test
+    fun `a corrupt notification hour falls back to the default instead of crashing`() = runTest {
+        // Simulates a hand-edited preference file or a partial write: hour 99 is not a valid hour.
+        dataStore.edit { prefs ->
+            prefs[rawHour] = 99
+            prefs[rawMinute] = 15
+        }
+
+        val profile = store.getUserProfile().first()
+
+        assertEquals(LocalTime.of(7, 0), profile.morningNotificationTime)
+    }
+
+    @Test
+    fun `unknown persisted enum values fall back to neutral defaults`() = runTest {
+        dataStore.edit { prefs ->
+            prefs[rawGender] = "ROBOT"
+            prefs[rawThermal] = "SUPERHUMAN"
+        }
+
+        val profile = store.getUserProfile().first()
+
+        assertEquals(GenderPreference.ALL, profile.genderPreference)
+        assertEquals(ThermalSensitivity.NEUTRAL, profile.thermalSensitivity)
+    }
+
+    @Test
+    fun `a profile written by Sprint 1 loads with the new fields at their defaults`() = runTest {
+        // Sprint 1 persisted only these keys; ageBand and isConfigured did not exist yet.
+        dataStore.edit { prefs ->
+            prefs[rawGender] = "MEN"
+            prefs[rawThermal] = "NEUTRAL"
+        }
+
+        val profile = store.getUserProfile().first()
+
+        assertEquals(GenderPreference.MEN, profile.genderPreference)
+        assertEquals(AgeBand.UNSPECIFIED, profile.ageBand)
+        assertEquals(false, profile.isConfigured)
     }
 }

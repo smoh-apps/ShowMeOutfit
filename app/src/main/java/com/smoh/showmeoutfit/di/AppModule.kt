@@ -12,6 +12,8 @@ import com.smoh.showmeoutfit.core.datastore.UserPreferencesStore
 import com.smoh.showmeoutfit.core.network.HttpClientFactory
 import com.smoh.showmeoutfit.data.local.datasource.LocalWeatherDataSource
 import com.smoh.showmeoutfit.data.local.datasource.RoomLocalWeatherDataSource
+import com.smoh.showmeoutfit.data.location.DeviceLocationSource
+import com.smoh.showmeoutfit.data.location.FusedDeviceLocationSource
 import com.smoh.showmeoutfit.data.remote.datasource.OpenMeteoDataSource
 import com.smoh.showmeoutfit.data.remote.datasource.RemoteWeatherDataSource
 import com.smoh.showmeoutfit.data.repository.LocationRepositoryImpl
@@ -25,9 +27,12 @@ import com.smoh.showmeoutfit.domain.repository.WeatherRepository
 import com.smoh.showmeoutfit.domain.usecase.GetTodayOutfitRecommendationUseCase
 import com.smoh.showmeoutfit.domain.usecase.ManageUserProfileUseCase
 import com.smoh.showmeoutfit.domain.usecase.SearchLocationUseCase
+import com.smoh.showmeoutfit.ui.home.HomeViewModel
+import com.smoh.showmeoutfit.ui.location.LocationSearchViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import org.koin.android.ext.koin.androidContext
+import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val networkModule = module {
@@ -78,9 +83,15 @@ val repositoryModule = module {
     }
     single<LocationRepository> {
         LocationRepositoryImpl(
-            remoteDataSource = get(),
-            preferencesStore = get()
+            deviceLocationSource = get(),
+            remoteDataSource = get()
         )
+    }
+}
+
+val locationModule = module {
+    single<DeviceLocationSource> {
+        FusedDeviceLocationSource(context = androidContext())
     }
 }
 
@@ -107,11 +118,29 @@ val useCaseModule = module {
     }
 }
 
+val presentationModule = module {
+    viewModel {
+        HomeViewModel(
+            getTodayOutfit = get(),
+            userRepository = get()
+        )
+    }
+    viewModel {
+        LocationSearchViewModel(
+            searchLocation = get(),
+            locationRepository = get(),
+            userRepository = get()
+        )
+    }
+}
+
 val appModules = listOf(
     networkModule,
     databaseModule,
     storageModule,
+    locationModule,
     repositoryModule,
     engineModule,
-    useCaseModule
+    useCaseModule,
+    presentationModule
 )
