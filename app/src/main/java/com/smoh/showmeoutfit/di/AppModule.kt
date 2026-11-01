@@ -31,9 +31,20 @@ import com.smoh.showmeoutfit.ui.home.HomeViewModel
 import com.smoh.showmeoutfit.ui.location.LocationSearchViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import org.koin.android.ext.koin.androidContext
-import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
+
+/**
+ * Dispatchers are dependencies, not globals: tests substitute a test dispatcher and the
+ * production graph resolves this binding, so ViewModels keep their default parameter for direct
+ * construction in unit tests.
+ */
+val dispatcherModule = module {
+    single<CoroutineDispatcher> { Dispatchers.Default }
+}
 
 val networkModule = module {
     single<HttpClient> {
@@ -119,22 +130,12 @@ val useCaseModule = module {
 }
 
 val presentationModule = module {
-    viewModel {
-        HomeViewModel(
-            getTodayOutfit = get(),
-            userRepository = get()
-        )
-    }
-    viewModel {
-        LocationSearchViewModel(
-            searchLocation = get(),
-            locationRepository = get(),
-            userRepository = get()
-        )
-    }
+    viewModelOf(::HomeViewModel)
+    viewModelOf(::LocationSearchViewModel)
 }
 
 val appModules = listOf(
+    dispatcherModule,
     networkModule,
     databaseModule,
     storageModule,

@@ -10,6 +10,8 @@ import com.smoh.showmeoutfit.domain.repository.WeatherRepository
 import com.smoh.showmeoutfit.domain.usecase.GetTodayOutfitRecommendationUseCase
 import com.smoh.showmeoutfit.domain.usecase.ManageUserProfileUseCase
 import com.smoh.showmeoutfit.domain.usecase.SearchLocationUseCase
+import com.smoh.showmeoutfit.ui.home.HomeViewModel
+import com.smoh.showmeoutfit.ui.location.LocationSearchViewModel
 import io.mockk.mockk
 import org.junit.After
 import org.junit.Assert.assertNotNull
@@ -42,8 +44,10 @@ class KoinModulesTest : KoinTest {
         startKoin {
             modules(
                 testMockModule,
+                dispatcherModule,
                 engineModule,
-                useCaseModule
+                useCaseModule,
+                presentationModule
             )
         }
     }
@@ -64,5 +68,13 @@ class KoinModulesTest : KoinTest {
         assertNotNull(getTodayOutfitRecommendationUseCase)
         assertNotNull(manageUserProfileUseCase)
         assertNotNull(searchLocationUseCase)
+    }
+
+    @Test
+    fun `presentationModule resolves both view models from the dispatcher binding`() {
+        // viewModelOf injects every constructor parameter, including the dispatcher that used to
+        // rely on a Kotlin default. This would fail at runtime if the binding were missing.
+        assertNotNull(getKoin().get<HomeViewModel>())
+        assertNotNull(getKoin().get<LocationSearchViewModel>())
     }
 }
