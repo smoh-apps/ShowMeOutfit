@@ -69,7 +69,10 @@ class OnboardingScreenTest {
             }
         }
 
-        composeRule.onNodeWithTag(OnboardingTestTags.AGE_ERROR).assertIsDisplayed()
+        // The supporting text is inside the text field's merged semantics on purpose: TalkBack
+        // reads the error as part of the field. The tag therefore only exists in the unmerged tree.
+        composeRule.onNodeWithTag(OnboardingTestTags.AGE_ERROR, useUnmergedTree = true)
+            .assertIsDisplayed()
         composeRule.onNodeWithTag(OnboardingTestTags.CONTINUE).assertIsNotEnabled()
     }
 
