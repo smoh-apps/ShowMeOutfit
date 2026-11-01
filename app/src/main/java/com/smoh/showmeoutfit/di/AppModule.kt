@@ -29,6 +29,8 @@ import com.smoh.showmeoutfit.domain.usecase.ManageUserProfileUseCase
 import com.smoh.showmeoutfit.domain.usecase.SearchLocationUseCase
 import com.smoh.showmeoutfit.ui.home.HomeViewModel
 import com.smoh.showmeoutfit.ui.location.LocationSearchViewModel
+import com.smoh.showmeoutfit.ui.onboarding.OnboardingViewModel
+import com.smoh.showmeoutfit.ui.app.AppViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import kotlinx.coroutines.CoroutineDispatcher
@@ -130,8 +132,10 @@ val useCaseModule = module {
 }
 
 val presentationModule = module {
+    viewModelOf(::AppViewModel)
     viewModelOf(::HomeViewModel)
     viewModelOf(::LocationSearchViewModel)
+    viewModelOf(::OnboardingViewModel)
 }
 
 val appModules = listOf(

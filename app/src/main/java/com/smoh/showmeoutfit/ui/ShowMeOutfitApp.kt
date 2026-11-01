@@ -8,21 +8,51 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.smoh.showmeoutfit.ui.app.AppStartState
+import com.smoh.showmeoutfit.ui.app.AppStartupLoading
+import com.smoh.showmeoutfit.ui.app.AppViewModel
 import com.smoh.showmeoutfit.ui.home.HomeRoute
 import com.smoh.showmeoutfit.ui.location.LocationSearchSheet
+import com.smoh.showmeoutfit.ui.onboarding.OnboardingRoute
+import org.koin.androidx.compose.koinViewModel
 
 /**
  * Screen-level destinations of the app graph.
  *
- * Only [HOME] exists today. The graph is here rather than in [MainActivity] so Sprint 3 can add
- * profile onboarding and settings routes without touching the activity again.
+ * Onboarding is a real destination rather than a modal overlay: its lifecycle is independent of
+ * Home, it can be tested as a route, and completing it clears itself from the back stack.
  */
 object AppRoutes {
     const val HOME = "home"
+    const val ONBOARDING = "onboarding"
+}
+
+/**
+ * Stateful entry point. [AppViewModel] reads the profile once and decides the graph's start
+ * destination; the rest of the shell is stateless with respect to startup.
+ */
+@Composable
+fun ShowMeOutfitApp(
+    modifier: Modifier = Modifier,
+    navController: NavHostController = rememberNavController(),
+    appViewModel: AppViewModel = koinViewModel()
+) {
+    val startState by appViewModel.state.collectAsStateWithLifecycle()
+
+    when (val state = startState) {
+        AppStartState.Loading -> AppStartupLoading(modifier = modifier)
+
+        is AppStartState.Ready -> ShowMeOutfitAppContent(
+            startDestination = state.startDestination,
+            navController = navController,
+            modifier = modifier
+        )
+    }
 }
 
 /**
@@ -38,7 +68,8 @@ object AppRoutes {
  * carry the result back.
  */
 @Composable
-fun ShowMeOutfitApp(
+fun ShowMeOutfitAppContent(
+    startDestination: String,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController()
 ) {
@@ -47,11 +78,22 @@ fun ShowMeOutfitApp(
     Box(modifier = modifier.fillMaxSize()) {
         NavHost(
             navController = navController,
-            startDestination = AppRoutes.HOME,
+            startDestination = startDestination,
             modifier = Modifier.fillMaxSize()
         ) {
             composable(AppRoutes.HOME) {
                 HomeRoute(onOpenLocationSearch = { showLocationSearch = true })
+            }
+            composable(AppRoutes.ONBOARDING) {
+                OnboardingRoute(
+                    onCompleted = {
+                        navController.navigate(AppRoutes.HOME) {
+                            // Onboarding is a first-run gate, never a place to go back to.
+                            popUpTo(AppRoutes.ONBOARDING) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }
+                )
             }
         }
 

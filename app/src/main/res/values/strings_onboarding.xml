@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copy owned by the first-run onboarding destination (SMO-S3-01).
+  Kept in a dedicated file so it cannot conflict with other screens' string resources.
+-->
+<resources>
+
+    <!-- Startup routing -->
+    <string name="app_startup_loading">Preparing your outfit…</string>
+
+    <!-- Screen frame -->
+    <string name="onboarding_title">Let\'s make it yours</string>
+    <string name="onboarding_subtitle">Three quick choices make every recommendation fit you better. You can change them any time in Settings.</string>
+    <string name="onboarding_footer_privacy">Only your age band is saved, never your birth date.</string>
+
+    <!-- Gender / fit -->
+    <string name="onboarding_gender_title">Fit preference</string>
+    <string name="onboarding_gender_helper">This only changes garment labels and cuts. It never changes the weather rules.</string>
+    <string name="onboarding_gender_all">Unisex</string>
+    <string name="onboarding_gender_men">Men</string>
+    <string name="onboarding_gender_women">Women</string>
+
+    <!-- Age -->
+    <string name="onboarding_age_title">Your age</string>
+    <string name="onboarding_age_label">Age in years</string>
+    <string name="onboarding_age_placeholder">Optional</string>
+    <string name="onboarding_age_helper">Used only to pick a comfort band. Leave it blank if you prefer.</string>
+    <string name="onboarding_age_error_range">Enter an age between 0 and 120.</string>
+    <string name="onboarding_age_band_label">Comfort profile: %1$s</string>
+    <string name="onboarding_age_band_unspecified">neutral (no adjustment)</string>
+    <string name="onboarding_age_band_child_0_5">young child (0–5)</string>
+    <string name="onboarding_age_band_child_6_12">child (6–12)</string>
+    <string name="onboarding_age_band_teen_13_19">teen (13–19)</string>
+    <string name="onboarding_age_band_adult_20_39">adult (20–39)</string>
+    <string name="onboarding_age_band_adult_40_59">adult (40–59)</string>
+    <string name="onboarding_age_band_senior_60_plus">senior (60+)</string>
+
+    <!-- Thermal sensitivity -->
+    <string name="onboarding_sensitivity_title">How do you feel the cold?</string>
+    <string name="onboarding_sensitivity_helper">This nudges layer thresholds by up to 2.5 °C.</string>
+    <string name="onboarding_sensitivity_cold">I feel cold easily</string>
+    <string name="onboarding_sensitivity_neutral">Neither way</string>
+    <string name="onboarding_sensitivity_warm">I feel warm easily</string>
+    <string name="onboarding_sensitivity_cold_description">Adds warmth earlier on cool days.</string>
+    <string name="onboarding_sensitivity_neutral_description">Keeps the standard thresholds.</string>
+    <string name="onboarding_sensitivity_warm_description">Waits longer before adding layers.</string>
+
+    <!-- Actions -->
+    <string name="onboarding_get_started">Get started</string>
+    <string name="onboarding_skip">Skip for now</string>
+    <string name="onboarding_saving">Saving…</string>
+    <string name="onboarding_error_save">Couldn\'t save your profile. Try again.</string>
+
+</resources>
