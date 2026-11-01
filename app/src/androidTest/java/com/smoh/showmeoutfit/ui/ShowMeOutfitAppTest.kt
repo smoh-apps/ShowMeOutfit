@@ -171,7 +171,9 @@ class ShowMeOutfitAppTest {
     }
 
     private class FakeUserRepository : UserRepository {
-        val profile = MutableStateFlow(UserProfile(selectedLocation = null))
+        // The E2E class exercises the dashboard, so the fake starts past first-run onboarding.
+        // Onboarding routing has its own class (OnboardingNavigationTest).
+        val profile = MutableStateFlow(UserProfile(isConfigured = true, selectedLocation = null))
 
         override fun getUserProfile(): Flow<UserProfile> = profile
 
