@@ -4,9 +4,12 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Address
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.location.LocationManagerCompat
 import com.google.android.gms.location.LocationServices
@@ -19,6 +22,7 @@ import java.util.Locale
 import java.util.TimeZone
 import kotlin.coroutines.resume
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
@@ -127,34 +131,75 @@ class FusedDeviceLocationSource(
         )
     }
 
+    /**
+     * Resolves a city name for [latitude]/[longitude], bounded by [timeoutMillis].
+     *
+     * API 33+ uses the asynchronous [Geocoder.GeocodeListener] overload, so the callback is
+     * suspended rather than a thread blocked in a network round trip. Below 33 the synchronous
+     * overload is unavoidable, so it runs inside [runInterruptible]: cancellation (including the
+     * timeout) interrupts the blocking call instead of leaving a thread parked for seconds.
+     */
     private suspend fun reverseGeocode(
         latitude: Double,
         longitude: Double,
         timeoutMillis: Long
     ): Triple<String, String?, String?>? =
         withContext(Dispatchers.IO) {
-            // The synchronous geocoder can block on a network round trip; bound it so a slow
-            // service never stretches the location path past its budget.
-            withTimeoutOrNull(timeoutMillis) {
-                try {
-                    if (!Geocoder.isPresent()) return@withTimeoutOrNull null
-                    @Suppress("DEPRECATION") // The listener overload is API 33+; the sync one still works.
-                    val results = Geocoder(context, Locale.getDefault())
-                        .getFromLocation(latitude, longitude, 1)
-                    val address = results?.firstOrNull() ?: return@withTimeoutOrNull null
-                    val city = address.locality
-                        ?: address.subAdminArea
-                        ?: address.adminArea
-                        ?: return@withTimeoutOrNull null
-                    Triple(city, address.countryName, address.adminArea)
-                } catch (cancellation: CancellationException) {
-                    throw cancellation
-                } catch (_: Throwable) {
-                    // No network / no geocoder service: the coordinates are still usable.
-                    null
+            try {
+                if (!Geocoder.isPresent()) return@withContext null
+
+                withTimeoutOrNull(timeoutMillis) {
+                    val address = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        geocodeWithListener(latitude, longitude)
+                    } else {
+                        @Suppress("DEPRECATION") // Listener overload is API 33+; guarded above.
+                        runInterruptible(Dispatchers.IO) {
+                            Geocoder(context, Locale.getDefault())
+                                .getFromLocation(latitude, longitude, 1)
+                                ?.firstOrNull()
+                        }
+                    }
+                    address?.toCityTriple()
                 }
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (_: Throwable) {
+                // No network / no geocoder service: the coordinates are still usable.
+                null
             }
         }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private suspend fun geocodeWithListener(
+        latitude: Double,
+        longitude: Double
+    ): Address? = suspendCancellableCoroutine { continuation ->
+        try {
+            Geocoder(context, Locale.getDefault()).getFromLocation(
+                latitude,
+                longitude,
+                1,
+                object : Geocoder.GeocodeListener {
+                    override fun onGeocode(addresses: MutableList<Address>) {
+                        if (continuation.isActive) continuation.resume(addresses.firstOrNull())
+                    }
+
+                    override fun onError(errorMessage: String?) {
+                        if (continuation.isActive) continuation.resume(null)
+                    }
+                }
+            )
+        } catch (error: Throwable) {
+            // A missing service or an illegal argument must not crash the notification path.
+            if (continuation.isActive) continuation.resume(null)
+        }
+    }
+
+    /** City-level label only; returns null when the address has no usable locality. */
+    private fun Address.toCityTriple(): Triple<String, String?, String?>? {
+        val city = locality ?: subAdminArea ?: adminArea ?: return null
+        return Triple(city, countryName, adminArea)
+    }
 
     /**
      * Awaits a Play Services task, resolving `null` on failure or cancellation.
