@@ -6,6 +6,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -56,6 +57,27 @@ class MorningAlarmDozeTest {
         )
     }
 
+    /**
+     * Proves the check above is really reading the pending registry: cancelling the alarm (which is
+     * also what the coordinator does when alerts are switched off) must make it disappear, even
+     * though `dumpsys alarm` keeps the cancellation in its history.
+     */
+    @Test
+    fun cancelling_removes_the_pending_alarm() {
+        scheduler.scheduleNext(LocalTime.now().plusMinutes(30).withSecond(0).withNano(0))
+        assertTrue(
+            "the alarm was not registered before cancel:\n${shell("dumpsys alarm")}",
+            hasPendingAlarm()
+        )
+
+        scheduler.cancel()
+
+        assertFalse(
+            "the alarm is still pending after cancel:\n${shell("dumpsys alarm")}",
+            hasPendingAlarm()
+        )
+    }
+
     /** Polls the deep-idle state; returns whether it reached IDLE. */
     private fun enterIdle(): Boolean {
         shell("dumpsys deviceidle force-idle")
@@ -67,8 +89,21 @@ class MorningAlarmDozeTest {
         return shell("dumpsys deviceidle get deep").trim() == "IDLE"
     }
 
-    private fun hasPendingAlarm(): Boolean =
-        shell("dumpsys alarm").contains(context.packageName)
+    /**
+     * Whether the morning broadcast is still registered with `AlarmManager`.
+     *
+     * Two details matter for this not to be a false positive:
+     * - `dumpsys alarm` keeps a "Removal history" (and per-package "Alarm Stats") after an alarm is
+     *   cancelled or delivered, so a plain package-name match stays true once the alarm is gone.
+     *   Only the part before those sections describes what is currently pending.
+     * - The package name alone also appears for any other alarm the app might own, so the check
+     *   additionally requires the broadcast action `AlarmManager` tags the morning alarm with.
+     */
+    private fun hasPendingAlarm(): Boolean {
+        val pending = shell("dumpsys alarm").substringBefore("Removal history:")
+        return pending.contains(context.packageName) &&
+            pending.contains(MorningAlarmReceiver.ACTION_MORNING_ALARM)
+    }
 
     private fun shell(command: String): String {
         val descriptor = InstrumentationRegistry.getInstrumentation().uiAutomation
