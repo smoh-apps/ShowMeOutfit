@@ -1,5 +1,14 @@
 package com.smoh.showmeoutfit.ui.settings
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,6 +26,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -36,12 +47,15 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -49,6 +63,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.smoh.showmeoutfit.R
 import com.smoh.showmeoutfit.domain.model.AgeBand
@@ -57,9 +76,14 @@ import com.smoh.showmeoutfit.domain.model.LocationInfo
 import com.smoh.showmeoutfit.domain.model.ThermalSensitivity
 import com.smoh.showmeoutfit.domain.model.UserProfile
 import com.smoh.showmeoutfit.ui.onboarding.OnboardingMessageMapper
+import com.smoh.showmeoutfit.ui.permissions.AlertsPermissionReader
+import com.smoh.showmeoutfit.ui.permissions.AlertsPermissionState
+import com.smoh.showmeoutfit.ui.permissions.AlertsRequirement
+import com.smoh.showmeoutfit.ui.permissions.AlertsSettingsIntents
 import com.smoh.showmeoutfit.ui.theme.DesignTokens
 import com.smoh.showmeoutfit.ui.theme.ShowMeOutfitTheme
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -82,20 +106,79 @@ object SettingsTestTags {
     const val AGE_INPUT = "settings_age_input"
     const val AGE_SAVE = "settings_age_save"
     const val RESET_LOCATION = "settings_reset_location"
+    const val PERMISSION_NOTICE = "settings_permission_notice"
+    const val PERMISSION_ACTION = "settings_permission_action"
+    const val PERMISSION_DIALOG_CONFIRM = "settings_permission_dialog_confirm"
+    const val PERMISSION_DIALOG_CANCEL = "settings_permission_dialog_cancel"
+    const val EXACT_ALARM_NOTICE = "settings_exact_alarm_notice"
+    const val EXACT_ALARM_ACTION = "settings_exact_alarm_action"
 }
 
+@SuppressLint("InlinedApi") // POST_NOTIFICATIONS is only requested behind an API 33+ check.
 @Composable
 fun SettingsRoute(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: SettingsViewModel = koinViewModel()
+    viewModel: SettingsViewModel = koinViewModel(),
+    permissionReader: AlertsPermissionReader = koinInject()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    // The user may grant or revoke either capability in system settings and come back, so the
+    // snapshot is refreshed on every resume rather than only once at composition.
+    var permissionState by remember { mutableStateOf(permissionReader.read()) }
+    DisposableEffect(lifecycleOwner, permissionReader) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) permissionState = permissionReader.read()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    val notificationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) {
+        // The callback result is deliberately ignored: the reader is the single source of truth
+        // (it also covers "don't ask again" and channel-level blocks).
+        permissionState = permissionReader.read()
+    }
+    // Android only shows the prompt while it still considers the request reasonable; after two
+    // denials the launcher becomes a no-op, so the card has to route to app settings instead.
+    var askedThisSession by rememberSaveable { mutableStateOf(false) }
+
     SettingsScreen(
         state = state,
         onIntent = viewModel::onIntent,
         onBack = onBack,
-        modifier = modifier
+        modifier = modifier,
+        permissionState = permissionState,
+        onRequestNotifications = {
+            val permission = Manifest.permission.POST_NOTIFICATIONS
+            val granted = ContextCompat.checkSelfPermission(
+                context,
+                permission
+            ) == PackageManager.PERMISSION_GRANTED
+            val activity = context.findActivity()
+            val mayPromptAgain = activity != null &&
+                ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)
+            val canAsk = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                !granted &&
+                (!askedThisSession || mayPromptAgain)
+
+            if (canAsk) {
+                askedThisSession = true
+                notificationLauncher.launch(permission)
+            } else {
+                runCatching { context.startActivity(AlertsSettingsIntents.appNotificationSettings(context)) }
+            }
+        },
+        onOpenExactAlarms = {
+            AlertsSettingsIntents.exactAlarmSettings(context)?.let { intent ->
+                runCatching { context.startActivity(intent) }
+            }
+        }
     )
 }
 
@@ -105,10 +188,14 @@ fun SettingsScreen(
     state: SettingsUiState,
     onIntent: (SettingsIntent) -> Unit,
     onBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    permissionState: AlertsPermissionState = AlertsPermissionState(),
+    onRequestNotifications: () -> Unit = {},
+    onOpenExactAlarms: () -> Unit = {}
 ) {
     var showTimePicker by rememberSaveable { mutableStateOf(false) }
     var showAgeDialog by rememberSaveable { mutableStateOf(false) }
+    var showNotificationRationale by rememberSaveable { mutableStateOf(false) }
     val profile = state.profile
 
     Scaffold(
@@ -198,8 +285,13 @@ fun SettingsScreen(
                 }
                 Switch(
                     checked = profile.isNotificationEnabled,
-                    onCheckedChange = {
-                        onIntent(SettingsIntent.SetNotificationsEnabled(it))
+                    onCheckedChange = { enabled ->
+                        if (enabled && !permissionState.notificationsAllowed) {
+                            // Explain before the system prompt: a denial on Android 13 costs two
+                            // taps to undo, and the rationale is the only place we can say why.
+                            showNotificationRationale = true
+                        }
+                        onIntent(SettingsIntent.SetNotificationsEnabled(enabled))
                     },
                     modifier = Modifier.testTag(SettingsTestTags.ALERT_SWITCH)
                 )
@@ -229,6 +321,30 @@ fun SettingsScreen(
                         )
                     }
                     Text(stringResource(R.string.settings_alert_time_change))
+                }
+            }
+
+            if (profile.isNotificationEnabled) {
+                when (permissionState.firstMissing) {
+                    AlertsRequirement.NOTIFICATIONS -> PermissionNotice(
+                        title = stringResource(R.string.settings_permission_notifications_title),
+                        summary = stringResource(R.string.settings_permission_notifications_summary),
+                        action = stringResource(R.string.settings_permission_notifications_action),
+                        onClick = onRequestNotifications,
+                        testTag = SettingsTestTags.PERMISSION_NOTICE,
+                        actionTestTag = SettingsTestTags.PERMISSION_ACTION
+                    )
+
+                    AlertsRequirement.EXACT_ALARMS -> PermissionNotice(
+                        title = stringResource(R.string.settings_permission_exact_alarm_title),
+                        summary = stringResource(R.string.settings_permission_exact_alarm_summary),
+                        action = stringResource(R.string.settings_permission_exact_alarm_action),
+                        onClick = onOpenExactAlarms,
+                        testTag = SettingsTestTags.EXACT_ALARM_NOTICE,
+                        actionTestTag = SettingsTestTags.EXACT_ALARM_ACTION
+                    )
+
+                    null -> Unit
                 }
             }
 
@@ -383,6 +499,75 @@ fun SettingsScreen(
             onDismiss = { showAgeDialog = false }
         )
     }
+
+    if (showNotificationRationale) {
+        AlertDialog(
+            onDismissRequest = { showNotificationRationale = false },
+            title = { Text(stringResource(R.string.settings_permission_dialog_title)) },
+            text = { Text(stringResource(R.string.settings_permission_dialog_body)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showNotificationRationale = false
+                        onRequestNotifications()
+                    },
+                    modifier = Modifier.testTag(SettingsTestTags.PERMISSION_DIALOG_CONFIRM)
+                ) {
+                    Text(stringResource(R.string.settings_permission_dialog_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showNotificationRationale = false },
+                    modifier = Modifier.testTag(SettingsTestTags.PERMISSION_DIALOG_CANCEL)
+                ) {
+                    Text(stringResource(R.string.settings_permission_dialog_cancel))
+                }
+            }
+        )
+    }
+}
+
+/**
+ * One missing capability, one action.
+ *
+ * Rendered as a card rather than a snackbar: the alert still looks enabled above it, so the notice
+ * has to stay on screen until the user actually fixes the OS state.
+ */
+@Composable
+private fun PermissionNotice(
+    title: String,
+    summary: String,
+    action: String,
+    onClick: () -> Unit,
+    testTag: String,
+    actionTestTag: String
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(testTag),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(DesignTokens.Spacing.md),
+            verticalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.xs)
+        ) {
+            Text(text = title, style = MaterialTheme.typography.titleSmall)
+            Text(text = summary, style = MaterialTheme.typography.bodySmall)
+            TextButton(
+                onClick = onClick,
+                modifier = Modifier
+                    .heightIn(min = DesignTokens.MinTouchTarget)
+                    .testTag(actionTestTag)
+            ) {
+                Text(text = action)
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -479,6 +664,16 @@ private fun SectionTitle(title: String) {
         style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.primary
     )
+}
+
+/** Compose's `LocalContext` is usually the Activity, but it can be a themed wrapper. */
+private fun Context.findActivity(): Activity? {
+    var current: Context = this
+    while (current is ContextWrapper) {
+        if (current is Activity) return current
+        current = current.baseContext
+    }
+    return null
 }
 
 private fun formatTime(time: LocalTime): String =

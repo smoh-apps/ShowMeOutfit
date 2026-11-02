@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copy owned by the alerts permission flow (SMO-S3-04).
+  Kept in a dedicated file so it cannot conflict with other screens' string resources.
+-->
+<resources>
+
+    <!-- Android 13+ notifications -->
+    <string name="settings_permission_notifications_title">Notifications are off</string>
+    <string name="settings_permission_notifications_summary">Your morning alert is on, but Android will not show it until notifications are allowed.</string>
+    <string name="settings_permission_notifications_action">Allow notifications</string>
+    <string name="settings_permission_dialog_title">Allow morning alerts?</string>
+    <string name="settings_permission_dialog_body">ShowMeOutfit sends one notification a day with your layers and accessories. Android needs your permission first, and you can revoke it at any time in system settings.</string>
+    <string name="settings_permission_dialog_confirm">Allow</string>
+    <string name="settings_permission_dialog_cancel">Not now</string>
+
+    <!-- Android 12+ exact alarms -->
+    <string name="settings_permission_exact_alarm_title">Exact timing is restricted</string>
+    <string name="settings_permission_exact_alarm_summary">Android may deliver the alert late. Allow exact alarms to get it at your chosen time.</string>
+    <string name="settings_permission_exact_alarm_action">Open settings</string>
+
+</resources>

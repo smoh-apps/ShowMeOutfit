@@ -36,6 +36,8 @@ import com.smoh.showmeoutfit.ui.home.HomeViewModel
 import com.smoh.showmeoutfit.ui.location.LocationSearchViewModel
 import com.smoh.showmeoutfit.ui.notifications.AndroidOutfitNotifier
 import com.smoh.showmeoutfit.ui.onboarding.OnboardingViewModel
+import com.smoh.showmeoutfit.ui.permissions.AlertsPermissionReader
+import com.smoh.showmeoutfit.ui.permissions.AndroidAlertsPermissionReader
 import com.smoh.showmeoutfit.ui.settings.SettingsViewModel
 import com.smoh.showmeoutfit.ui.app.AppViewModel
 import io.ktor.client.HttpClient
@@ -156,6 +158,7 @@ val presentationModule = module {
 val schedulerModule = module {
     single<AlarmScheduler> { AndroidAlarmScheduler(context = androidContext()) }
     single<OutfitNotifier> { AndroidOutfitNotifier(context = androidContext()) }
+    single<AlertsPermissionReader> { AndroidAlertsPermissionReader(context = androidContext()) }
     single { MorningScheduleCoordinator(userRepository = get(), alarmScheduler = get()) }
     single {
         MorningOutfitRoutine(

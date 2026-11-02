@@ -36,6 +36,17 @@ android {
     buildFeatures {
         compose = true
     }
+    lint {
+        // Version currency is audited separately in the version catalog; these three checks only
+        // report "a newer release exists" and would drown out actionable findings in the sprint
+        // gate (they fire for every declared library on every build).
+        disable += setOf(
+            "GradleDependency",
+            "NewerVersionAvailable",
+            "AndroidGradlePluginVersion"
+        )
+        warningsAsErrors = false
+    }
 }
 
 kotlin {

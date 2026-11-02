@@ -11,6 +11,8 @@ import com.smoh.showmeoutfit.domain.model.LocationInfo
 import com.smoh.showmeoutfit.domain.model.UserProfile
 import com.smoh.showmeoutfit.domain.repository.UserRepository
 import com.smoh.showmeoutfit.domain.usecase.ManageUserProfileUseCase
+import com.smoh.showmeoutfit.ui.permissions.AlertsPermissionReader
+import com.smoh.showmeoutfit.ui.permissions.AlertsPermissionState
 import com.smoh.showmeoutfit.ui.theme.ShowMeOutfitTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,7 +52,33 @@ class SettingsScreenTest {
     private fun showSettings(onBack: () -> Unit = {}) {
         composeRule.setContent {
             ShowMeOutfitTheme(dynamicColor = false) {
-                SettingsRoute(onBack = onBack, viewModel = viewModel)
+                SettingsRoute(
+                    onBack = onBack,
+                    viewModel = viewModel,
+                    permissionReader = AlertsPermissionReader { AlertsPermissionState() }
+                )
+            }
+        }
+    }
+
+    /** Stateless variant for the permission card, which is pure UI over [AlertsPermissionState]. */
+    private fun showScreen(
+        state: SettingsUiState,
+        permissionState: AlertsPermissionState,
+        onIntent: (SettingsIntent) -> Unit = {},
+        onRequestNotifications: () -> Unit = {},
+        onOpenExactAlarms: () -> Unit = {}
+    ) {
+        composeRule.setContent {
+            ShowMeOutfitTheme(dynamicColor = false) {
+                SettingsScreen(
+                    state = state,
+                    onIntent = onIntent,
+                    onBack = {},
+                    permissionState = permissionState,
+                    onRequestNotifications = onRequestNotifications,
+                    onOpenExactAlarms = onOpenExactAlarms
+                )
             }
         }
     }
@@ -115,6 +143,121 @@ class SettingsScreenTest {
         composeRule.waitUntil(TIMEOUT_MILLIS) { wentBack }
         assertTrue(wentBack)
     }
+
+    // --- Alerts permission flow (SMO-S3-04) -----------------------------------------------
+
+    @Test
+    fun a_blocked_notification_permission_shows_the_notice_and_asks_on_tap() {
+        var requested = false
+        showScreen(
+            state = alertsEnabledState(),
+            permissionState = AlertsPermissionState(notificationsAllowed = false),
+            onRequestNotifications = { requested = true }
+        )
+
+        composeRule.onNodeWithTag(SettingsTestTags.PERMISSION_NOTICE).assertIsDisplayed()
+        composeRule.onNodeWithTag(SettingsTestTags.PERMISSION_ACTION).performClick()
+
+        composeRule.waitUntil(TIMEOUT_MILLIS) { requested }
+        assertTrue(requested)
+    }
+
+    @Test
+    fun enabling_alerts_without_notification_permission_explains_before_asking() {
+        val intents = mutableListOf<SettingsIntent>()
+        var requested = false
+        showScreen(
+            state = SettingsUiState(
+                profile = UserProfile(isNotificationEnabled = false, isConfigured = true),
+                isLoading = false
+            ),
+            permissionState = AlertsPermissionState(notificationsAllowed = false),
+            onIntent = { intents += it },
+            onRequestNotifications = { requested = true }
+        )
+
+        composeRule.onNodeWithTag(SettingsTestTags.ALERT_SWITCH).performClick()
+
+        // The rationale comes before the system prompt; the toggle itself is still persisted.
+        composeRule.onNodeWithTag(SettingsTestTags.PERMISSION_DIALOG_CONFIRM).assertIsDisplayed()
+        assertEquals(
+            listOf(SettingsIntent.SetNotificationsEnabled(true)),
+            intents.filterIsInstance<SettingsIntent.SetNotificationsEnabled>()
+        )
+
+        composeRule.onNodeWithTag(SettingsTestTags.PERMISSION_DIALOG_CONFIRM).performClick()
+
+        composeRule.waitUntil(TIMEOUT_MILLIS) { requested }
+        assertTrue(requested)
+    }
+
+    @Test
+    fun dismissing_the_rationale_does_not_request_the_permission() {
+        var requested = false
+        showScreen(
+            state = SettingsUiState(
+                profile = UserProfile(isNotificationEnabled = false, isConfigured = true),
+                isLoading = false
+            ),
+            permissionState = AlertsPermissionState(notificationsAllowed = false),
+            onRequestNotifications = { requested = true }
+        )
+
+        composeRule.onNodeWithTag(SettingsTestTags.ALERT_SWITCH).performClick()
+        composeRule.onNodeWithTag(SettingsTestTags.PERMISSION_DIALOG_CANCEL).performClick()
+
+        composeRule.onNodeWithTag(SettingsTestTags.PERMISSION_DIALOG_CANCEL).assertDoesNotExist()
+        assertFalse(requested)
+    }
+
+    @Test
+    fun the_exact_alarm_notice_opens_system_settings() {
+        var opened = false
+        showScreen(
+            state = alertsEnabledState(),
+            permissionState = AlertsPermissionState(exactAlarmsAllowed = false),
+            onOpenExactAlarms = { opened = true }
+        )
+
+        composeRule.onNodeWithTag(SettingsTestTags.EXACT_ALARM_NOTICE).assertIsDisplayed()
+        composeRule.onNodeWithTag(SettingsTestTags.EXACT_ALARM_ACTION).performClick()
+
+        composeRule.waitUntil(TIMEOUT_MILLIS) { opened }
+        assertTrue(opened)
+    }
+
+    @Test
+    fun a_satisfied_device_shows_no_permission_notice() {
+        showScreen(
+            state = alertsEnabledState(),
+            permissionState = AlertsPermissionState()
+        )
+
+        composeRule.onNodeWithTag(SettingsTestTags.PERMISSION_NOTICE).assertDoesNotExist()
+        composeRule.onNodeWithTag(SettingsTestTags.EXACT_ALARM_NOTICE).assertDoesNotExist()
+    }
+
+    @Test
+    fun a_disabled_alert_never_asks_for_permissions() {
+        showScreen(
+            state = SettingsUiState(
+                profile = UserProfile(isNotificationEnabled = false, isConfigured = true),
+                isLoading = false
+            ),
+            permissionState = AlertsPermissionState(
+                notificationsAllowed = false,
+                exactAlarmsAllowed = false
+            )
+        )
+
+        composeRule.onNodeWithTag(SettingsTestTags.PERMISSION_NOTICE).assertDoesNotExist()
+        composeRule.onNodeWithTag(SettingsTestTags.EXACT_ALARM_NOTICE).assertDoesNotExist()
+    }
+
+    private fun alertsEnabledState() = SettingsUiState(
+        profile = UserProfile(isNotificationEnabled = true, isConfigured = true),
+        isLoading = false
+    )
 
     private companion object {
         const val TIMEOUT_MILLIS = 5_000L
