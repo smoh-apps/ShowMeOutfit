@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copy owned by the morning notification (SMO-S3-03) and its rich expansion (SMO-S3-04).
+  Kept in a dedicated file so it cannot conflict with other screens' string resources.
+-->
+<resources>
+
+    <!-- Channel -->
+    <string name="notification_channel_name">Morning outfit</string>
+    <string name="notification_channel_description">Your daily layers and accessories, delivered at the time you choose.</string>
+
+    <!-- Content -->
+    <string name="notification_title">Morning outfit · %1$s–%2$s°</string>
+    <string name="notification_layer_line">%1$s: %2$s</string>
+    <string name="notification_layer_base">Base</string>
+    <string name="notification_layer_mid">Mid</string>
+    <string name="notification_layer_outer">Outer</string>
+    <string name="notification_layer_bottom">Bottoms</string>
+    <string name="notification_layer_footwear">Shoes</string>
+    <string name="notification_accessories">Also bring: %1$s</string>
+    <string name="notification_no_accessories">No extras needed today.</string>
+
+</resources>

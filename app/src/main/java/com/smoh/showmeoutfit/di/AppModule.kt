@@ -16,11 +16,16 @@ import com.smoh.showmeoutfit.data.location.DeviceLocationSource
 import com.smoh.showmeoutfit.data.location.FusedDeviceLocationSource
 import com.smoh.showmeoutfit.data.remote.datasource.OpenMeteoDataSource
 import com.smoh.showmeoutfit.data.remote.datasource.RemoteWeatherDataSource
+import com.smoh.showmeoutfit.data.scheduler.AlarmScheduler
+import com.smoh.showmeoutfit.data.scheduler.AndroidAlarmScheduler
+import com.smoh.showmeoutfit.data.scheduler.MorningOutfitRoutine
+import com.smoh.showmeoutfit.data.scheduler.MorningScheduleCoordinator
 import com.smoh.showmeoutfit.data.repository.LocationRepositoryImpl
 import com.smoh.showmeoutfit.data.repository.UserRepositoryImpl
 import com.smoh.showmeoutfit.data.repository.WeatherRepositoryImpl
 import com.smoh.showmeoutfit.domain.engine.IOutfitRecommendationEngine
 import com.smoh.showmeoutfit.domain.engine.RuleBasedPresetEngine
+import com.smoh.showmeoutfit.domain.notification.OutfitNotifier
 import com.smoh.showmeoutfit.domain.repository.LocationRepository
 import com.smoh.showmeoutfit.domain.repository.UserRepository
 import com.smoh.showmeoutfit.domain.repository.WeatherRepository
@@ -29,6 +34,7 @@ import com.smoh.showmeoutfit.domain.usecase.ManageUserProfileUseCase
 import com.smoh.showmeoutfit.domain.usecase.SearchLocationUseCase
 import com.smoh.showmeoutfit.ui.home.HomeViewModel
 import com.smoh.showmeoutfit.ui.location.LocationSearchViewModel
+import com.smoh.showmeoutfit.ui.notifications.AndroidOutfitNotifier
 import com.smoh.showmeoutfit.ui.onboarding.OnboardingViewModel
 import com.smoh.showmeoutfit.ui.settings.SettingsViewModel
 import com.smoh.showmeoutfit.ui.app.AppViewModel
@@ -140,6 +146,26 @@ val presentationModule = module {
     viewModelOf(::SettingsViewModel)
 }
 
+/**
+ * Morning scheduler graph.
+ *
+ * `AndroidAlarmScheduler` degrades on its own when exact-alarm access is missing, and
+ * `AndroidOutfitNotifier` reports refusal instead of throwing, so neither the worker nor the boot
+ * receiver needs a platform branch.
+ */
+val schedulerModule = module {
+    single<AlarmScheduler> { AndroidAlarmScheduler(context = androidContext()) }
+    single<OutfitNotifier> { AndroidOutfitNotifier(context = androidContext()) }
+    single { MorningScheduleCoordinator(userRepository = get(), alarmScheduler = get()) }
+    single {
+        MorningOutfitRoutine(
+            getTodayOutfit = get(),
+            userRepository = get(),
+            notifier = get()
+        )
+    }
+}
+
 val appModules = listOf(
     dispatcherModule,
     networkModule,
@@ -149,5 +175,6 @@ val appModules = listOf(
     repositoryModule,
     engineModule,
     useCaseModule,
+    schedulerModule,
     presentationModule
 )

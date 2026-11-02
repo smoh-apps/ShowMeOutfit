@@ -13,6 +13,16 @@
         android:name="android.hardware.location"
         android:required="false" />
 
+    <!--
+      Morning alert. SCHEDULE_EXACT_ALARM (not USE_EXACT_ALARM) is the appropriate request for a
+      daily lifestyle alert: Android 12+ lets the user grant or revoke it, and the app degrades to
+      an inexact alarm plus periodic work when it is missing. RECEIVE_BOOT_COMPLETED keeps the
+      alarm alive across reboots; POST_NOTIFICATIONS is requested at runtime on Android 13+.
+    -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:name=".ShowMeOutfitApp"
         android:allowBackup="true"
@@ -26,7 +36,6 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.ShowMeOutfit"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -35,6 +44,30 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Re-armed by AlarmManager; not exported, only the app's own PendingIntent targets it. -->
+        <receiver
+            android:name=".data.scheduler.MorningAlarmReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
+        <!--
+          System broadcasts only. exported="false" is correct: the system and the app itself can
+          deliver these protected broadcasts, no third-party app can.
+        -->
+        <receiver
+            android:name=".data.scheduler.BootCompletedReceiver"
+            android:directBootAware="false"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
