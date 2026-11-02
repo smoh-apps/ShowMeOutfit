@@ -25,3 +25,5 @@ local.properties
 .sprint/
 sprint-planning/
 
+# Generated GitHub Pages artifact (SMO-S3-05)
+/public/
