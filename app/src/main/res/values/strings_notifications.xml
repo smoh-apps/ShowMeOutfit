@@ -20,4 +20,12 @@
     <string name="notification_accessories">Also bring: %1$s</string>
     <string name="notification_no_accessories">No extras needed today.</string>
 
+    <!-- Highlights (SMO-S3-04). Arguments arrive pre-formatted, hence %s for numbers. -->
+    <string name="notification_highlight_rain_window">Rain %1$s–%2$s. Umbrella in the bag.</string>
+    <string name="notification_highlight_rain_chance">%1$s%% chance of rain. Umbrella in the bag.</string>
+    <string name="notification_highlight_uv">UV %1$s. Sunglasses and sunscreen.</string>
+    <string name="notification_highlight_uv_hat">UV %1$s. Sun hat, sunglasses and sunscreen.</string>
+    <string name="notification_highlight_wind">Wind up to %1$s km/h. The windbreaker has you covered.</string>
+    <string name="notification_highlight_swing">%1$s° drop later. Pack the evening layer.</string>
+
 </resources>

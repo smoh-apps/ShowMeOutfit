@@ -12,26 +12,29 @@ import com.smoh.showmeoutfit.R
 import com.smoh.showmeoutfit.domain.model.Garment
 import com.smoh.showmeoutfit.domain.model.TodayOutfit
 import com.smoh.showmeoutfit.domain.notification.OutfitNotifier
+import com.smoh.showmeoutfit.ui.AppRoutes
 import com.smoh.showmeoutfit.ui.home.GarmentTextMapper
 import java.text.NumberFormat
+import java.util.Locale
 
 /**
- * Posts the morning alert with plain `NotificationCompat` copy.
+ * Posts the morning alert: headline range, one line per layer, the accessory list, and the
+ * weather highlights that explain the advice.
  *
- * SMO-S3-03 keeps the payload honest but small: the headline temperature range, one line per
- * layer, and the accessory list. SMO-S3-04 owns the rich expansion (rain/UV highlights, deep
- * links) and the permission education flow; this class only has to be safe to call from a
- * background worker and to report when the OS refused the notification.
+ * SMO-S3-04 owns the rich expansion (rain/UV/wind highlights, deep link) and the permission
+ * education flow; this class only has to be safe to call from a background worker and to report
+ * when the OS refused the notification.
  */
 class AndroidOutfitNotifier(
     private val context: Context
 ) : OutfitNotifier {
 
     override suspend fun notifyMorningOutfit(outfit: TodayOutfit): Boolean {
+        ensureChannel()
+
         val notificationManager = NotificationManagerCompat.from(context)
         if (!notificationManager.areNotificationsEnabled()) return false
-
-        ensureChannel()
+        if (isChannelBlocked()) return false
 
         return try {
             notificationManager.notify(NOTIFICATION_ID, build(outfit))
@@ -40,6 +43,16 @@ class AndroidOutfitNotifier(
             // POST_NOTIFICATIONS was revoked between the check above and the post.
             false
         }
+    }
+
+    /**
+     * A user can block the channel while leaving the app's notification toggle on. Posting then
+     * succeeds at the API level but nothing is shown, so delivery has to be reported as failed.
+     */
+    private fun isChannelBlocked(): Boolean {
+        val channel = context.getSystemService(NotificationManager::class.java)
+            ?.getNotificationChannel(CHANNEL_ID)
+        return channel?.importance == NotificationManager.IMPORTANCE_NONE
     }
 
     private fun ensureChannel() {
@@ -73,7 +86,18 @@ class AndroidOutfitNotifier(
             context.getString(R.string.notification_accessories, accessories.joinToString(", "))
         }
 
-        val body = (layerLines + accessoryLine).joinToString(lineSeparator)
+        // Highlights are only useful when they add a reason the layer list does not already show,
+        // so they sit in their own paragraph and stay out of the collapsed single line.
+        val highlights = NotificationHighlights.of(recommendation)
+            .map { mapped -> context.getString(mapped.resId, *mapped.resolve(Locale.getDefault())) }
+        val body = buildList {
+            addAll(layerLines)
+            add(accessoryLine)
+            if (highlights.isNotEmpty()) {
+                add("")
+                addAll(highlights)
+            }
+        }.joinToString(lineSeparator)
 
         return NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification_outfit)
@@ -84,8 +108,12 @@ class AndroidOutfitNotifier(
                     formatTemperature(recommendation.summary.tempMaxCelsius)
                 )
             )
-            .setContentText(accessoryLine)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+            .setContentText(highlights.firstOrNull() ?: accessoryLine)
+            .setStyle(
+                NotificationCompat.BigTextStyle()
+                    .bigText(body)
+                    .setSummaryText(accessoryLine)
+            )
             .setSubText(outfit.weather.snapshot.location.cityName.takeIf { it.isNotBlank() })
             .setContentIntent(openAppIntent())
             .setAutoCancel(true)
@@ -101,8 +129,18 @@ class AndroidOutfitNotifier(
         context.getString(GarmentTextMapper.garmentNameRes(garment.id, garment.fit))
     )
 
+    /**
+     * Opens the dashboard.
+     *
+     * The intent carries the destination the notification is about, but the navigation graph still
+     * gates on `isConfigured`: a tap can land on onboarding (when the profile was cleared between
+     * delivery and the tap) and must never skip it. Home is the start destination, so a plain
+     * activity launch already lands in the right place; the extra keeps the contract explicit for
+     * any future deep-link handling.
+     */
     private fun openAppIntent(): PendingIntent {
         val intent = Intent(context, MainActivity::class.java).apply {
+            putExtra(EXTRA_DESTINATION, AppRoutes.HOME)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         return PendingIntent.getActivity(
@@ -119,6 +157,7 @@ class AndroidOutfitNotifier(
     companion object {
         const val CHANNEL_ID = "morning_outfit_channel"
         const val NOTIFICATION_ID = 4_101
+        const val EXTRA_DESTINATION = "com.smoh.showmeoutfit.extra.DESTINATION"
         private const val REQUEST_CODE = 4_102
     }
 }
