@@ -15,7 +15,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.smoh.showmeoutfit.MainActivity
 import com.smoh.showmeoutfit.R
-import com.smoh.showmeoutfit.di.appModules
+import com.smoh.showmeoutfit.di.dispatcherModule
 import com.smoh.showmeoutfit.di.engineModule
 import com.smoh.showmeoutfit.di.presentationModule
 import com.smoh.showmeoutfit.di.useCaseModule
@@ -78,6 +78,7 @@ class ShowMeOutfitAppTest {
                     single<WeatherRepository> { weatherRepository }
                     single<LocationRepository> { locationRepository }
                 },
+                dispatcherModule,
                 engineModule,
                 useCaseModule,
                 presentationModule
@@ -89,12 +90,10 @@ class ShowMeOutfitAppTest {
     @After
     fun tearDown() {
         scenario.close()
+        // Leave no Koin instance behind. Re-registering appModules here would open a second
+        // DataStore over the same file while the first is still alive, which throws on the next
+        // test class in this process. The next test starts the graph it needs in @Before.
         stopKoin()
-        // Leave the process with the production graph for any later test class.
-        startKoin {
-            androidContext(context.applicationContext)
-            modules(appModules)
-        }
     }
 
     @Test
@@ -172,7 +171,9 @@ class ShowMeOutfitAppTest {
     }
 
     private class FakeUserRepository : UserRepository {
-        val profile = MutableStateFlow(UserProfile(selectedLocation = null))
+        // The E2E class exercises the dashboard, so the fake starts past first-run onboarding.
+        // Onboarding routing has its own class (OnboardingNavigationTest).
+        val profile = MutableStateFlow(UserProfile(isConfigured = true, selectedLocation = null))
 
         override fun getUserProfile(): Flow<UserProfile> = profile
 

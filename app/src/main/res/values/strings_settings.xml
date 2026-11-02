@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copy owned by Settings (SMO-S3-02) and the Home entry point that opens it.
+  Kept in a dedicated file so it cannot conflict with other screens' string resources.
+-->
+<resources>
+
+    <!-- Entry point -->
+    <string name="settings_open_action">Settings</string>
+    <string name="settings_back_action">Back</string>
+
+    <!-- Screen frame -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_loading">Loading your preferences…</string>
+    <string name="settings_error_save">Couldn\'t save that change. Try again.</string>
+    <string name="settings_error_dismiss">Dismiss</string>
+
+    <!-- Morning alert -->
+    <string name="settings_section_alerts">Morning alert</string>
+    <string name="settings_alert_toggle_title">Daily outfit notification</string>
+    <string name="settings_alert_toggle_summary">Today\'s layers and accessories, delivered at the time you choose.</string>
+    <string name="settings_alert_time_title">Delivery time</string>
+    <string name="settings_alert_time_value">Every day at %1$s</string>
+    <string name="settings_alert_time_change">Change</string>
+    <string name="settings_time_picker_title">Morning alert time</string>
+    <string name="settings_time_picker_confirm">Set</string>
+    <string name="settings_time_picker_cancel">Cancel</string>
+
+    <!-- Comfort profile -->
+    <string name="settings_section_comfort">Comfort profile</string>
+    <string name="settings_sensitivity_title">Thermal sensitivity</string>
+    <string name="settings_sensitivity_helper">Nudges layer thresholds by up to 2.5 °C. This is comfort guidance, not medical advice.</string>
+    <string name="settings_sensitivity_cold">Feels cold</string>
+    <string name="settings_sensitivity_neutral">Neutral</string>
+    <string name="settings_sensitivity_warm">Feels warm</string>
+
+    <string name="settings_gender_title">Fit preference</string>
+    <string name="settings_gender_all">Unisex</string>
+    <string name="settings_gender_men">Men</string>
+    <string name="settings_gender_women">Women</string>
+
+    <string name="settings_age_title">Age band</string>
+    <string name="settings_age_edit">Edit</string>
+    <string name="settings_age_dialog_title">Age in years</string>
+    <string name="settings_age_dialog_helper">Only the band is stored. Leave blank to clear it.</string>
+    <string name="settings_age_dialog_save">Save</string>
+    <string name="settings_age_dialog_cancel">Cancel</string>
+    <string name="settings_age_error">Enter an age between 0 and 120.</string>
+
+    <!-- Location -->
+    <string name="settings_section_location">Location</string>
+    <string name="settings_location_current">Current location (GPS)</string>
+    <string name="settings_location_saved">Saved city: %1$s</string>
+    <string name="settings_location_reset">Reset to GPS location</string>
+    <string name="settings_location_reset_summary">Uses a fresh device fix next time instead of the saved city.</string>
+
+</resources>

@@ -14,7 +14,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -22,6 +27,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -79,6 +85,7 @@ object HomeTestTags {
     const val CACHE_BANNER = "home_cache_banner"
     const val REFRESH_FAILED_BANNER = "home_refresh_failed_banner"
     const val TIMELINE = "home_timeline"
+    const val OPEN_SETTINGS = "home_open_settings"
 }
 
 private val HourLabelFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
@@ -96,6 +103,7 @@ private val HourLabelFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(
 @Composable
 fun HomeRoute(
     onOpenLocationSearch: () -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = koinViewModel()
 ) {
@@ -130,6 +138,7 @@ fun HomeRoute(
         state = state,
         onIntent = viewModel::onIntent,
         onEffect = onEffect,
+        onOpenSettings = onOpenSettings,
         snackbarHostState = snackbarHostState,
         modifier = modifier
     )
@@ -144,16 +153,36 @@ fun HomeRoute(
  * the host opens the sheet, so the screen keeps no navigation dependency and there is exactly one
  * way to ask for the picker.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     state: HomeUiState,
     onIntent: (HomeIntent) -> Unit,
     onEffect: (HomeEffect) -> Unit,
     modifier: Modifier = Modifier,
+    onOpenSettings: () -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = { Text(text = stringResource(R.string.app_name)) },
+                actions = {
+                    IconButton(
+                        onClick = onOpenSettings,
+                        modifier = Modifier
+                            .heightIn(min = DesignTokens.MinTouchTarget)
+                            .testTag(HomeTestTags.OPEN_SETTINGS)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Settings,
+                            contentDescription = stringResource(R.string.settings_open_action)
+                        )
+                    }
+                }
+            )
+        },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { innerPadding ->
         val stateModifier = Modifier

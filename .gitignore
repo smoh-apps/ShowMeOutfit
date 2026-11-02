@@ -25,3 +25,10 @@ local.properties
 .sprint/
 sprint-planning/
 
+# Generated GitHub Pages artifact (SMO-S3-05)
+/public/
+
+# Signing material must never be committed (SMO-S3-06); the alpha key lives in repository secrets.
+*.jks
+*.keystore
+keystore.properties
