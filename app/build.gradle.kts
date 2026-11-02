@@ -5,6 +5,29 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// Stable alpha signing (SMO-S3-06).
+//
+// `assembleDebug` on a hosted runner would otherwise generate a brand-new debug keystore on every
+// run, so each published alpha would carry a different certificate and Android would refuse to
+// install it over the previous one (INSTALL_FAILED_UPDATE_INCOMPATIBLE).
+//
+// When the four variables below are present the distributed debug APK is signed with the project's
+// alpha key instead; a normal local build without them keeps using the default debug keystore.
+// `ALPHA_SIGNING_REQUIRED=true` (set by the Pages workflow) turns a missing keystore into a build
+// failure so a rotating key can never be published silently.
+val alphaKeystorePath = providers.environmentVariable("ALPHA_KEYSTORE_PATH").orNull
+val alphaKeystore = alphaKeystorePath?.let { file(it) }
+val alphaSigningAvailable = alphaKeystore?.exists() == true
+val alphaSigningRequired = providers.environmentVariable("ALPHA_SIGNING_REQUIRED").orNull == "true"
+
+if (alphaSigningRequired && !alphaSigningAvailable) {
+    throw GradleException(
+        "ALPHA_SIGNING_REQUIRED is set but no alpha keystore was found at " +
+            "'${alphaKeystorePath ?: "<ALPHA_KEYSTORE_PATH unset>"}'. Publishing an unsigned/" +
+            "debug-keyed APK would break in-place updates; see docs/distribution/alpha-signing.md."
+    )
+}
+
 android {
     namespace = "com.smoh.showmeoutfit"
     compileSdk {
@@ -15,13 +38,33 @@ android {
         applicationId = "com.smoh.showmeoutfit"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
+        // Monotonic per published build: the Pages workflow passes `github.run_number`, so each
+        // alpha supersedes the previous one. Local builds keep 1.
+        versionCode = providers.environmentVariable("ALPHA_VERSION_CODE").orNull?.toIntOrNull() ?: 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (alphaSigningAvailable) {
+            create("alpha") {
+                storeFile = alphaKeystore
+                storePassword = providers.environmentVariable("ALPHA_KEYSTORE_PASSWORD").orNull
+                keyAlias = providers.environmentVariable("ALPHA_KEY_ALIAS").orNull
+                keyPassword = providers.environmentVariable("ALPHA_KEY_PASSWORD").orNull
+            }
+        }
+    }
+
     buildTypes {
+        if (alphaSigningAvailable) {
+            // The alpha ships the debug variant (no R8), so the override belongs here rather than
+            // on a separate build type: same artifact path, same tests, stable certificate.
+            getByName("debug") {
+                signingConfig = signingConfigs.getByName("alpha")
+            }
+        }
         release {
             optimization {
                 enable = true

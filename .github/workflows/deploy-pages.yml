@@ -3,6 +3,10 @@ name: Pages alpha portal
 # Publishes the debug APK and its download portal to GitHub Pages (SMO-S3-05).
 # Runs on `main` (after the sprint PR lands) and on version tags; `workflow_dispatch` exists so a
 # maintainer can redeploy without an empty commit.
+#
+# The build is signed with the project's stable alpha key (SMO-S3-06). Without it, every runner
+# generates a fresh debug keystore and a new download cannot install over the previous one; the
+# signing step therefore fails instead of publishing a rotating signature.
 on:
   push:
     branches: [main]
@@ -37,6 +41,35 @@ jobs:
       # Wrapper validation + dependency cache; the version comes from gradle/wrapper.
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+
+      # Decodes the alpha keystore into the runner's temp dir and exports the signing variables.
+      # Fails *before* the build when the secret is absent: a plain `assembleDebug` on a hosted
+      # runner generates a throwaway debug key, and the next alpha then cannot install over this
+      # one. One-time setup: docs/distribution/alpha-signing.md
+      - name: Prepare alpha signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ALPHA_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ALPHA_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ALPHA_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ALPHA_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::ALPHA_KEYSTORE_BASE64 is not configured. Refusing to publish an APK signed with a throwaway debug key (see docs/distribution/alpha-signing.md)."
+            exit 1
+          fi
+          keystore="$RUNNER_TEMP/alpha-keystore.jks"
+          printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$keystore"
+          chmod 600 "$keystore"
+          test -s "$keystore" || { echo "::error::Decoded keystore is empty."; exit 1; }
+          {
+            echo "ALPHA_KEYSTORE_PATH=$keystore"
+            echo "ALPHA_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
+            echo "ALPHA_KEY_ALIAS=$KEY_ALIAS"
+            echo "ALPHA_KEY_PASSWORD=$KEY_PASSWORD"
+            echo "ALPHA_SIGNING_REQUIRED=true"
+            # Monotonic across runs, so each alpha supersedes the previous one in place.
+            echo "ALPHA_VERSION_CODE=${GITHUB_RUN_NUMBER}"
+          } >> "$GITHUB_ENV"
 
       - name: Unit tests
         run: ./gradlew testDebugUnitTest --console=plain
