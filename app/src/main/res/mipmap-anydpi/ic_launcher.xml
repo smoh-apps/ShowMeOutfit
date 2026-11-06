@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Adaptive launcher icon (SMO-S4-06). The single authoritative definition: minSdk is 26, so this
+  unversioned anydpi folder is picked up on every supported API level and a redundant -v26
+  qualifier is deliberately avoided (lint ObsoleteSdkInt). The legacy rasters in mipmap-mdpi ..
+  mipmap-xxxhdpi only cover density-specific bitmaps.
+
+  <monochrome> is an API 33 attribute; older AdaptiveIconDrawable parsers skip child tags they do
+  not know, so it is safe to keep in this one file.
+-->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background android:drawable="@drawable/ic_launcher_background" />
     <foreground android:drawable="@drawable/ic_launcher_foreground" />
-    <monochrome android:drawable="@drawable/ic_launcher_foreground" />
+    <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
 </adaptive-icon>
