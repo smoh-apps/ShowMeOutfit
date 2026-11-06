@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -23,6 +24,9 @@ import androidx.compose.ui.unit.dp
  * - 0%–22%: UV index band
  * - 34%–74%: temperature curve
  * - 80%–100%: rain-chance bars
+ *
+ * The canvas is purely decorative: [DiurnalTimelineBar] exposes one semantics node with the
+ * spoken summary, so the drawing itself must not produce a second, meaningless announcement.
  */
 @Composable
 internal fun DiurnalTimelineChart(
@@ -37,7 +41,8 @@ internal fun DiurnalTimelineChart(
     Canvas(
         modifier = modifier
             .fillMaxWidth()
-            .height(chartHeight),
+            .height(chartHeight)
+            .clearAndSetSemantics {},
     ) {
         val chartTop = 4.dp.toPx()
         val chartBottom = size.height - 4.dp.toPx()
