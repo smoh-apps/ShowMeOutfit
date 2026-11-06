@@ -14,11 +14,15 @@ import org.junit.runner.RunWith
 import java.time.LocalTime
 
 /**
- * Sprint 3 Doze gate: the morning alarm has to stay registered while the device is idle.
+ * Doze gate for the morning alert.
  *
- * Drives the real `AlarmManager` through the production scheduler, forces the emulator into Doze
- * via `dumpsys deviceidle`, and checks the pending alarm survives. This is the automated half of
- * the Doze verification; the shell transcript in the sprint QA report records the same steps.
+ * Sprint 3 proved that the pending alarm survives one `force-idle` transition. Sprint 4 (SMO-S4-02)
+ * widens the gate to the failure modes that an overnight standby actually exercises:
+ * repeated idle/wake cycles, re-scheduling idempotency (one `cancel` must clear everything) and the
+ * `RTC_WAKEUP` registration that lets the alarm escape Doze.
+ *
+ * The physical-device half of the ticket is documented in `scripts/soak/README.md`; this suite is
+ * the automated evidence that can run on the API 37 AVD in CI.
  */
 @RunWith(AndroidJUnit4::class)
 class MorningAlarmDozeTest {
@@ -54,6 +58,70 @@ class MorningAlarmDozeTest {
         assertTrue(
             "the alarm disappeared while the device was idle:\n${shell("dumpsys alarm")}",
             hasPendingAlarm()
+        )
+    }
+
+    /**
+     * An overnight standby can cross several maintenance windows. Re-entering Doze after a wake-up
+     * must not clear or duplicate the pending wake-up.
+     */
+    @Test
+    fun the_morning_alarm_survives_repeated_idle_cycles() {
+        scheduler.scheduleNext(LocalTime.now().plusMinutes(5).withSecond(0).withNano(0))
+
+        repeat(3) { cycle ->
+            assertTrue("device did not enter Doze on cycle $cycle", enterIdle())
+            assertTrue(
+                "the alarm disappeared during idle cycle $cycle:\n${shell("dumpsys alarm")}",
+                hasPendingAlarm()
+            )
+            shell("dumpsys deviceidle unforce")
+            assertTrue(
+                "the alarm disappeared when Doze ended on cycle $cycle:\n${shell("dumpsys alarm")}",
+                hasPendingAlarm()
+            )
+        }
+    }
+
+    /**
+     * Every coordinator path may call `scheduleNext` again (start, settings edit, worker). Because
+     * the scheduler reuses one immutable `PendingIntent`, repeated calls replace the previous alarm
+     * instead of stacking duplicates. A single `cancel` is the proof: it only removes the one
+     * `PendingIntent` registered for the morning broadcast.
+     */
+    @Test
+    fun re_scheduling_replaces_the_previous_alarm_instead_of_stacking_it() {
+        val now = LocalTime.now().withSecond(0).withNano(0)
+        scheduler.scheduleNext(now.plusMinutes(30))
+        scheduler.scheduleNext(now.plusMinutes(31))
+        scheduler.scheduleNext(now.plusMinutes(32))
+
+        assertTrue(
+            "the alarm was not registered after repeated schedules:\n${shell("dumpsys alarm")}",
+            hasPendingAlarm()
+        )
+
+        scheduler.cancel()
+
+        assertFalse(
+            "a duplicate survived the single cancel:\n${shell("dumpsys alarm")}",
+            hasPendingAlarm()
+        )
+    }
+
+    /** `setExactAndAllowWhileIdle` must register an `RTC_WAKEUP` alarm, or Doze never wakes. */
+    @Test
+    fun the_morning_alarm_is_registered_as_an_rtc_wakeup() {
+        scheduler.scheduleNext(LocalTime.now().plusMinutes(30).withSecond(0).withNano(0))
+
+        val pending = pendingAlarmSection()
+        val actionIndex = pending.indexOf(MorningAlarmReceiver.ACTION_MORNING_ALARM)
+        assertTrue("the action is missing from the pending alarms:\n$pending", actionIndex >= 0)
+
+        val registration = pending.substring((actionIndex - 400).coerceAtLeast(0), actionIndex)
+        assertTrue(
+            "the morning alarm is not an RTC_WAKEUP registration:\n$registration",
+            registration.contains("RTC_WAKEUP")
         )
     }
 
@@ -100,10 +168,13 @@ class MorningAlarmDozeTest {
      *   additionally requires the broadcast action `AlarmManager` tags the morning alarm with.
      */
     private fun hasPendingAlarm(): Boolean {
-        val pending = shell("dumpsys alarm").substringBefore("Removal history:")
+        val pending = pendingAlarmSection()
         return pending.contains(context.packageName) &&
             pending.contains(MorningAlarmReceiver.ACTION_MORNING_ALARM)
     }
+
+    private fun pendingAlarmSection(): String =
+        shell("dumpsys alarm").substringBefore("Removal history:")
 
     private fun shell(command: String): String {
         val descriptor = InstrumentationRegistry.getInstrumentation().uiAutomation
