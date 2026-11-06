@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,6 +39,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
@@ -85,10 +87,14 @@ object HomeTestTags {
     const val CACHE_BANNER = "home_cache_banner"
     const val REFRESH_FAILED_BANNER = "home_refresh_failed_banner"
     const val TIMELINE = "home_timeline"
+    const val METRICS = "home_metrics"
     const val OPEN_SETTINGS = "home_open_settings"
 }
 
 private val HourLabelFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
+/** Font scale at which multi-column rows stop being readable and switch to one item per row. */
+internal const val LargeFontScale = 1.5f
 
 /**
  * Stateful entry point: owns the [HomeViewModel], the snackbar host and the effect handling.
@@ -358,6 +364,9 @@ private fun HomeHeader(
     onRefresh: () -> Unit
 ) {
     val locale = Locale.getDefault()
+    // A city name is content, not decoration: at 200% text size it may wrap instead of being
+    // truncated to "Lisb…". The normal font scale keeps the single-line header.
+    val maxCityLines = if (LocalDensity.current.fontScale >= LargeFontScale) 2 else 1
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.sm),
@@ -367,7 +376,7 @@ private fun HomeHeader(
             Text(
                 text = cityName,
                 style = MaterialTheme.typography.titleLarge,
-                maxLines = 1,
+                maxLines = maxCityLines,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
@@ -509,10 +518,17 @@ private fun AccessorySection(recommendation: OutfitRecommendation) {
 private fun MetricSection(recommendation: OutfitRecommendation) {
     val highlights = recommendation.weatherHighlights
     val locale = Locale.getDefault()
+    // Three chips side by side stop being readable once the text doubles. FlowRow either keeps
+    // them in one row (normal scale) or stacks them full width (200%), so nothing clips.
+    val itemsPerRow = if (LocalDensity.current.fontScale >= LargeFontScale) 1 else 3
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.sm)
+    FlowRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(HomeTestTags.METRICS),
+        horizontalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.sm),
+        verticalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.sm),
+        maxItemsInEachRow = itemsPerRow
     ) {
         WeatherMetricChip(
             label = stringResource(R.string.home_metric_rain_label),

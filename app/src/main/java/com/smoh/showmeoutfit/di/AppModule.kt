@@ -18,6 +18,8 @@ import com.smoh.showmeoutfit.data.remote.datasource.OpenMeteoDataSource
 import com.smoh.showmeoutfit.data.remote.datasource.RemoteWeatherDataSource
 import com.smoh.showmeoutfit.data.scheduler.AlarmScheduler
 import com.smoh.showmeoutfit.data.scheduler.AndroidAlarmScheduler
+import com.smoh.showmeoutfit.data.scheduler.AndroidMorningAlertLog
+import com.smoh.showmeoutfit.data.scheduler.MorningAlertLog
 import com.smoh.showmeoutfit.data.scheduler.MorningOutfitRoutine
 import com.smoh.showmeoutfit.data.scheduler.MorningScheduleCoordinator
 import com.smoh.showmeoutfit.data.repository.LocationRepositoryImpl
@@ -159,12 +161,14 @@ val schedulerModule = module {
     single<AlarmScheduler> { AndroidAlarmScheduler(context = androidContext()) }
     single<OutfitNotifier> { AndroidOutfitNotifier(context = androidContext()) }
     single<AlertsPermissionReader> { AndroidAlertsPermissionReader(context = androidContext()) }
-    single { MorningScheduleCoordinator(userRepository = get(), alarmScheduler = get()) }
+    single<MorningAlertLog> { AndroidMorningAlertLog() }
+    single { MorningScheduleCoordinator(userRepository = get(), alarmScheduler = get(), log = get()) }
     single {
         MorningOutfitRoutine(
             getTodayOutfit = get(),
             userRepository = get(),
-            notifier = get()
+            notifier = get(),
+            log = get()
         )
     }
 }
