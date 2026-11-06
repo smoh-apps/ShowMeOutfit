@@ -173,6 +173,8 @@ class RuleBasedPresetEngineTest {
             recommendation.accessories.first { it.type == AccessoryType.SUN_HAT }.priority
         )
         assertEquals(8.5, recommendation.summary.peakUvIndex, 0.01)
+        // A hot day below the heatwave band stays a UV-only advisory: no hydration alert.
+        assertTrue(recommendation.accessories.none { it.type == AccessoryType.WATER_BOTTLE })
     }
 
     @Test
@@ -382,5 +384,155 @@ class RuleBasedPresetEngineTest {
         assertEquals(18.0, recommendation.weatherHighlights.tempMaxCelsius, 0.01)
         assertEquals(GarmentFit.UNISEX, recommendation.baseLayer.fit)
         assertEquals(HeadlineReason.Mild, recommendation.headline)
+    }
+
+    // --- Extreme weather (SMO-S4-03) ---
+
+    @Test
+    fun `TC-ENG-13 deep frost locks the full winter stack plus critical gloves and scarf`() {
+        val snapshot = buildSnapshot(
+            hourlyList = hourly(
+                temp = -15.0,
+                precip = 0,
+                uv = 0.5,
+                wind = 15.0,
+                code = WeatherCode.CLEAR_SKY
+            ),
+            maxTemp = -14.0,
+            minTemp = -16.0,
+            weatherCode = WeatherCode.CLEAR_SKY
+        )
+
+        val recommendation = engine.recommend(snapshot, UserProfile())
+
+        assertEquals(GarmentId.THERMAL_UNDERSHIRT, recommendation.baseLayer.id)
+        assertEquals(GarmentId.WOOL_SWEATER, recommendation.midLayer?.id)
+        assertEquals(GarmentId.DOWN_PARKA, recommendation.outerLayer?.id)
+        assertEquals(GarmentId.THERMAL_PANTS, recommendation.bottomLayer.id)
+        assertEquals(GarmentId.WINTER_BOOTS, recommendation.footwear.id)
+        assertEquals(HeadlineReason.FrostWarning, recommendation.headline)
+
+        val gloves = recommendation.accessories.first { it.type == AccessoryType.GLOVES }
+        val scarf = recommendation.accessories.first { it.type == AccessoryType.SCARF }
+        assertEquals(PriorityLevel.CRITICAL, gloves.priority)
+        assertEquals(PriorityLevel.CRITICAL, scarf.priority)
+        assertEquals(AccessoryReason.FreezingConditions, gloves.reason)
+        assertEquals(AccessoryReason.FreezingConditions, scarf.reason)
+    }
+
+    @Test
+    fun `TC-ENG-14 frost headline starts exactly at the documented threshold`() {
+        val atThreshold = engine.recommend(
+            buildSnapshot(
+                hourlyList = hourly(temp = -10.0, uv = 0.5, code = WeatherCode.CLEAR_SKY),
+                maxTemp = -10.0,
+                minTemp = -10.0
+            ),
+            UserProfile()
+        )
+        val justAbove = engine.recommend(
+            buildSnapshot(
+                hourlyList = hourly(temp = -9.9, uv = 0.5, code = WeatherCode.CLEAR_SKY),
+                maxTemp = -9.9,
+                minTemp = -9.9
+            ),
+            UserProfile()
+        )
+
+        assertEquals(
+            RuleBasedPresetEngine.FROST_HEADLINE_THRESHOLD_CELSIUS,
+            -10.0,
+            0.0
+        )
+        assertEquals(HeadlineReason.FrostWarning, atThreshold.headline)
+        // A merely cold day keeps the ordinary cold headline: frost must not fire on ordinary days.
+        assertEquals(HeadlineReason.Chilly, justAbove.headline)
+    }
+
+    @Test
+    fun `TC-ENG-15 heatwave uses the lightest layers and a critical hydration alert`() {
+        val snapshot = buildSnapshot(
+            hourlyList = hourly(
+                temp = 41.0,
+                precip = 0,
+                uv = 9.0,
+                wind = 5.0,
+                code = WeatherCode.CLEAR_SKY
+            ),
+            maxTemp = 41.0,
+            minTemp = 30.0,
+            weatherCode = WeatherCode.CLEAR_SKY
+        )
+
+        val recommendation = engine.recommend(snapshot, UserProfile())
+
+        assertEquals(GarmentId.ULTRA_LIGHT_TANK, recommendation.baseLayer.id)
+        assertEquals(GarmentId.SHORTS, recommendation.bottomLayer.id)
+        assertEquals(GarmentId.SANDALS, recommendation.footwear.id)
+        assertNull(recommendation.midLayer)
+        assertNull(recommendation.outerLayer)
+        assertEquals(HeadlineReason.Heatwave, recommendation.headline)
+
+        val water = recommendation.accessories.first { it.type == AccessoryType.WATER_BOTTLE }
+        assertEquals(PriorityLevel.CRITICAL, water.priority)
+        assertEquals(AccessoryReason.ExtremeHeat(tempCelsius = 41.0), water.reason)
+
+        // UV guidance is unchanged by the heatwave branch.
+        assertTrue(recommendation.accessories.any { it.type == AccessoryType.SUN_HAT })
+        assertTrue(recommendation.accessories.any { it.type == AccessoryType.SUNSCREEN })
+    }
+
+    @Test
+    fun `TC-ENG-16 heatwave threshold is inclusive and slightly cooler days stay UV-only`() {
+        val atThreshold = engine.recommend(
+            buildSnapshot(
+                hourlyList = hourly(temp = 40.0, uv = 8.5, code = WeatherCode.CLEAR_SKY),
+                maxTemp = 40.0,
+                minTemp = 28.0
+            ),
+            UserProfile()
+        )
+        val justBelow = engine.recommend(
+            buildSnapshot(
+                hourlyList = hourly(temp = 39.9, uv = 8.5, code = WeatherCode.CLEAR_SKY),
+                maxTemp = 39.9,
+                minTemp = 28.0
+            ),
+            UserProfile()
+        )
+
+        assertEquals(
+            RuleBasedPresetEngine.HEATWAVE_THRESHOLD_CELSIUS,
+            40.0,
+            0.0
+        )
+        assertEquals(HeadlineReason.Heatwave, atThreshold.headline)
+        assertTrue(atThreshold.accessories.any { it.type == AccessoryType.WATER_BOTTLE })
+
+        assertEquals(HeadlineReason.HotAndIntenseUv, justBelow.headline)
+        assertTrue(justBelow.accessories.none { it.type == AccessoryType.WATER_BOTTLE })
+    }
+
+    @Test
+    fun `TC-ENG-17 frost headline outranks heatwave when one pathological day spans both`() {
+        // Physically implausible but structurally possible: a huge swing from a deep frost morning
+        // to a 41 °C afternoon. The headline order is explicit, so frost must win.
+        val snapshot = buildSnapshot(
+            hourlyList = hourly(temp = 20.0) { hour ->
+                when (hour) {
+                    7 -> -15.0
+                    in 14..16 -> 41.0
+                    else -> 20.0
+                }
+            },
+            maxTemp = 41.0,
+            minTemp = -15.0
+        )
+
+        val recommendation = engine.recommend(snapshot, UserProfile())
+
+        assertEquals(HeadlineReason.FrostWarning, recommendation.headline)
+        assertTrue(recommendation.accessories.any { it.type == AccessoryType.WATER_BOTTLE })
+        assertTrue(recommendation.accessories.any { it.type == AccessoryType.GLOVES })
     }
 }

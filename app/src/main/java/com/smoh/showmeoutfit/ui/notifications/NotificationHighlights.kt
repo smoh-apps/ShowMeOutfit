@@ -17,8 +17,8 @@ import kotlin.math.roundToInt
  * the dashboard. Every line is a [MappedText] so the caller formats times and numbers for the
  * device locale (and the mapper stays testable on a plain JVM).
  *
- * Order is the order a person checks them: rain first (it changes what you carry), then UV, then
- * wind, then the evening temperature drop.
+ * Order is the order a person checks them: rain first (it changes what you carry), then heat
+ * hydration (a health risk), then UV, then wind, then the evening temperature drop.
  */
 object NotificationHighlights {
 
@@ -27,9 +27,29 @@ object NotificationHighlights {
 
     fun of(recommendation: OutfitRecommendation): List<MappedText> = buildList {
         rainLine(recommendation)?.let(::add)
+        heatLine(recommendation)?.let(::add)
         uvLine(recommendation)?.let(::add)
         windLine(recommendation)?.let(::add)
         swingLine(recommendation)?.let(::add)
+    }
+
+    /**
+     * Heatwave hydration line.
+     *
+     * Reads the water-bottle accessory rather than re-testing a threshold, so the alert and the
+     * dashboard badge always agree. No water bottle in the set means no line: the layer list
+     * already tells the user it is a light-outfit day.
+     */
+    private fun heatLine(recommendation: OutfitRecommendation): MappedText? {
+        val heat = recommendation.accessories
+            .firstOrNull { it.type == AccessoryType.WATER_BOTTLE }
+            ?.reason as? AccessoryReason.ExtremeHeat
+            ?: return null
+
+        return MappedText(
+            resId = R.string.notification_highlight_hydration,
+            args = listOf(TextArg.Number(heat.tempCelsius, decimals = 0))
+        )
     }
 
     /**

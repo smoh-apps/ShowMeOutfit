@@ -152,6 +152,53 @@ class NotificationHighlightsTest {
         assertTrue(highlights.isEmpty())
     }
 
+    // --- Heat -----------------------------------------------------------------------------
+
+    @Test
+    fun `a critical water bottle becomes a hydration highlight`() {
+        val highlights = NotificationHighlights.of(
+            recommendation(
+                accessories = listOf(
+                    alert(
+                        AccessoryType.WATER_BOTTLE,
+                        AccessoryReason.ExtremeHeat(tempCelsius = 41.4),
+                        PriorityLevel.CRITICAL
+                    )
+                )
+            )
+        )
+
+        val heat = highlights.single()
+        assertEquals(R.string.notification_highlight_hydration, heat.resId)
+        assertEquals(listOf(TextArg.Number(41.4, decimals = 0)), heat.args)
+    }
+
+    @Test
+    fun `hydration follows the rain line and precedes the UV line`() {
+        val highlights = NotificationHighlights.of(
+            recommendation(
+                rainReason = AccessoryReason.RainProbability(peakPercent = 50),
+                accessories = listOf(
+                    alert(
+                        AccessoryType.WATER_BOTTLE,
+                        AccessoryReason.ExtremeHeat(tempCelsius = 41.0),
+                        PriorityLevel.CRITICAL
+                    ),
+                    alert(AccessoryType.SUNGLASSES, AccessoryReason.UvIndex(peakUv = 8.0))
+                )
+            )
+        )
+
+        assertEquals(
+            listOf(
+                R.string.notification_highlight_rain_chance,
+                R.string.notification_highlight_hydration,
+                R.string.notification_highlight_uv
+            ),
+            highlights.map { it.resId }
+        )
+    }
+
     // --- Diurnal swing --------------------------------------------------------------------
 
     @Test

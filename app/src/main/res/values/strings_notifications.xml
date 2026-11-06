@@ -27,5 +27,6 @@
     <string name="notification_highlight_uv_hat">UV %1$s. Sun hat, sunglasses and sunscreen.</string>
     <string name="notification_highlight_wind">Wind up to %1$s km/h. The windbreaker has you covered.</string>
     <string name="notification_highlight_swing">%1$s° drop later. Pack the evening layer.</string>
+    <string name="notification_highlight_hydration">Peaks at %1$s°. Carry water and stay in the shade.</string>
 
 </resources>

@@ -25,22 +25,24 @@ data class OpenMeteoCurrentDto(
 
 @Serializable
 data class OpenMeteoHourlyDto(
-    @SerialName("time") val time: List<String>,
-    @SerialName("temperature_2m") val temperature2m: List<Double>,
-    @SerialName("apparent_temperature") val apparentTemperature: List<Double>,
-    @SerialName("precipitation_probability") val precipitationProbability: List<Int>,
-    @SerialName("uv_index") val uvIndex: List<Double>,
-    @SerialName("wind_speed_10m") val windSpeed10m: List<Double>,
-    @SerialName("weather_code") val weatherCode: List<Int>
+    // Arrays are independently optional in an Open-Meteo reply: a sparse or truncated payload can
+    // omit one of them, so every list defaults to empty and the mapper intersects the lengths.
+    @SerialName("time") val time: List<String> = emptyList(),
+    @SerialName("temperature_2m") val temperature2m: List<Double> = emptyList(),
+    @SerialName("apparent_temperature") val apparentTemperature: List<Double> = emptyList(),
+    @SerialName("precipitation_probability") val precipitationProbability: List<Int> = emptyList(),
+    @SerialName("uv_index") val uvIndex: List<Double> = emptyList(),
+    @SerialName("wind_speed_10m") val windSpeed10m: List<Double> = emptyList(),
+    @SerialName("weather_code") val weatherCode: List<Int> = emptyList()
 )
 
 @Serializable
 data class OpenMeteoDailyDto(
-    @SerialName("time") val time: List<String>,
-    @SerialName("temperature_2m_max") val temperature2mMax: List<Double>,
-    @SerialName("temperature_2m_min") val temperature2mMin: List<Double>,
-    @SerialName("precipitation_probability_max") val precipitationProbabilityMax: List<Int>,
-    @SerialName("weather_code") val weatherCode: List<Int>
+    @SerialName("time") val time: List<String> = emptyList(),
+    @SerialName("temperature_2m_max") val temperature2mMax: List<Double> = emptyList(),
+    @SerialName("temperature_2m_min") val temperature2mMin: List<Double> = emptyList(),
+    @SerialName("precipitation_probability_max") val precipitationProbabilityMax: List<Int> = emptyList(),
+    @SerialName("weather_code") val weatherCode: List<Int> = emptyList()
 )
 
 @Serializable

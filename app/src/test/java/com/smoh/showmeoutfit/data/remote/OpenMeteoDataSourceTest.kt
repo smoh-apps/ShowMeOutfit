@@ -2,6 +2,7 @@ package com.smoh.showmeoutfit.data.remote
 
 import com.smoh.showmeoutfit.core.network.HttpClientFactory
 import com.smoh.showmeoutfit.data.remote.datasource.OpenMeteoDataSource
+import com.smoh.showmeoutfit.domain.model.DomainError
 import com.smoh.showmeoutfit.domain.model.LocationInfo
 import com.smoh.showmeoutfit.domain.model.WeatherCode
 import io.ktor.client.engine.mock.MockEngine
@@ -91,6 +92,28 @@ class OpenMeteoDataSourceTest {
         val dataSource = buildMockDataSource("NOT_VALID_JSON_AT_ALL")
         val result = dataSource.fetchForecast(berlinLocation)
         assertTrue("Should return failure on malformed response", result.isFailure)
+    }
+
+    @Test
+    fun `fetchForecast truncates a sparse hourly payload instead of failing`() = runTest {
+        val dataSource = buildMockDataSource(SPARSE_HOURLY_FORECAST_JSON)
+        val result = dataSource.fetchForecast(berlinLocation)
+
+        assertTrue(result.isSuccess)
+        // `uv_index` carries only two values, so only the first two hours are usable.
+        assertEquals(2, result.getOrThrow().hourlyForecast.size)
+    }
+
+    @Test
+    fun `fetchForecast reports a missing daily block as MalformedData`() = runTest {
+        val dataSource = buildMockDataSource(EMPTY_DAILY_FORECAST_JSON)
+        val result = dataSource.fetchForecast(berlinLocation)
+
+        assertTrue(result.isFailure)
+        assertTrue(
+            "expected DomainError.MalformedData but was ${result.exceptionOrNull()}",
+            result.exceptionOrNull() is DomainError.MalformedData
+        )
     }
 
     @Test
