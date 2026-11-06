@@ -141,7 +141,8 @@ class GarmentTextMapperTest {
             AccessoryReason.FreezingConditions,
             AccessoryReason.Wind(speedKmh = 38),
             AccessoryReason.UvIndex(peakUv = 6.24),
-            AccessoryReason.DiurnalSwing(deltaCelsius = 9.4)
+            AccessoryReason.DiurnalSwing(deltaCelsius = 9.4),
+            AccessoryReason.ExtremeHeat(tempCelsius = 41.4)
         )
 
         reasons.forEach { reason ->
@@ -172,6 +173,10 @@ class GarmentTextMapperTest {
         assertEquals(
             listOf(isolated("9")),
             GarmentTextMapper.accessoryReason(reasons[5]).resolve(locale).toList()
+        )
+        assertEquals(
+            listOf(isolated("41")),
+            GarmentTextMapper.accessoryReason(reasons[6]).resolve(locale).toList()
         )
     }
 
@@ -227,6 +232,8 @@ class GarmentTextMapperTest {
     @Test
     fun `every headline variant has copy`() {
         val reasons = listOf(
+            HeadlineReason.FrostWarning,
+            HeadlineReason.Heatwave,
             HeadlineReason.SnowAndFrost,
             HeadlineReason.LargeTempSwing(deltaCelsius = 9.4),
             HeadlineReason.RainExpected,
@@ -253,6 +260,8 @@ class GarmentTextMapperTest {
     @Test
     fun `headline resources differ per variant`() {
         val resources = listOf(
+            HeadlineReason.FrostWarning,
+            HeadlineReason.Heatwave,
             HeadlineReason.SnowAndFrost,
             HeadlineReason.LargeTempSwing(deltaCelsius = 9.4),
             HeadlineReason.RainExpected,
@@ -262,7 +271,7 @@ class GarmentTextMapperTest {
             HeadlineReason.Mild
         ).map { GarmentTextMapper.headline(it).resId }
 
-        assertEquals(7, resources.distinct().size)
+        assertEquals(9, resources.distinct().size)
     }
 
     @Test
