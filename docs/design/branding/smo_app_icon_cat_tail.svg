@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <style>
+      .bg { fill: #F8F7F4; }
+      .stroke-main { fill: none; stroke: #111827; stroke-width: 14; stroke-linecap: round; stroke-linejoin: round; }
+      .stroke-tail { fill: none; stroke: #111827; stroke-width: 16; stroke-linecap: round; stroke-linejoin: round; }
+      .sun { fill: #E06D44; }
+    </style>
+  </defs>
+
+  <!-- Background Squircle Canvas -->
+  <rect class="bg" width="512" height="512" rx="116" ry="116" />
+
+  <!-- Outer Orbit Ring: 'O' for Weather & Diurnal Cycle -->
+  <circle class="stroke-main" cx="256" cy="256" r="172" />
+
+  <!-- Terracotta Sun Accent Dot -->
+  <circle class="sun" cx="256" cy="184" r="16" />
+
+  <!-- Coat Hanger Hook -->
+  <path class="stroke-main" d="M 256 160 C 256 138, 274 134, 274 146 C 274 156, 262 162, 256 172" />
+
+  <!-- Coat Hanger Shoulders & Lapels: 'M' for Mode & Outfit Layering -->
+  <!-- Left Shoulder to Arm -->
+  <path class="stroke-main" d="M 256 172 L 132 242 C 124 246, 126 256, 136 256 L 176 256 L 176 338" />
+  <!-- Right Shoulder to Arm -->
+  <path class="stroke-main" d="M 256 172 L 380 242 C 388 246, 386 256, 376 256 L 336 256 L 336 338" />
+
+  <!-- Blazer Lapel V-Neck (Inner 'M' geometry) -->
+  <path class="stroke-main" d="M 176 256 L 216 288 L 256 256 L 296 288 L 336 256" />
+
+  <!-- Letter 'S' as a Graceful Cat's Tail -->
+  <!-- Originates at the coat collar, flows through the center, and wraps around the bottom with a playful upward flick -->
+  <path class="stroke-tail" d="M 224 232 C 196 238, 188 274, 226 296 C 276 324, 284 356, 256 386 C 230 412, 186 398, 178 368 C 174 354, 184 340, 196 342 C 206 344, 210 356, 214 366 C 222 384, 248 388, 262 374 C 278 358, 268 334, 236 316 C 188 290, 186 244, 224 224" />
+</svg>
