@@ -1,5 +1,7 @@
 # Alpha signing (SMO-S3-06)
 
+> End-to-end Pages deployment checklist: [`distribution-gate.md`](distribution-gate.md).
+
 The GitHub Pages portal publishes a **debug-variant** APK so testers can install the current build
 in one tap. Android identifies an app by `applicationId` **plus** its signing certificate, so an APK
 signed with a different key than the installed copy is rejected with
