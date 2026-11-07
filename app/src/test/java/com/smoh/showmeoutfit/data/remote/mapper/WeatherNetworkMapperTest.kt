@@ -109,7 +109,7 @@ class WeatherNetworkMapperTest {
         )
         assertEquals(listOf(10.5, 11.2), snapshot.hourlyForecast.map { it.temperatureCelsius })
         assertEquals(listOf(0.5, 1.2), snapshot.hourlyForecast.map { it.uvIndex })
-        assertEquals(WeatherCode.RAIN_MODERATE, snapshot.hourlyForecast[1].weatherCode)
+        assertEquals(WeatherCode.RAIN_SLIGHT, snapshot.hourlyForecast[1].weatherCode)
 
         assertEquals(LocalDate.of(2026, 10, 24), snapshot.dailyForecast.date)
         assertEquals(16.1, snapshot.dailyForecast.maxTempCelsius, 0.0)
