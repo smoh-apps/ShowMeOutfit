@@ -64,7 +64,16 @@ if ($Serial) { $adbArgs += @("-s", $Serial) }
 
 function Invoke-Adb {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Command)
-    $output = & $adb @adbArgs @Command 2>&1
+    # adb writes benign warnings to stderr (for example "* daemon still not running" while the
+    # server restarts). With $ErrorActionPreference = "Stop" a native stderr line becomes a
+    # terminating NativeCommandError, so relax it for the call and inspect $LASTEXITCODE instead.
+    $previous = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        $output = & $adb @adbArgs @Command 2>&1
+    } finally {
+        $ErrorActionPreference = $previous
+    }
     if ($LASTEXITCODE -ne 0) {
         throw "adb $($Command -join ' ') failed:`n$output"
     }
@@ -95,7 +104,7 @@ function Test-NotificationDelivered {
 
 # ---------------------------------------------------------------- pre-flight
 Write-Host "== ShowMeOutfit Doze soak ==" -ForegroundColor Cyan
-$devices = & $adb devices
+$devices = (& $adb devices) -join "`n"
 if ($devices -notmatch "`tdevice") {
     throw "No device/emulator is attached.`n$devices"
 }
@@ -131,7 +140,7 @@ $startLevel = Get-BatteryLevel
 $startedAt = Get-Date
 
 Write-Host "Arming the morning alarm $AlarmDelaySeconds s ahead ..."
-Invoke-Adb shell am broadcast -a $ScheduleAction --ei seconds $AlarmDelaySeconds -n $Receiver | Out-Null
+Invoke-Adb shell am broadcast -f 32 -a $ScheduleAction --ei seconds $AlarmDelaySeconds -n $Receiver | Out-Null
 Start-Sleep -Seconds 2
 
 if (-not (Test-PendingAlarm)) {
@@ -183,7 +192,7 @@ $perHour = if ($null -ne $delta -and $hours -gt 0) { [Math]::Round($delta / $hou
 Write-Host ""
 Write-Host "== Result ==" -ForegroundColor Cyan
 Write-Host "Device        : $Serial"
-Write-Host "Window        : {0:N2} h ($samples samples)" -f $hours
+Write-Host ("Window        : {0:N2} h ({1} samples)" -f $hours, $samples)
 Write-Host "Alarm pending : $(Test-PendingAlarm)"
 Write-Host "Delivered     : $delivered"
 Write-Host "Battery       : $startLevel% -> $endLevel% (delta $delta pp, $perHour pp/h)"
