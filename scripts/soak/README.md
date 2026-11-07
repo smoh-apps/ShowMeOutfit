@@ -4,6 +4,16 @@ The morning alert is only useful if it survives a night in Doze. The automated
 `MorningAlarmDozeTest` proves the pending alarm survives idle transitions; this harness proves the
 whole chain end to end and records the battery cost.
 
+## Before you start
+
+Launch the app once and finish onboarding (age, fit, sensitivity, and either a selected city or the
+location permission). `MorningOutfitRoutine` returns `AlertsDisabled` for an unconfigured profile,
+so a fresh install will keep the alarm registered but never post the notification — the soak would
+end with exit code `2` for a reason unrelated to Doze.
+
+The device also needs a network path to Open-Meteo (or a fresh cache), because the worker cannot
+build a recommendation without weather.
+
 ## What it does
 
 1. Installs (optionally) a **debug** APK and grants `SCHEDULE_EXACT_ALARM` + `POST_NOTIFICATIONS`.
