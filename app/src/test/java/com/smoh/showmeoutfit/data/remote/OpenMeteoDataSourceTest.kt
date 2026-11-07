@@ -237,6 +237,75 @@ class OpenMeteoDataSourceTest {
         }
         """.trimIndent()
 
+        // `uv_index` carries only two values while every other hourly array has four, so the mapper
+        // must intersect the lengths and keep the two leading slots instead of indexing out of
+        // bounds (SMO-S4-03).
+        private val SPARSE_HOURLY_FORECAST_JSON = """
+        {
+          "latitude": 52.52,
+          "longitude": 13.405,
+          "timezone": "Europe/Berlin",
+          "current": {
+            "time": "2026-10-24T10:00",
+            "temperature_2m": 14.2,
+            "apparent_temperature": 12.1,
+            "relative_humidity_2m": 70,
+            "weather_code": 2,
+            "wind_speed_10m": 18.0
+          },
+          "hourly": {
+            "time": ["2026-10-24T07:00","2026-10-24T08:00","2026-10-24T09:00","2026-10-24T10:00"],
+            "temperature_2m": [10.5,11.2,12.1,13.0],
+            "apparent_temperature": [8.5,9.2,10.1,11.0],
+            "precipitation_probability": [5,5,10,10],
+            "uv_index": [0.5,1.2],
+            "wind_speed_10m": [15.0,16.0,17.0,18.0],
+            "weather_code": [2,2,2,2]
+          },
+          "daily": {
+            "time": ["2026-10-24"],
+            "temperature_2m_max": [16.1],
+            "temperature_2m_min": [9.5],
+            "precipitation_probability_max": [20],
+            "weather_code": [2]
+          }
+        }
+        """.trimIndent()
+
+        // A structurally valid payload whose daily block has no complete entry: the mapper must
+        // surface `DomainError.MalformedData` rather than inventing a "today" (SMO-S4-03).
+        private val EMPTY_DAILY_FORECAST_JSON = """
+        {
+          "latitude": 52.52,
+          "longitude": 13.405,
+          "timezone": "Europe/Berlin",
+          "current": {
+            "time": "2026-10-24T10:00",
+            "temperature_2m": 14.2,
+            "apparent_temperature": 12.1,
+            "relative_humidity_2m": 70,
+            "weather_code": 2,
+            "wind_speed_10m": 18.0
+          },
+          "hourly": {
+            "time": [],
+            "temperature_2m": [],
+            "apparent_temperature": [],
+            "precipitation_probability": [],
+            "uv_index": [],
+            "wind_speed_10m": [],
+            "weather_code": []
+          },
+          "daily": {
+            "time": [],
+            "temperature_2m_max": [],
+            "temperature_2m_min": [],
+            "precipitation_probability_max": [],
+            "weather_code": []
+          }
+        }
+        """.trimIndent()
+
         private val GEOCODING_RESPONSE_JSON = """
         {
           "results": [

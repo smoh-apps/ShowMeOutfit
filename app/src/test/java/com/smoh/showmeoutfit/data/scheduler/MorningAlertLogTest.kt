@@ -1,12 +1,20 @@
 package com.smoh.showmeoutfit.data.scheduler
 
+import com.smoh.showmeoutfit.domain.engine.RuleBasedPresetEngine
+import com.smoh.showmeoutfit.domain.model.CurrentCondition
+import com.smoh.showmeoutfit.domain.model.DailySummary
+import com.smoh.showmeoutfit.domain.model.LocationInfo
 import com.smoh.showmeoutfit.domain.model.TodayOutfit
 import com.smoh.showmeoutfit.domain.model.UserProfile
+import com.smoh.showmeoutfit.domain.model.WeatherCode
+import com.smoh.showmeoutfit.domain.model.WeatherData
+import com.smoh.showmeoutfit.domain.model.WeatherOrigin
+import com.smoh.showmeoutfit.domain.model.WeatherSnapshot
 import com.smoh.showmeoutfit.domain.notification.OutfitNotifier
+import com.smoh.showmeoutfit.domain.repository.LocationRepository
 import com.smoh.showmeoutfit.domain.repository.UserRepository
+import com.smoh.showmeoutfit.domain.repository.WeatherRepository
 import com.smoh.showmeoutfit.domain.usecase.GetTodayOutfitRecommendationUseCase
-import io.mockk.coEvery
-import io.mockk.mockk
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
@@ -15,6 +23,9 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.IOException
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 
 /**
@@ -125,16 +136,69 @@ class MorningAlertLogTest {
     }
 
     private fun successfulUseCase(): GetTodayOutfitRecommendationUseCase {
-        val useCase = mockk<GetTodayOutfitRecommendationUseCase>()
-        coEvery { useCase(forceRefresh = true) } returns
-            Result.success(mockk<TodayOutfit>(relaxed = true))
-        return useCase
+        // A real use case wired to in-memory fakes. MockK cannot stand in for a suspend function
+        // returning an inline `Result<T>`: the value-class boxing makes the stubbed answer arrive as
+        // a `kotlin.Result` where `TodayOutfit` is expected.
+        val weatherRepository = object : WeatherRepository {
+            override suspend fun getTodayWeather(
+                location: LocationInfo,
+                forceRefresh: Boolean
+            ): Result<WeatherData> = Result.success(weatherData())
+
+            override suspend fun getCachedWeather(): WeatherData? = null
+        }
+        val locationRepository = object : LocationRepository {
+            override suspend fun getCurrentLocation(): Result<LocationInfo> =
+                Result.success(berlinLocation)
+
+            override suspend fun searchLocation(query: String): Result<List<LocationInfo>> =
+                Result.success(emptyList())
+        }
+        return GetTodayOutfitRecommendationUseCase(
+            weatherRepository = weatherRepository,
+            userRepository = FakeUserRepository(MutableStateFlow(configuredProfile())),
+            locationRepository = locationRepository,
+            engine = RuleBasedPresetEngine()
+        )
     }
+
+    private fun weatherData(): WeatherData = WeatherData(
+        snapshot = WeatherSnapshot(
+            location = berlinLocation,
+            fetchedAt = Instant.parse("2026-10-24T08:00:00Z"),
+            current = CurrentCondition(
+                time = LocalDateTime.of(2026, 10, 24, 10, 0),
+                temperatureCelsius = 14.2,
+                apparentTemperatureCelsius = 12.1,
+                humidityPercent = 70,
+                weatherCode = WeatherCode.PARTLY_CLOUDY,
+                windSpeedKmh = 18.0
+            ),
+            hourlyForecast = emptyList(),
+            dailyForecast = DailySummary(
+                date = LocalDate.of(2026, 10, 24),
+                maxTempCelsius = 16.1,
+                minTempCelsius = 9.5,
+                maxPrecipitationProbability = 20,
+                weatherCode = WeatherCode.PARTLY_CLOUDY
+            )
+        ),
+        origin = WeatherOrigin.NETWORK
+    )
+
+    private val berlinLocation = LocationInfo(
+        latitude = 52.52,
+        longitude = 13.405,
+        cityName = "Berlin",
+        country = "Germany",
+        timezone = "Europe/Berlin"
+    )
 
     private fun configuredProfile() = UserProfile(
         isConfigured = true,
         isNotificationEnabled = true,
-        morningNotificationTime = LocalTime.of(7, 0)
+        morningNotificationTime = LocalTime.of(7, 0),
+        selectedLocation = berlinLocation
     )
 
     /** Only event names and event arguments are recorded: no free-form message channel exists. */
