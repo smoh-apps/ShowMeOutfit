@@ -32,3 +32,6 @@ sprint-planning/
 *.jks
 *.keystore
 keystore.properties
+
+# Doze soak outputs (SMO-S4-02)
+scripts/soak/out/

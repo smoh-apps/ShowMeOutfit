@@ -7,6 +7,8 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 
 /**
  * Receives the exact morning alarm and hands the real work to WorkManager.
@@ -15,10 +17,15 @@ import androidx.work.WorkManager
  * expedited one-time request. The worker is responsible for the recommendation, the notification
  * and arming tomorrow's alarm, so a slow network never lives inside a broadcast receiver.
  */
-class MorningAlarmReceiver : BroadcastReceiver() {
+class MorningAlarmReceiver : BroadcastReceiver(), KoinComponent {
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != ACTION_MORNING_ALARM) return
+
+        // Optional: a graph without a logger must not stop the receiver from enqueueing work.
+        runCatching { get<MorningAlertLog>() }
+            .getOrNull()
+            ?.alarmFired(MorningAlertSource.EXACT_ALARM)
 
         runCatching {
             WorkManager.getInstance(context).enqueueUniqueWork(

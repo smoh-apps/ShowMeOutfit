@@ -24,6 +24,24 @@ import com.smoh.showmeoutfit.domain.personalization.PersonalizationPolicy
  */
 class RuleBasedPresetEngine : IOutfitRecommendationEngine {
 
+    companion object {
+        /**
+         * Effective daytime minimum (°C) at or below which the headline warns about frost.
+         *
+         * Inclusive so that exactly -10 °C reads as frost: it is the first temperature at which
+         * exposed skin is at risk in a light outfit.
+         */
+        const val FROST_HEADLINE_THRESHOLD_CELSIUS: Double = -10.0
+
+        /**
+         * Effective daytime maximum (°C) at or above which the recommendation escalates to
+         * heatwave guidance (lightest layers plus a hydration alert).
+         *
+         * Inclusive: 40 °C is already a health risk, not merely a hot day.
+         */
+        const val HEATWAVE_THRESHOLD_CELSIUS: Double = 40.0
+    }
+
     override fun recommend(
         weather: WeatherSnapshot,
         profile: UserProfile
@@ -77,6 +95,7 @@ class RuleBasedPresetEngine : IOutfitRecommendationEngine {
             daytimeHours = daytimeHours,
             ageBand = profile.ageBand,
             minEffTemp = minEffTemp,
+            maxEffTemp = maxEffTemp,
             maxPrecipProb = maxPrecipProb,
             hasRainCode = hasRainCode,
             hasSnow = hasSnowCode,
@@ -88,6 +107,8 @@ class RuleBasedPresetEngine : IOutfitRecommendationEngine {
 
         val headline = headlineFor(
             hasSnow = hasSnowCode,
+            minEffTemp = minEffTemp,
+            maxEffTemp = maxEffTemp,
             highlights = highlights
         )
 
@@ -172,6 +193,8 @@ class RuleBasedPresetEngine : IOutfitRecommendationEngine {
                 footwear = if (hasRain) GarmentCatalog.WATERPROOF_SHOES else GarmentCatalog.LOAFERS
             )
 
+            // 28 °C and above: the lightest set. This branch also serves the heatwave band
+            // (>= [HEATWAVE_THRESHOLD_CELSIUS]), so extreme heat never carries a mid or outer layer.
             else -> LayerSelection(
                 base = GarmentCatalog.ULTRA_LIGHT_TANK,
                 mid = null,
@@ -186,6 +209,7 @@ class RuleBasedPresetEngine : IOutfitRecommendationEngine {
         daytimeHours: List<HourlyCondition>,
         ageBand: AgeBand,
         minEffTemp: Double,
+        maxEffTemp: Double,
         maxPrecipProb: Int,
         hasRainCode: Boolean,
         hasSnow: Boolean,
@@ -232,7 +256,16 @@ class RuleBasedPresetEngine : IOutfitRecommendationEngine {
             )
         }
 
-        // 3. UV protection
+        // 3. Extreme heat: hydration outranks every cosmetic accessory below.
+        if (maxEffTemp >= HEATWAVE_THRESHOLD_CELSIUS) {
+            alerts += AccessoryAlert(
+                type = AccessoryType.WATER_BOTTLE,
+                reason = AccessoryReason.ExtremeHeat(tempCelsius = maxEffTemp),
+                priority = PriorityLevel.CRITICAL
+            )
+        }
+
+        // 4. UV protection
         if (maxUv >= 3.0) {
             alerts += AccessoryAlert(
                 type = AccessoryType.SUNGLASSES,
@@ -257,7 +290,7 @@ class RuleBasedPresetEngine : IOutfitRecommendationEngine {
             )
         }
 
-        // 4. Diurnal temperature swing
+        // 5. Diurnal temperature swing
         if (hasLargeTempSwing) {
             alerts += AccessoryAlert(
                 type = AccessoryType.EXTRA_EVENING_LAYER,
@@ -296,10 +329,22 @@ class RuleBasedPresetEngine : IOutfitRecommendationEngine {
         return if (start == end) start to start.plusHours(1) else start to end
     }
 
+    /**
+     * Headline selection order is deliberate and explicit:
+     * 1. [HeadlineReason.FrostWarning] beats everything, including snow: extreme cold is the
+     *    condition the user has to dress for first.
+     * 2. [HeadlineReason.Heatwave] next. Frost and heatwave cannot co-occur, but the order is
+     *    spelled out so a future threshold edit cannot silently reorder the two extremes.
+     * 3. Then the existing snow, swing, rain, UV and temperature bands, unchanged.
+     */
     private fun headlineFor(
         hasSnow: Boolean,
+        minEffTemp: Double,
+        maxEffTemp: Double,
         highlights: WeatherHighlights
     ): HeadlineReason = when {
+        minEffTemp <= FROST_HEADLINE_THRESHOLD_CELSIUS -> HeadlineReason.FrostWarning
+        maxEffTemp >= HEATWAVE_THRESHOLD_CELSIUS -> HeadlineReason.Heatwave
         hasSnow -> HeadlineReason.SnowAndFrost
         highlights.hasLargeTempSwing ->
             HeadlineReason.LargeTempSwing(deltaCelsius = highlights.deltaTCelsius)

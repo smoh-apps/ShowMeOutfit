@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <!--
-  Template for the GitHub Pages alpha portal (SMO-S3-05).
+  Template for the GitHub Pages distribution portal (SMO-S3-05, SMO-S4-08).
 
   `scripts/render-portal.js` replaces the __TOKENS__ and writes public/index.html, so this file
-  stays readable and the deployed page carries the real build metadata. No JavaScript runs on the
-  page: the QR code is rendered to an SVG at build time.
+  stays readable and the deployed page carries real build metadata. No client-side JavaScript is
+  required: QR codes are pre-rendered SVGs at build time.
 -->
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ShowMeOutfit alpha</title>
-  <meta name="description" content="Download the ShowMeOutfit alpha APK: a daily outfit recommendation built from the day's weather.">
+  <title>ShowMeOutfit — Android Downloads</title>
+  <meta name="description" content="Download ShowMeOutfit for Android: personalized daily outfit and accessory recommendations powered by diurnal weather intelligence.">
   <meta name="theme-color" content="#6750A4">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%A5%3C/text%3E%3C/svg%3E">
   <style>
@@ -26,9 +26,12 @@
       --surface-variant: #E7E0EC;
       --on-surface-variant: #49454F;
       --outline: #79747E;
-      --error-container: #F9DEDC;
-      --on-error-container: #410E0B;
-      --radius-lg: 28px;
+      --outline-variant: #CAC4D0;
+      --badge-prod-bg: #E8F5E9;
+      --badge-prod-color: #1B5E20;
+      --badge-alpha-bg: #EADDFF;
+      --badge-alpha-color: #21005D;
+      --radius-lg: 24px;
       --radius-md: 16px;
       --radius-sm: 12px;
       --space: 16px;
@@ -46,8 +49,11 @@
         --surface-variant: #49454F;
         --on-surface-variant: #CAC4D0;
         --outline: #938F99;
-        --error-container: #8C1D18;
-        --on-error-container: #F9DEDC;
+        --outline-variant: #49454F;
+        --badge-prod-bg: #1B3822;
+        --badge-prod-color: #A5D6A7;
+        --badge-alpha-bg: #4F378B;
+        --badge-alpha-color: #EADDFF;
       }
     }
 
@@ -66,9 +72,9 @@
 
     main {
       width: 100%;
-      max-width: 640px;
+      max-width: 680px;
       display: grid;
-      gap: clamp(20px, 4vw, 32px);
+      gap: clamp(20px, 4vw, 28px);
     }
 
     header { display: grid; gap: 8px; }
@@ -82,35 +88,56 @@
 
     h1 {
       margin: 0;
-      font-size: clamp(28px, 6vw, 40px);
+      font-size: clamp(28px, 6vw, 38px);
       line-height: 1.2;
       letter-spacing: -0.5px;
     }
 
     .badge {
-      background: var(--primary-container);
-      color: var(--on-primary-container);
       border-radius: 999px;
-      padding: 2px 12px;
+      padding: 3px 12px;
       font-size: 13px;
       font-weight: 600;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.3px;
       text-transform: uppercase;
+    }
+
+    .badge-prod {
+      background: var(--badge-prod-bg);
+      color: var(--badge-prod-color);
+    }
+
+    .badge-alpha {
+      background: var(--badge-alpha-bg);
+      color: var(--badge-alpha-color);
     }
 
     .tagline {
       margin: 0;
       color: var(--on-surface-variant);
-      font-size: 17px;
+      font-size: 16px;
     }
 
     .card {
       background: var(--surface);
-      border: 1px solid var(--outline);
+      border: 1px solid var(--outline-variant);
       border-radius: var(--radius-lg);
-      padding: clamp(16px, 4vw, 24px);
+      padding: clamp(18px, 4vw, 24px);
       display: grid;
       gap: var(--space);
+    }
+
+    .card.primary-card {
+      border: 2px solid var(--primary);
+      box-shadow: 0 4px 20px rgba(103, 80, 164, 0.08);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
     .meta {
@@ -136,14 +163,24 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      min-height: 56px;
+      min-height: 52px;
       padding: 0 24px;
       border-radius: 999px;
       background: var(--primary);
       color: var(--on-primary);
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 600;
       text-decoration: none;
+      transition: opacity 0.15s ease;
+    }
+
+    .download:hover {
+      opacity: 0.92;
+    }
+
+    .download.download-secondary {
+      background: var(--surface-variant);
+      color: var(--on-surface-variant);
     }
 
     .download:focus-visible,
@@ -163,21 +200,29 @@
       grid-template-columns: auto 1fr;
       gap: var(--space);
       align-items: center;
+      background: var(--surface-variant);
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
     }
 
     .qr img {
-      width: 152px;
-      height: 152px;
+      width: 120px;
+      height: 120px;
       background: #FFFFFF;
       border-radius: var(--radius-sm);
-      padding: 8px;
-      border: 1px solid var(--outline);
+      padding: 6px;
+      border: 1px solid var(--outline-variant);
     }
 
     h2 {
-      margin: 0 0 8px;
-      font-size: 18px;
+      margin: 0;
+      font-size: 20px;
       letter-spacing: -0.2px;
+    }
+
+    h3 {
+      margin: 0 0 4px;
+      font-size: 15px;
     }
 
     ol {
@@ -188,28 +233,37 @@
       gap: 6px;
     }
 
-    .note {
-      border-radius: var(--radius-md);
-      background: var(--error-container);
-      color: var(--on-error-container);
-      padding: 12px 16px;
-      font-size: 14px;
-      margin: 0;
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 4px 0;
+    }
+
+    .feature-item {
+      font-size: 13.5px;
+      color: var(--on-surface-variant);
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     footer {
       color: var(--on-surface-variant);
-      font-size: 14px;
+      font-size: 13.5px;
       display: flex;
       flex-wrap: wrap;
       gap: 8px 16px;
+      padding-top: 8px;
+      border-top: 1px solid var(--outline-variant);
     }
 
     a.link { color: var(--primary); }
 
-    @media (max-width: 420px) {
+    @media (max-width: 480px) {
       .qr { grid-template-columns: 1fr; justify-items: center; text-align: center; }
       .download { width: 100%; }
+      .features { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -218,47 +272,77 @@
   <header>
     <div class="brand">
       <h1>ShowMeOutfit</h1>
-      <span class="badge">Alpha</span>
+      <span class="badge badge-prod">Release</span>
     </div>
-    <p class="tagline">Your daily outfit, decided by the day's weather. Layers, rain windows, UV and wind, in one morning notification.</p>
+    <p class="tagline">Your daily outfit, decided by diurnal weather intelligence. Daily layers, diurnal temperature curves, rain spikes, UV &amp; wind protection, all in one exact morning alert.</p>
   </header>
 
-  <section class="card" aria-labelledby="download-heading">
-    <h2 id="download-heading">Download the Android build</h2>
+  <!-- Production Release Card -->
+  <section class="card primary-card" aria-labelledby="release-heading">
+    <div class="card-header">
+      <h2 id="release-heading">Production Release</h2>
+      <span class="badge badge-prod">v1.0.0 Stable</span>
+    </div>
     <ul class="meta">
-      <li id="version">__VERSION__</li>
-      <li id="built">built __BUILD_TIME__</li>
-      <li id="commit">__COMMIT__</li>
+      <li id="release-version">__RELEASE_VERSION__</li>
+      <li id="release-size">__RELEASE_APK_SIZE__</li>
+      <li>Signed (Official Key)</li>
+      <li>R8 Minified</li>
     </ul>
-    <a class="download" href="showmeoutfit-alpha.apk" download>
-      Download APK · __APK_SIZE__
-    </a>
-    <p class="hint">Android 8.0 or newer. Alpha-signed build: updates install over the previous version, so there is nothing to uninstall between builds.</p>
-  </section>
+    <p class="hint">Recommended for all users. R8-optimized release (~4.8 MB), signed with the production keystore, battery-friendly with exact morning wakeups.</p>
 
-  <section class="card" aria-labelledby="qr-heading">
+    <div class="features">
+      <div class="feature-item">☀️ Diurnal temperature analysis</div>
+      <div class="feature-item">☔ Rain spikes &amp; UV protection</div>
+      <div class="feature-item">🔔 Exact 7:00 AM morning alert</div>
+      <div class="feature-item">🔒 Zero account &amp; zero trackers</div>
+    </div>
+
+    <a class="download" href="showmeoutfit-release.apk" download>
+      Download Production APK · __RELEASE_APK_SIZE__
+    </a>
+
     <div class="qr">
-      <img src="qr.svg" alt="QR code that downloads the ShowMeOutfit alpha APK" width="152" height="152">
+      <img src="qr-release.svg" alt="QR code that downloads the ShowMeOutfit production release APK" width="120" height="120">
       <div>
-        <h2 id="qr-heading">Open it on your phone</h2>
-        <p class="hint">Point your camera at the code. It downloads the same APK directly, so you can skip typing the address.</p>
+        <h3>Scan to Install on Phone</h3>
+        <p class="hint">Point your camera at the QR code to download the official signed APK directly to your Android device.</p>
       </div>
     </div>
   </section>
 
+  <!-- Alpha Preview Channel Card -->
+  <section class="card" aria-labelledby="alpha-heading">
+    <div class="card-header">
+      <h2 id="alpha-heading">Alpha Preview Channel</h2>
+      <span class="badge badge-alpha">Alpha Pre-release</span>
+    </div>
+    <ul class="meta">
+      <li id="alpha-version">__VERSION__</li>
+      <li id="alpha-size">__APK_SIZE__</li>
+      <li id="alpha-commit">commit __COMMIT__</li>
+    </ul>
+    <p class="hint">Continuous integration build for testers and developers. Contains unminified debug symbols and developer diagnostics.</p>
+    <a class="download download-secondary" href="showmeoutfit-alpha.apk" download>
+      Download Alpha APK · __APK_SIZE__
+    </a>
+  </section>
+
+  <!-- Installation Instructions -->
   <section class="card" aria-labelledby="install-heading">
-    <h2 id="install-heading">Installing a sideloaded build</h2>
+    <h2 id="install-heading">How to Install</h2>
     <ol>
-      <li>Download the APK on the phone.</li>
-      <li>Open it. Android asks once to allow installs from this browser; choose <strong>Allow from this source</strong>.</li>
-      <li>Confirm <strong>Install</strong>, then open ShowMeOutfit and complete the short first-run setup.</li>
+      <li>Download the production APK directly on your Android phone (Android 8.0 Oreo or newer).</li>
+      <li>Open the downloaded file. When prompted, toggle <strong>Allow from this source</strong> for your browser.</li>
+      <li>Tap <strong>Install</strong> and complete the quick first-run thermal sensitivity setup.</li>
     </ol>
-    <p class="note">This is an early alpha. The morning alert, permissions and weather source may change between builds. Everything stays on the device: no account, no backend, no analytics.</p>
   </section>
 
   <footer>
-    <span>Built from the <a class="link" href="https://github.com/smoh-apps/ShowMeOutfit">ShowMeOutfit repository</a>.</span>
-    <span>Weather data by <a class="link" href="https://open-meteo.com/">Open-Meteo</a>.</span>
+    <span><a class="link" href="https://github.com/smoh-apps/ShowMeOutfit">GitHub Repository</a></span>
+    <span><a class="link" href="privacy.html">Privacy Policy</a></span>
+    <span>Weather data by <a class="link" href="https://open-meteo.com/">Open-Meteo</a></span>
+    <span>MIT License</span>
   </footer>
 </main>
 </body>

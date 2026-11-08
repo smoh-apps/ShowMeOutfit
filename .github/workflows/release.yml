@@ -1,0 +1,125 @@
+name: Signed Release
+
+# Builds the production-signed Android App Bundle and APK (SMO-S4-08).
+#
+# Signing material is never in the repository: the keystore arrives as the base64 secret
+# `RELEASE_KEYSTORE_BASE64`, is decoded into $RUNNER_TEMP, and is deleted at the end of the job.
+# See docs/distribution/release-signing.md for the one-time setup and rotation procedure.
+#
+# Triggered manually (workflow_dispatch) or by a `v*` tag. It is deliberately not triggered by
+# pull requests: forks have no access to the secrets, and a release artifact should never be
+# produced from an unreviewed branch.
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Signed AAB & APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Validate signing secrets
+        env:
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: |
+          missing=0
+          for name in RELEASE_KEYSTORE_BASE64 RELEASE_KEYSTORE_PASSWORD RELEASE_KEY_ALIAS RELEASE_KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Repository secret $name is not set. See docs/distribution/release-signing.md."
+              missing=1
+            fi
+          done
+          exit "$missing"
+
+      - name: Decode keystore
+        env:
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/keys"
+          printf '%s' "$RELEASE_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/keys/release.jks"
+          chmod 600 "$RUNNER_TEMP/keys/release.jks"
+          echo "Keystore decoded to \$RUNNER_TEMP/keys/release.jks"
+
+      - name: Build signed release
+        env:
+          RELEASE_KEYSTORE_PATH: ${{ runner.temp }}/keys/release.jks
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: ./gradlew bundleRelease assembleRelease --console=plain --stacktrace
+
+      - name: Assert the artifacts are signed
+        run: |
+          set -euo pipefail
+          apk=app/build/outputs/apk/release/app-release.apk
+          aab=app/build/outputs/bundle/release/app-release.aab
+
+          # When the signing config is absent AGP names the APK `app-release-unsigned.apk`.
+          # Its absence is therefore the build-level proof that the RELEASE_* config applied.
+          if [ ! -f "$apk" ]; then
+            echo "::error::Expected a signed $apk. The RELEASE_* signing config did not apply."
+            ls -l app/build/outputs/apk/release || true
+            exit 1
+          fi
+          test -f "$aab"
+
+          sdk="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          build_tools=$(ls -d "$sdk"/build-tools/* | sort -V | tail -1)
+          "$build_tools/apksigner" verify --print-certs "$apk"
+          jarsigner -verify "$aab"
+
+      - name: Upload signed artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: signed-release
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            app/build/outputs/bundle/release/app-release.aab
+            app/build/outputs/apk/release/app-release.apk
+            app/build/outputs/mapping/release/mapping.txt
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            app/build/outputs/bundle/release/app-release.aab
+            app/build/outputs/apk/release/app-release.apk
+            app/build/outputs/mapping/release/mapping.txt
+          generate_release_notes: true
+
+      - name: Remove the keystore
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/keys"

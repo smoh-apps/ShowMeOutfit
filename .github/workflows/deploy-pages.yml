@@ -1,12 +1,12 @@
-name: Pages alpha portal
+name: Pages distribution portal
 
-# Publishes the debug APK and its download portal to GitHub Pages (SMO-S3-05).
+# Publishes the Android APKs (Production Release and Alpha) and download portal to GitHub Pages (SMO-S3-05, SMO-S4-08).
 # Runs on `main` (after the sprint PR lands) and on version tags; `workflow_dispatch` exists so a
 # maintainer can redeploy without an empty commit.
 #
-# The build is signed with the project's stable alpha key (SMO-S3-06). Without it, every runner
-# generates a fresh debug keystore and a new download cannot install over the previous one; the
-# signing step therefore fails instead of publishing a rotating signature.
+# Alpha builds are signed with the project's stable alpha key (SMO-S3-06).
+# Production release builds are signed with the official release key (SMO-S4-08) when the release
+# secret is configured in repository secrets.
 on:
   push:
     branches: [main]
@@ -53,14 +53,27 @@ jobs:
           KEY_ALIAS: ${{ secrets.ALPHA_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ALPHA_KEY_PASSWORD }}
         run: |
-          if [ -z "$KEYSTORE_BASE64" ]; then
-            echo "::error::ALPHA_KEYSTORE_BASE64 is not configured. Refusing to publish an APK signed with a throwaway debug key (see docs/distribution/alpha-signing.md)."
+          # Validate every secret before touching the keystore. A partially configured set would
+          # otherwise fail later inside AGP with a much less actionable message.
+          missing=""
+          [ -z "$KEYSTORE_BASE64" ] && missing="$missing ALPHA_KEYSTORE_BASE64"
+          [ -z "$KEYSTORE_PASSWORD" ] && missing="$missing ALPHA_KEYSTORE_PASSWORD"
+          [ -z "$KEY_ALIAS" ] && missing="$missing ALPHA_KEY_ALIAS"
+          [ -z "$KEY_PASSWORD" ] && missing="$missing ALPHA_KEY_PASSWORD"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secret(s):$missing. Refusing to publish an APK signed with a throwaway debug key. One-time setup: docs/distribution/alpha-signing.md"
             exit 1
           fi
+
           keystore="$RUNNER_TEMP/alpha-keystore.jks"
           printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$keystore"
           chmod 600 "$keystore"
           test -s "$keystore" || { echo "::error::Decoded keystore is empty."; exit 1; }
+
+          # Prove the alias and passwords actually open the decoded store. Without this, a typo in
+          # ALPHA_KEY_ALIAS only fails after the unit-test job has already burned several minutes.
+          keytool -list -keystore "$keystore" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" > /dev/null \
+            || { echo "::error::The keystore does not open with ALPHA_KEYSTORE_PASSWORD / ALPHA_KEY_ALIAS. See docs/distribution/alpha-signing.md."; exit 1; }
           {
             echo "ALPHA_KEYSTORE_PATH=$keystore"
             echo "ALPHA_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
@@ -71,13 +84,44 @@ jobs:
             echo "ALPHA_VERSION_CODE=${GITHUB_RUN_NUMBER}"
           } >> "$GITHUB_ENV"
 
+      # Decodes the production release keystore into the runner's temp dir if configured.
+      # If not yet set, Pages gracefully deploys alpha while awaiting release secrets.
+      - name: Prepare release signing (optional)
+        id: release-signing
+        env:
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: |
+          if [ -n "$RELEASE_KEYSTORE_BASE64" ] && [ -n "$RELEASE_KEYSTORE_PASSWORD" ] && [ -n "$RELEASE_KEY_ALIAS" ] && [ -n "$RELEASE_KEY_PASSWORD" ]; then
+            keystore="$RUNNER_TEMP/release-keystore.jks"
+            printf '%s' "$RELEASE_KEYSTORE_BASE64" | base64 -d > "$keystore"
+            chmod 600 "$keystore"
+            {
+              echo "RELEASE_KEYSTORE_PATH=$keystore"
+              echo "RELEASE_KEYSTORE_PASSWORD=$RELEASE_KEYSTORE_PASSWORD"
+              echo "RELEASE_KEY_ALIAS=$RELEASE_KEY_ALIAS"
+              echo "RELEASE_KEY_PASSWORD=$RELEASE_KEY_PASSWORD"
+            } >> "$GITHUB_ENV"
+            echo "has_release=true" >> "$GITHUB_OUTPUT"
+            echo "Production release keystore configured."
+          else
+            echo "has_release=false" >> "$GITHUB_OUTPUT"
+            echo "Release keystore secrets not configured; Pages will stage alpha channel."
+          fi
+
       - name: Unit tests
         run: ./gradlew testDebugUnitTest --console=plain
 
       - name: Assemble debug APK
         run: ./gradlew assembleDebug --console=plain
 
-      - name: Stage APK and render portal
+      - name: Assemble release APK
+        if: steps.release-signing.outputs.has_release == 'true'
+        run: ./gradlew assembleRelease --console=plain
+
+      - name: Stage APKs and render portal
         env:
           # Tags publish their own name; branch builds get `alpha-<short sha>` from the script.
           VERSION: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
@@ -85,7 +129,9 @@ jobs:
           PAGES_URL: https://smoh-apps.github.io/ShowMeOutfit/
         run: |
           mkdir -p public
-          cp app/build/outputs/apk/debug/app-debug.apk public/showmeoutfit-alpha.apk
+          cp pages/privacy.html public/privacy.html
+          [ -f app/build/outputs/apk/debug/app-debug.apk ] && cp app/build/outputs/apk/debug/app-debug.apk public/showmeoutfit-alpha.apk
+          [ -f app/build/outputs/apk/release/app-release.apk ] && cp app/build/outputs/apk/release/app-release.apk public/showmeoutfit-release.apk
           node scripts/render-portal.js
 
       - name: Configure Pages

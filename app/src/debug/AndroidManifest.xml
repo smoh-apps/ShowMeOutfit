@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+      Debug-only Doze soak harness (SMO-S4-02). `DUMP` restricts the receiver to the shell/system;
+      the receiver is not present in release builds because this manifest lives in src/debug.
+    -->
+    <application>
+        <receiver
+            android:name=".debug.SoakAlarmReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.DUMP" />
+    </application>
+</manifest>

@@ -119,6 +119,7 @@
     <string name="home_accessory_gloves_name">Gloves</string>
     <string name="home_accessory_extra_evening_layer_name">Extra evening layer</string>
     <string name="home_accessory_sunscreen_name">Sunscreen</string>
+    <string name="home_accessory_water_bottle_name">Water bottle</string>
 
     <!-- Accessories: icon descriptions (used when the glyph is rendered) -->
     <string name="home_accessory_umbrella_icon_description">Umbrella</string>
@@ -128,6 +129,7 @@
     <string name="home_accessory_gloves_icon_description">Gloves</string>
     <string name="home_accessory_extra_evening_layer_icon_description">Extra layer</string>
     <string name="home_accessory_sunscreen_icon_description">Sunscreen</string>
+    <string name="home_accessory_water_bottle_icon_description">Water bottle</string>
 
     <!-- Accessories: why they were recommended -->
     <string name="home_reason_rain_window">Rain between %1$s and %2$s.</string>
@@ -136,6 +138,7 @@
     <string name="home_reason_wind">Wind up to %1$s km/h.</string>
     <string name="home_reason_uv">UV index peaks at %1$s.</string>
     <string name="home_reason_diurnal_swing">Temperature swings about %1$s° during the day.</string>
+    <string name="home_reason_extreme_heat">Peaks at %1$s°. Drink water often and stay in the shade.</string>
     <string name="home_accessories_empty">No accessories needed today.</string>
 
     <!-- Weather metric chips -->
@@ -147,6 +150,8 @@
     <string name="home_metric_wind_unit">km/h</string>
 
     <!-- Headlines -->
+    <string name="home_headline_frost">Hard frost — dress for the cold</string>
+    <string name="home_headline_heatwave">Heatwave — keep it light and stay hydrated</string>
     <string name="home_headline_snow">Snow and frost — bundle up</string>
     <string name="home_headline_temp_swing">A %1$s° swing today</string>
     <string name="home_headline_rain">Rain is on the way</string>
