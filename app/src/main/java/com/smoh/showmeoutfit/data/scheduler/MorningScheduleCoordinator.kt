@@ -20,7 +20,8 @@ import kotlin.coroutines.cancellation.CancellationException
  */
 class MorningScheduleCoordinator(
     private val userRepository: UserRepository,
-    private val alarmScheduler: AlarmScheduler
+    private val alarmScheduler: AlarmScheduler,
+    private val log: MorningAlertLog = MorningAlertLog.NoOp
 ) {
 
     /**
@@ -46,6 +47,7 @@ class MorningScheduleCoordinator(
                 throw cancellation
             } catch (_: Throwable) {
                 // Leave whatever alarm is already pending; the next successful read fixes it.
+                log.scheduleSyncFailed()
             }
         }
     }
@@ -57,6 +59,7 @@ class MorningScheduleCoordinator(
         } catch (cancellation: CancellationException) {
             throw cancellation
         } catch (_: Throwable) {
+            log.scheduleSyncFailed()
             return
         }
         apply(profile)
@@ -74,6 +77,8 @@ class MorningScheduleCoordinator(
     private fun apply(plan: AlarmPlan) {
         if (plan.enabled) {
             alarmScheduler.scheduleNext(plan.time)
+            // Logged after the call so the event means "handed to the platform", not "attempted".
+            log.alarmScheduled(plan.time)
         } else {
             alarmScheduler.cancel()
         }

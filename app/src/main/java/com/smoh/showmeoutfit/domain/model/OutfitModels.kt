@@ -82,7 +82,10 @@ enum class AccessoryType {
     SCARF,
     GLOVES,
     EXTRA_EVENING_LAYER,
-    SUNSCREEN
+    SUNSCREEN,
+
+    /** Hydration during an extreme-heat day. */
+    WATER_BOTTLE
 }
 
 enum class PriorityLevel {
@@ -104,6 +107,9 @@ sealed interface AccessoryReason {
     data class Wind(val speedKmh: Int) : AccessoryReason
     data class UvIndex(val peakUv: Double) : AccessoryReason
     data class DiurnalSwing(val deltaCelsius: Double) : AccessoryReason
+
+    /** The daytime peak reached a heatwave temperature; the value is the effective peak in °C. */
+    data class ExtremeHeat(val tempCelsius: Double) : AccessoryReason
 }
 
 data class AccessoryAlert(
@@ -116,6 +122,10 @@ data class AccessoryAlert(
  * Headline category for the recommendation. The UI maps each variant to localized copy.
  */
 sealed interface HeadlineReason {
+    /** Extreme cold: the daytime minimum fell to the frost threshold or below. */
+    data object FrostWarning : HeadlineReason
+    /** Extreme heat: the daytime maximum reached the heatwave threshold or above. */
+    data object Heatwave : HeadlineReason
     data object SnowAndFrost : HeadlineReason
     data class LargeTempSwing(val deltaCelsius: Double) : HeadlineReason
     data object RainExpected : HeadlineReason

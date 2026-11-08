@@ -46,6 +46,10 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    val releaseKeystorePath = providers.environmentVariable("RELEASE_KEYSTORE_PATH").orNull
+    val releaseKeystore = releaseKeystorePath?.let { file(it) }
+    val releaseSigningAvailable = releaseKeystore?.exists() == true
+
     signingConfigs {
         if (alphaSigningAvailable) {
             create("alpha") {
@@ -53,6 +57,14 @@ android {
                 storePassword = providers.environmentVariable("ALPHA_KEYSTORE_PASSWORD").orNull
                 keyAlias = providers.environmentVariable("ALPHA_KEY_ALIAS").orNull
                 keyPassword = providers.environmentVariable("ALPHA_KEY_PASSWORD").orNull
+            }
+        }
+        if (releaseSigningAvailable) {
+            create("release") {
+                storeFile = releaseKeystore
+                storePassword = providers.environmentVariable("RELEASE_KEYSTORE_PASSWORD").orNull
+                keyAlias = providers.environmentVariable("RELEASE_KEY_ALIAS").orNull
+                keyPassword = providers.environmentVariable("RELEASE_KEY_PASSWORD").orNull
             }
         }
     }
@@ -66,6 +78,15 @@ android {
             }
         }
         release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            if (releaseSigningAvailable) {
+                signingConfig = signingConfigs["release"]
+            }
             optimization {
                 enable = true
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
@@ -107,7 +128,6 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)

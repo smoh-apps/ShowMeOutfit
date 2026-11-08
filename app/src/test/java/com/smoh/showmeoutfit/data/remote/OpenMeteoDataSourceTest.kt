@@ -2,6 +2,7 @@ package com.smoh.showmeoutfit.data.remote
 
 import com.smoh.showmeoutfit.core.network.HttpClientFactory
 import com.smoh.showmeoutfit.data.remote.datasource.OpenMeteoDataSource
+import com.smoh.showmeoutfit.domain.model.DomainError
 import com.smoh.showmeoutfit.domain.model.LocationInfo
 import com.smoh.showmeoutfit.domain.model.WeatherCode
 import io.ktor.client.engine.mock.MockEngine
@@ -91,6 +92,28 @@ class OpenMeteoDataSourceTest {
         val dataSource = buildMockDataSource("NOT_VALID_JSON_AT_ALL")
         val result = dataSource.fetchForecast(berlinLocation)
         assertTrue("Should return failure on malformed response", result.isFailure)
+    }
+
+    @Test
+    fun `fetchForecast truncates a sparse hourly payload instead of failing`() = runTest {
+        val dataSource = buildMockDataSource(SPARSE_HOURLY_FORECAST_JSON)
+        val result = dataSource.fetchForecast(berlinLocation)
+
+        assertTrue(result.isSuccess)
+        // `uv_index` carries only two values, so only the first two hours are usable.
+        assertEquals(2, result.getOrThrow().hourlyForecast.size)
+    }
+
+    @Test
+    fun `fetchForecast reports a missing daily block as MalformedData`() = runTest {
+        val dataSource = buildMockDataSource(EMPTY_DAILY_FORECAST_JSON)
+        val result = dataSource.fetchForecast(berlinLocation)
+
+        assertTrue(result.isFailure)
+        assertTrue(
+            "expected DomainError.MalformedData but was ${result.exceptionOrNull()}",
+            result.exceptionOrNull() is DomainError.MalformedData
+        )
     }
 
     @Test
@@ -210,6 +233,75 @@ class OpenMeteoDataSourceTest {
             "temperature_2m_min": [-5.0],
             "precipitation_probability_max": [90],
             "weather_code": [73]
+          }
+        }
+        """.trimIndent()
+
+        // `uv_index` carries only two values while every other hourly array has four, so the mapper
+        // must intersect the lengths and keep the two leading slots instead of indexing out of
+        // bounds (SMO-S4-03).
+        private val SPARSE_HOURLY_FORECAST_JSON = """
+        {
+          "latitude": 52.52,
+          "longitude": 13.405,
+          "timezone": "Europe/Berlin",
+          "current": {
+            "time": "2026-10-24T10:00",
+            "temperature_2m": 14.2,
+            "apparent_temperature": 12.1,
+            "relative_humidity_2m": 70,
+            "weather_code": 2,
+            "wind_speed_10m": 18.0
+          },
+          "hourly": {
+            "time": ["2026-10-24T07:00","2026-10-24T08:00","2026-10-24T09:00","2026-10-24T10:00"],
+            "temperature_2m": [10.5,11.2,12.1,13.0],
+            "apparent_temperature": [8.5,9.2,10.1,11.0],
+            "precipitation_probability": [5,5,10,10],
+            "uv_index": [0.5,1.2],
+            "wind_speed_10m": [15.0,16.0,17.0,18.0],
+            "weather_code": [2,2,2,2]
+          },
+          "daily": {
+            "time": ["2026-10-24"],
+            "temperature_2m_max": [16.1],
+            "temperature_2m_min": [9.5],
+            "precipitation_probability_max": [20],
+            "weather_code": [2]
+          }
+        }
+        """.trimIndent()
+
+        // A structurally valid payload whose daily block has no complete entry: the mapper must
+        // surface `DomainError.MalformedData` rather than inventing a "today" (SMO-S4-03).
+        private val EMPTY_DAILY_FORECAST_JSON = """
+        {
+          "latitude": 52.52,
+          "longitude": 13.405,
+          "timezone": "Europe/Berlin",
+          "current": {
+            "time": "2026-10-24T10:00",
+            "temperature_2m": 14.2,
+            "apparent_temperature": 12.1,
+            "relative_humidity_2m": 70,
+            "weather_code": 2,
+            "wind_speed_10m": 18.0
+          },
+          "hourly": {
+            "time": [],
+            "temperature_2m": [],
+            "apparent_temperature": [],
+            "precipitation_probability": [],
+            "uv_index": [],
+            "wind_speed_10m": [],
+            "weather_code": []
+          },
+          "daily": {
+            "time": [],
+            "temperature_2m_max": [],
+            "temperature_2m_min": [],
+            "precipitation_probability_max": [],
+            "weather_code": []
           }
         }
         """.trimIndent()

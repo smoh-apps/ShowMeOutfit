@@ -1,0 +1,72 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!--
+      Android 13+ themed icon layer (SMO-S4-06). A single-colour (indigo #111827) silhouette of the
+      emblem: the same geometry as ic_launcher_foreground with the terracotta sun dot flattened to
+      the same ink so the system can tint the whole mark with the user's wallpaper colours.
+
+      Same 0.18 scale and centre as the foreground, so the silhouette also stays inside the 66dp
+      safe-zone circle.
+    -->
+    <group
+        android:scaleX="0.18"
+        android:scaleY="0.18"
+        android:translateX="7.92"
+        android:translateY="7.92">
+
+        <path
+            android:fillColor="#00000000"
+            android:pathData="M 84,256 a 172,172 0 1,0 344,0 a 172,172 0 1,0 -344,0"
+            android:strokeColor="#111827"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeWidth="14" />
+
+        <path
+            android:fillColor="#00000000"
+            android:pathData="M 256 160 C 256 138, 274 134, 274 146 C 274 156, 262 162, 256 172"
+            android:strokeColor="#111827"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeWidth="14" />
+
+        <path
+            android:fillColor="#00000000"
+            android:pathData="M 256 172 L 132 242 C 124 246, 126 256, 136 256 L 176 256 L 176 338"
+            android:strokeColor="#111827"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeWidth="14" />
+        <path
+            android:fillColor="#00000000"
+            android:pathData="M 256 172 L 380 242 C 388 246, 386 256, 376 256 L 336 256 L 336 338"
+            android:strokeColor="#111827"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeWidth="14" />
+
+        <path
+            android:fillColor="#00000000"
+            android:pathData="M 176 256 L 216 288 L 256 256 L 296 288 L 336 256"
+            android:strokeColor="#111827"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeWidth="14" />
+
+        <path
+            android:fillColor="#00000000"
+            android:pathData="M 224 232 C 196 238, 188 274, 226 296 C 276 324, 284 356, 256 386 C 230 412, 186 398, 178 368 C 174 354, 184 340, 196 342 C 206 344, 210 356, 214 366 C 222 384, 248 388, 262 374 C 278 358, 268 334, 236 316 C 188 290, 186 244, 224 224"
+            android:strokeColor="#111827"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeWidth="16" />
+
+        <!-- Sun dot kept as a solid silhouette shape in the same ink -->
+        <path
+            android:fillColor="#111827"
+            android:pathData="M 240,184 a 16,16 0 1,0 32,0 a 16,16 0 1,0 -32,0" />
+    </group>
+</vector>

@@ -249,7 +249,8 @@ object GarmentTextMapper {
         AccessoryType.SCARF to R.string.home_accessory_scarf_name,
         AccessoryType.GLOVES to R.string.home_accessory_gloves_name,
         AccessoryType.EXTRA_EVENING_LAYER to R.string.home_accessory_extra_evening_layer_name,
-        AccessoryType.SUNSCREEN to R.string.home_accessory_sunscreen_name
+        AccessoryType.SUNSCREEN to R.string.home_accessory_sunscreen_name,
+        AccessoryType.WATER_BOTTLE to R.string.home_accessory_water_bottle_name
     )
 
     private val accessoryIconDescriptionResMap: Map<AccessoryType, Int> = mapOf(
@@ -259,7 +260,8 @@ object GarmentTextMapper {
         AccessoryType.SCARF to R.string.home_accessory_scarf_icon_description,
         AccessoryType.GLOVES to R.string.home_accessory_gloves_icon_description,
         AccessoryType.EXTRA_EVENING_LAYER to R.string.home_accessory_extra_evening_layer_icon_description,
-        AccessoryType.SUNSCREEN to R.string.home_accessory_sunscreen_icon_description
+        AccessoryType.SUNSCREEN to R.string.home_accessory_sunscreen_icon_description,
+        AccessoryType.WATER_BOTTLE to R.string.home_accessory_water_bottle_icon_description
     )
 
     /** Why an accessory is recommended, as template + arguments. */
@@ -289,6 +291,11 @@ object GarmentTextMapper {
         is AccessoryReason.DiurnalSwing -> MappedText(
             resId = R.string.home_reason_diurnal_swing,
             args = listOf(TextArg.Number(reason.deltaCelsius, decimals = 0))
+        )
+
+        is AccessoryReason.ExtremeHeat -> MappedText(
+            resId = R.string.home_reason_extreme_heat,
+            args = listOf(TextArg.Number(reason.tempCelsius, decimals = 0))
         )
     }
 
@@ -337,6 +344,8 @@ object GarmentTextMapper {
 
     /** Headline copy; `LargeTempSwing` carries the delta the UI formats before substituting it. */
     fun headline(reason: HeadlineReason): MappedText = when (reason) {
+        HeadlineReason.FrostWarning -> MappedText(R.string.home_headline_frost)
+        HeadlineReason.Heatwave -> MappedText(R.string.home_headline_heatwave)
         HeadlineReason.SnowAndFrost -> MappedText(R.string.home_headline_snow)
         is HeadlineReason.LargeTempSwing -> MappedText(
             resId = R.string.home_headline_temp_swing,

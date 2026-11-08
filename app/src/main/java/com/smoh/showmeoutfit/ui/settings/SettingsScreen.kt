@@ -56,6 +56,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -360,28 +361,53 @@ fun SettingsScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                ThermalSensitivity.entries.forEachIndexed { index, sensitivity ->
-                    SegmentedButton(
-                        selected = profile.thermalSensitivity == sensitivity,
-                        onClick = {
-                            onIntent(SettingsIntent.SetThermalSensitivity(sensitivity))
-                        },
-                        shape = SegmentedButtonDefaults.itemShape(
-                            index = index,
-                            count = ThermalSensitivity.entries.size
-                        ),
-                        modifier = Modifier.testTag(
-                            when (sensitivity) {
-                                ThermalSensitivity.FEELS_COLD_EASILY ->
-                                    SettingsTestTags.SENSITIVITY_COLD
-                                ThermalSensitivity.NEUTRAL -> SettingsTestTags.SENSITIVITY_NEUTRAL
-                                ThermalSensitivity.FEELS_WARM_EASILY ->
-                                    SettingsTestTags.SENSITIVITY_WARM
-                            }
-                        )
-                    ) {
-                        Text(stringResource(sensitivityLabelRes(sensitivity)))
+            // At 200% text size a three-segment row clips its labels, so the control reflows into a
+            // vertical radio list. Selection semantics, touch targets and test tags stay identical.
+            if (LocalDensity.current.fontScale >= LargeFontScale) {
+                Column(verticalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.xs)) {
+                    ThermalSensitivity.entries.forEach { sensitivity ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = DesignTokens.MinTouchTarget)
+                                .selectable(
+                                    selected = profile.thermalSensitivity == sensitivity,
+                                    role = Role.RadioButton,
+                                    onClick = {
+                                        onIntent(SettingsIntent.SetThermalSensitivity(sensitivity))
+                                    }
+                                )
+                                .testTag(sensitivityTestTag(sensitivity)),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = profile.thermalSensitivity == sensitivity,
+                                onClick = null
+                            )
+                            Text(
+                                text = stringResource(sensitivityLabelRes(sensitivity)),
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(start = DesignTokens.Spacing.sm)
+                            )
+                        }
+                    }
+                }
+            } else {
+                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                    ThermalSensitivity.entries.forEachIndexed { index, sensitivity ->
+                        SegmentedButton(
+                            selected = profile.thermalSensitivity == sensitivity,
+                            onClick = {
+                                onIntent(SettingsIntent.SetThermalSensitivity(sensitivity))
+                            },
+                            shape = SegmentedButtonDefaults.itemShape(
+                                index = index,
+                                count = ThermalSensitivity.entries.size
+                            ),
+                            modifier = Modifier.testTag(sensitivityTestTag(sensitivity))
+                        ) {
+                            Text(stringResource(sensitivityLabelRes(sensitivity)))
+                        }
                     }
                 }
             }
@@ -686,6 +712,15 @@ private fun sensitivityLabelRes(sensitivity: ThermalSensitivity): Int = when (se
     ThermalSensitivity.NEUTRAL -> R.string.settings_sensitivity_neutral
     ThermalSensitivity.FEELS_WARM_EASILY -> R.string.settings_sensitivity_warm
 }
+
+private fun sensitivityTestTag(sensitivity: ThermalSensitivity): String = when (sensitivity) {
+    ThermalSensitivity.FEELS_COLD_EASILY -> SettingsTestTags.SENSITIVITY_COLD
+    ThermalSensitivity.NEUTRAL -> SettingsTestTags.SENSITIVITY_NEUTRAL
+    ThermalSensitivity.FEELS_WARM_EASILY -> SettingsTestTags.SENSITIVITY_WARM
+}
+
+/** Font scale at which the segmented control reflows into a vertical radio list. */
+private const val LargeFontScale = 1.5f
 
 private fun genderLabelRes(gender: GenderPreference): Int = when (gender) {
     GenderPreference.ALL -> R.string.settings_gender_all

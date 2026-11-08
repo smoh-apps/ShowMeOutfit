@@ -56,7 +56,9 @@ class OpenMeteoDataSource(
                 parameter("format", "json")
             }
             val dto: OpenMeteoGeocodingResponseDto = response.body()
-            Result.success(dto.results?.map { WeatherNetworkMapper.mapGeocodingResultToDomain(it) } ?: emptyList())
+            Result.success(
+                dto.results?.let { WeatherNetworkMapper.mapGeocodingResults(it) } ?: emptyList()
+            )
         } catch (cancellation: CancellationException) {
             throw cancellation
         } catch (error: Throwable) {

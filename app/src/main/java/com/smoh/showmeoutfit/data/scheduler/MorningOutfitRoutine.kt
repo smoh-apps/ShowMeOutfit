@@ -34,7 +34,8 @@ sealed interface MorningDelivery {
 class MorningOutfitRoutine(
     private val getTodayOutfit: GetTodayOutfitRecommendationUseCase,
     private val userRepository: UserRepository,
-    private val notifier: OutfitNotifier
+    private val notifier: OutfitNotifier,
+    private val log: MorningAlertLog = MorningAlertLog.NoOp
 ) {
 
     suspend fun deliver(): MorningDelivery {
@@ -61,6 +62,7 @@ class MorningOutfitRoutine(
         return if (notifier.notifyMorningOutfit(outfit)) {
             MorningDelivery.Delivered
         } else {
+            log.notificationBlocked()
             MorningDelivery.NotificationBlocked
         }
     }

@@ -53,14 +53,27 @@ jobs:
           KEY_ALIAS: ${{ secrets.ALPHA_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ALPHA_KEY_PASSWORD }}
         run: |
-          if [ -z "$KEYSTORE_BASE64" ]; then
-            echo "::error::ALPHA_KEYSTORE_BASE64 is not configured. Refusing to publish an APK signed with a throwaway debug key (see docs/distribution/alpha-signing.md)."
+          # Validate every secret before touching the keystore. A partially configured set would
+          # otherwise fail later inside AGP with a much less actionable message.
+          missing=""
+          [ -z "$KEYSTORE_BASE64" ] && missing="$missing ALPHA_KEYSTORE_BASE64"
+          [ -z "$KEYSTORE_PASSWORD" ] && missing="$missing ALPHA_KEYSTORE_PASSWORD"
+          [ -z "$KEY_ALIAS" ] && missing="$missing ALPHA_KEY_ALIAS"
+          [ -z "$KEY_PASSWORD" ] && missing="$missing ALPHA_KEY_PASSWORD"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secret(s):$missing. Refusing to publish an APK signed with a throwaway debug key. One-time setup: docs/distribution/alpha-signing.md"
             exit 1
           fi
+
           keystore="$RUNNER_TEMP/alpha-keystore.jks"
           printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$keystore"
           chmod 600 "$keystore"
           test -s "$keystore" || { echo "::error::Decoded keystore is empty."; exit 1; }
+
+          # Prove the alias and passwords actually open the decoded store. Without this, a typo in
+          # ALPHA_KEY_ALIAS only fails after the unit-test job has already burned several minutes.
+          keytool -list -keystore "$keystore" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" > /dev/null \
+            || { echo "::error::The keystore does not open with ALPHA_KEYSTORE_PASSWORD / ALPHA_KEY_ALIAS. See docs/distribution/alpha-signing.md."; exit 1; }
           {
             echo "ALPHA_KEYSTORE_PATH=$keystore"
             echo "ALPHA_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
