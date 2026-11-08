@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Policy — ShowMeOutfit</title>
+  <meta name="description" content="Privacy Policy for ShowMeOutfit: an offline-first, standalone native Android weather attire application.">
+  <meta name="theme-color" content="#6750A4">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%A5%3C/text%3E%3C/svg%3E">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --primary: #6750A4;
+      --on-primary: #FFFFFF;
+      --surface: #FFFBFE;
+      --on-surface: #1C1B1F;
+      --surface-variant: #E7E0EC;
+      --on-surface-variant: #49454F;
+      --outline: #79747E;
+      --radius-md: 16px;
+      --space: 16px;
+      --font: "Roboto", "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #D0BCFF;
+        --on-primary: #381E72;
+        --surface: #1C1B1F;
+        --on-surface: #E6E1E5;
+        --surface-variant: #49454F;
+        --on-surface-variant: #CAC4D0;
+        --outline: #938F99;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: clamp(20px, 5vw, 64px) var(--space);
+      font-family: var(--font);
+      background: var(--surface);
+      color: var(--on-surface);
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--outline);
+      border-radius: var(--radius-md);
+      padding: clamp(20px, 4vw, 40px);
+    }
+    h1, h2, h3 { color: var(--primary); }
+    h1 { margin-top: 0; font-size: 2rem; }
+    h2 { margin-top: 2rem; font-size: 1.3rem; border-bottom: 1px solid var(--surface-variant); padding-bottom: 8px; }
+    p, li { color: var(--on-surface-variant); font-size: 1rem; }
+    ul { padding-left: 20px; }
+    a { color: var(--primary); text-decoration: underline; }
+    .badge {
+      display: inline-block;
+      background: var(--surface-variant);
+      color: var(--on-surface);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+    }
+    .back-nav {
+      margin-bottom: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="back-nav">
+      <a href="./index.html">← Back to ShowMeOutfit Alpha Portal</a>
+    </div>
+    <span class="badge">Privacy Policy • Effective Date: November 8, 2026</span>
+    <h1>ShowMeOutfit Privacy Policy</h1>
+    
+    <h2>1. Introduction & Core Philosophy</h2>
+    <p><strong>ShowMeOutfit</strong> is an offline-first, standalone native Android application that provides personalized daily clothing and accessory recommendations based on diurnal weather conditions. We operate on a strict privacy-first foundation:</p>
+    <ul>
+      <li><strong>Zero Accounts:</strong> You do not need to register, sign in, or provide any personal identification (name, email, phone number).</li>
+      <li><strong>No Ads or Trackers:</strong> The application contains zero advertising SDKs, zero analytics trackers, and zero behavioral telemetry tools.</li>
+      <li><strong>Zero Custom Backend:</strong> The application communicates directly from your device to the open meteorological service without routing through private proxy servers.</li>
+    </ul>
+
+    <h2>2. Data Collection & Permissions</h2>
+    <p><strong>Foreground Location (Coarse & Fine):</strong> When granted, GPS coordinates are used exclusively in the foreground to fetch weather data directly from the public <a href="https://open-meteo.com/" target="_blank">Open-Meteo REST API</a>. We never access background location. You may alternatively use manual city search without granting location permissions.</p>
+    <p><strong>Local Preferences:</strong> Personalization inputs (gender fit variant, thermal sensitivity offset, age band, and notification time) are saved strictly on your device using Android DataStore and Room SQLite. They are never transmitted off the device.</p>
+    <p><strong>Exact Morning Alarms:</strong> User-scheduled morning outfit alerts utilize Android's <code>AlarmManager</code> locally to wake the device at the chosen time. No remote push notification infrastructure is used.</p>
+
+    <h2>3. Third-Party Meteorological Service</h2>
+    <p>Weather forecasts are retrieved directly via encrypted HTTPS from the keyless public Open-Meteo API. Open-Meteo does not collect personal identifiers. Please review <a href="https://open-meteo.com/en/terms" target="_blank">Open-Meteo Terms and Privacy</a> for details.</p>
+
+    <h2>4. Data Deletion & Retention</h2>
+    <p>Because no remote account or database exists, you retain total control of your data. You can delete all preferences and cached weather at any time by clearing the application storage via <strong>Android Settings &gt; Apps &gt; ShowMeOutfit &gt; Storage &gt; Clear Data</strong>, or by uninstalling the application.</p>
+
+    <h2>5. Security</h2>
+    <p>All network traffic is encrypted via HTTPS/TLS. Local data is protected by the Android application sandbox.</p>
+
+    <h2>6. Contact Us</h2>
+    <p>For questions or support regarding this policy, visit our GitHub repository: <a href="https://github.com/smoh-apps/ShowMeOutfit" target="_blank">https://github.com/smoh-apps/ShowMeOutfit</a> or contact <code>vietnguyen.smoh@gmail.com</code>.</p>
+  </div>
+</body>
+</html>
