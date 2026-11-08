@@ -70,20 +70,24 @@ It exits non-zero with the exact failing step, so it can be attached to a releas
 4. Install the APK over the previous alpha **without uninstalling**. This is the stable-signature
    check from SMO-S3-06 and is the one step a browser cannot prove.
 
-## 6. Current status (06 Nov 2026)
+## 6. Current status (08 Nov 2026)
 
 | Step | Status |
 | :--- | :--- |
 | Workflow guard + keystore validation | ✅ Implemented |
 | Pre-flight script | ✅ Implemented |
-| Four repository secrets | ⛔ **Blocked — `gh auth status` reports "not logged in"** |
-| Pages source = GitHub Actions | ⛔ **Blocked — requires authenticated `gh`/admin UI** |
-| Live URL reachable | ⛔ **Blocked — no deployment has ever run; `main` has not received Sprint 3 or 4** |
-| Install-over-previous alpha | ⛔ **Blocked — requires a successful deployment** |
+| Four `ALPHA_*` repository secrets | ✅ Set (02 Nov 2026) |
+| Pages source = GitHub Actions | ✅ Configured (`build_type: workflow`) |
+| Live URL reachable | ⏳ **Pending — requires `sprint-4` → `main` merge (PR #3)** |
+| Install-over-previous alpha | ⏳ **Pending — requires a successful deployment** |
 
-The blocker is environmental, not a code defect: the four tickets that depend on it are marked
-"externally blocked" in `sprint_4_qa_s4-01.md`. Once the steps above are executed, no further code
-change is required.
+Production signing is separate from the alpha key and is documented in
+[`release-signing.md`](release-signing.md); the four `RELEASE_*` secrets are set and the
+**Signed Release** workflow builds a verified, signed `.aab` on demand.
+
+The remaining blocker is sequencing, not configuration: the Pages workflow triggers on `main` and
+`v*` only, so the first deployment happens after the sprint merge. No further code change is
+required.
 
 ## 7. Troubleshooting
 
