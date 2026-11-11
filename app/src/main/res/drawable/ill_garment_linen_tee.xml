@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Linen tee illustration (SMO-S5-01): sand body, folded-linen tone bands, white neckline.
+  Flat multi-tone art on a 96dp grid with explicit hex fills, so it is theme independent.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="#E8D3C3"
+        android:pathData="M39,23.5 Q48,31 57,23.5 L62,23.5 C64.2,23.5 65.8,25 66.2,27 L78.6,34.8 C81,36.4 82,39.4 80.7,42 L75.8,52.2 C74.6,54.6 71.6,55.6 69.2,54.4 L66.3,53 L66.5,74 C66.5,76.2 64.7,78 62.5,78 L33.5,78 C31.3,78 29.5,76.2 29.5,74 L29.7,53 L26.8,54.4 C24.4,55.6 21.4,54.6 20.2,52.2 L15.3,42 C14,39.4 15,36.4 17.4,34.8 L29.8,27 C30.2,25 31.8,23.5 34,23.5 Z" />
+    <path
+        android:fillColor="#CDB49F"
+        android:pathData="M66.2,27 L78.6,34.8 C81,36.4 82,39.4 80.7,42 L75.8,52.2 C74.6,54.6 71.6,55.6 69.2,54.4 L66.3,53 Z" />
+    <path
+        android:fillColor="#CDB49F"
+        android:pathData="M35.4,34 L37.6,34 L37.6,72 L35.4,72 Z M40.4,34 L42.6,34 L42.6,72 L40.4,72 Z M53.4,34 L55.6,34 L55.6,72 L53.4,72 Z M58.4,34 L60.6,34 L60.6,72 L58.4,72 Z" />
+    <path
+        android:fillColor="#F7F7F5"
+        android:pathData="M39,23.5 Q48,31 57,23.5 L60.2,24.8 Q48,35.4 35.8,24.8 Z" />
+    <path
+        android:fillColor="#A97B3F"
+        android:pathData="M29.6,71 L66.4,71 L66.5,74 C66.5,76.2 64.7,78 62.5,78 L33.5,78 C31.3,78 29.5,76.2 29.5,74 Z" />
+</vector>

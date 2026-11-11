@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Water bottle accessory illustration (SMO-S5-01): reusable sky bottle, navy cap, pale label.
+  Flat multi-tone art on a 96dp grid with explicit hex fills, so it is theme independent.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="#24324A"
+        android:pathData="M41.4,14 L54.6,14 C56.6,14 58,15.4 58,17.4 L58,24 L38,24 L38,17.4 C38,15.4 39.4,14 41.4,14 Z" />
+    <path
+        android:fillColor="#4F86A8"
+        android:pathData="M37,24 L59,24 L59,30 L37,30 Z" />
+    <path
+        android:fillColor="#7FB3D5"
+        android:pathData="M37,30 L59,30 C61.2,30 63,31.8 63,34 L63,74 C63,78.4 59.4,82 55,82 L41,82 C36.6,82 33,78.4 33,74 L33,34 C33,31.8 34.8,30 37,30 Z" />
+    <path
+        android:fillColor="#4F86A8"
+        android:pathData="M33,64 L63,64 L63,74 C63,78.4 59.4,82 55,82 L41,82 C36.6,82 33,78.4 33,74 Z" />
+    <path
+        android:fillColor="#F7F7F5"
+        android:pathData="M33.6,42 L62.4,42 L62.4,60 L33.6,60 Z" />
+    <path
+        android:fillColor="#4F86A8"
+        android:pathData="M38,47 L56,47 L56,49.4 L38,49.4 Z M38,52.6 L50,52.6 L50,55 L38,55 Z" />
+    <path
+        android:fillColor="#D9E2F0"
+        android:pathData="M37.6,36 L39.6,36 L39.6,78 L37.6,78 Z" />
+</vector>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Sunglasses accessory illustration (SMO-S5-01): navy frames, sky lenses, pale reflection.
+  Flat multi-tone art on a 96dp grid with explicit hex fills, so it is theme independent.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="#24324A"
+        android:pathData="M18,36 L42,36 C44.2,36 46,37.8 46,40 L46,46 C46,51.6 41.4,56 35.8,56 L27.4,56 C19.4,56 14,50.4 14,43.4 C14,39.4 15.4,36 18,36 Z" />
+    <path
+        android:fillColor="#24324A"
+        android:pathData="M78,36 L54,36 C51.8,36 50,37.8 50,40 L50,46 C50,51.6 54.6,56 60.2,56 L68.6,56 C76.6,56 82,50.4 82,43.4 C82,39.4 80.6,36 78,36 Z" />
+    <path
+        android:fillColor="#7FB3D5"
+        android:pathData="M19.4,39 L43,39 L43,46 C43,50.4 39.4,53.4 35.4,53.4 L27.6,53.4 C21.4,53.4 17.2,49.4 17.2,43.6 Z" />
+    <path
+        android:fillColor="#7FB3D5"
+        android:pathData="M76.6,39 L53,39 L53,46 C53,50.4 56.6,53.4 60.6,53.4 L68.4,53.4 C74.6,53.4 78.8,49.4 78.8,43.6 Z" />
+    <path
+        android:fillColor="#D9E2F0"
+        android:pathData="M23.4,43.4 L27.4,40 L29.6,42 L25.4,45.6 Z M57.4,43.4 L61.4,40 L63.6,42 L59.4,45.6 Z" />
+    <path
+        android:fillColor="#24324A"
+        android:pathData="M44,40.6 L52,40.6 L52,44.4 L44,44.4 Z" />
+    <path
+        android:fillColor="#C79A5B"
+        android:pathData="M14,38 L12,39.6 L12,45 L14,43.4 Z M82,38 L84,39.6 L84,45 L82,43.4 Z" />
+</vector>

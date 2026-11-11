@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Extra evening layer accessory illustration (SMO-S5-01): a folded sage knit ready to pack.
+  Flat multi-tone art on a 96dp grid with explicit hex fills, so it is theme independent.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="#F7F7F5"
+        android:pathData="M22,52 C22,47 26,43 31,43 L65,43 C70,43 74,47 74,52 L74,66 C74,71 70,75 65,75 L31,75 C26,75 22,71 22,66 Z" />
+    <path
+        android:fillColor="#8FA98C"
+        android:pathData="M26,34 C26,29 30,25 35,25 L61,25 C66,25 70,29 70,34 L70,50 C70,55 66,59 61,59 L35,59 C30,59 26,55 26,50 Z" />
+    <path
+        android:fillColor="#6F8C6C"
+        android:pathData="M26,40 L70,40 L70,46 L26,46 Z" />
+    <path
+        android:fillColor="#F7F7F5"
+        android:pathData="M40.6,25 L48,37 L55.4,25 L59,25 L48,43 L37,25 Z" />
+    <path
+        android:fillColor="#6F8C6C"
+        android:pathData="M22,64 L74,64 L74,66 C74,71 70,75 65,75 L31,75 C26,75 22,71 22,66 Z" />
+    <path
+        android:fillColor="#6F8C6C"
+        android:pathData="M30,49 L34,49 L34,57 L30,57 Z M46,49 L50,49 L50,57 L46,57 Z M62,49 L66,49 L66,57 L62,57 Z" />
+</vector>

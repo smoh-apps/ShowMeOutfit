@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Trousers illustration (SMO-S5-01): charcoal tailoring with a pale pressed crease.
+  Flat multi-tone art on a 96dp grid with explicit hex fills, so it is theme independent.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="#3A3F45"
+        android:pathData="M29,22 L67,22 C69.4,22 71.2,23.9 71,26.3 L69.6,52 L65.8,80.4 C65.5,82.6 63.6,84.2 61.4,84.2 L55.4,84.2 C53.2,84.2 51.4,82.4 51.4,80.2 L50.6,60 L48,56 L45.4,60 L44.6,80.2 C44.6,82.4 42.8,84.2 40.6,84.2 L34.6,84.2 C32.4,84.2 30.5,82.6 30.2,80.4 L26.4,52 L25,26.3 C24.8,23.9 26.6,22 29,22 Z" />
+    <path
+        android:fillColor="#2B2F34"
+        android:pathData="M48,56 L69.6,52 L65.8,80.4 C65.5,82.6 63.6,84.2 61.4,84.2 L55.4,84.2 C53.2,84.2 51.4,82.4 51.4,80.2 L50.6,60 Z" />
+    <path
+        android:fillColor="#2B2F34"
+        android:pathData="M29,22 L67,22 C69.4,22 71.2,23.9 71,26.3 L70.8,36.4 L25.2,36.4 L25,26.3 C24.8,23.9 26.6,22 29,22 Z" />
+    <path
+        android:fillColor="#C9CDD2"
+        android:pathData="M37.4,36.4 L38.8,36.4 L38.2,80.4 L36.8,80.4 Z M58.6,36.4 L57.2,36.4 L57.8,80.4 L59.2,80.4 Z" />
+    <path
+        android:fillColor="#F7F7F5"
+        android:pathData="M45.8,25.6 h4.4 v2.6 h-4.4 z" />
+    <path
+        android:fillColor="#2B2F34"
+        android:pathData="M46.4,33.4 L49.6,33.4 L49.6,36.4 L46.4,36.4 Z" />
+</vector>

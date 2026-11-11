@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Light overshirt illustration (SMO-S5-01): oat canvas, collar and two chest pockets, leather buttons.
+  Flat multi-tone art on a 96dp grid with explicit hex fills, so it is theme independent.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="#E4D9C3"
+        android:pathData="M39,23.5 Q48,31 57,23.5 L62,23.5 C64.2,23.5 65.8,25 66.2,27 L78.4,34.6 C80.8,36.2 81.8,39.2 80.5,41.8 L75.4,66 C74.8,68.4 72.6,70 70.1,70 L66.4,70 L66.4,74 C66.4,76.2 64.6,78 62.4,78 L33.6,78 C31.4,78 29.6,76.2 29.6,74 L29.6,70 L25.9,70 C23.4,70 21.2,68.4 20.6,66 L15.5,41.8 C14.2,39.2 15.2,36.2 17.6,34.6 L30,27 C30.4,25 32,23.5 34.2,23.5 Z" />
+    <path
+        android:fillColor="#C9BB9F"
+        android:pathData="M29.8,27 L17.6,34.6 C15.2,36.2 14.2,39.2 15.5,41.8 L20.6,66 C21.2,68.4 23.4,70 25.9,70 L29.6,70 Z" />
+    <path
+        android:fillColor="#F7F7F5"
+        android:pathData="M39.4,23 Q44.6,28.6 48.4,30.4 L45.6,35.4 L35.6,25.4 Z M56.6,23 Q51.4,28.6 47.6,30.4 L50.4,35.4 L60.4,25.4 Z" />
+    <path
+        android:fillColor="#C9BB9F"
+        android:pathData="M33.6,38.4 L43,38.4 L43,47.6 L33.6,47.6 Z M53,38.4 L62.4,38.4 L62.4,47.6 L53,47.6 Z" />
+    <path
+        android:fillColor="#7A4E2D"
+        android:pathData="M47,29.4 L49,29.4 L49,76 L47,76 Z M37.6,36.6 L39.4,36.6 L39.4,42.4 L37.6,42.4 Z M57,36.6 L58.8,36.6 L58.8,42.4 L57,42.4 Z" />
+    <path
+        android:fillColor="#C9BB9F"
+        android:pathData="M29.6,72 L66.4,72 L66.4,74 C66.4,76.2 64.6,78 62.4,78 L33.6,78 C31.4,78 29.6,76.2 29.6,74 Z" />
+</vector>

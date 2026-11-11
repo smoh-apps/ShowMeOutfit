@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Sandals illustration (SMO-S5-01): top-down footbed with two leather straps and a brass buckle.
+  Flat multi-tone art on a 96dp grid with explicit hex fills, so it is theme independent.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="#3A3F45"
+        android:pathData="M48,12 C58.6,12 67,18.4 67,28.6 L66,52 C65.6,64.6 61,75 52.4,79.4 C49.8,80.8 46.2,80.8 43.6,79.4 C35,75 30.4,64.6 30,52 L29,28.6 C29,18.4 37.4,12 48,12 Z" />
+    <path
+        android:fillColor="#E8D3C3"
+        android:pathData="M48,15.4 C57.2,15.4 64.4,21 64.4,29.4 L63.4,52 C63,63 59,72.4 51.4,76.4 C49.6,77.4 46.4,77.4 44.6,76.4 C37,72.4 32.8,63 32.4,52 L31.6,29.4 C31.6,21 38.8,15.4 48,15.4 Z" />
+    <path
+        android:fillColor="#7A4E2D"
+        android:pathData="M31.8,33 C39.8,29.8 56.2,29.8 64.2,33 L64.2,38.8 C56.2,35.6 39.8,35.6 31.8,38.8 Z" />
+    <path
+        android:fillColor="#7A4E2D"
+        android:pathData="M32.6,47.4 C40.2,44.6 55.8,44.6 63.4,47.4 L63.4,52.6 C55.8,49.8 40.2,49.8 32.6,52.6 Z" />
+    <path
+        android:fillColor="#7A4E2D"
+        android:pathData="M46.6,18.4 L49.4,18.4 L49.4,31 L46.6,31 Z" />
+    <path
+        android:fillColor="#A97B3F"
+        android:pathData="M33.4,59.6 C40.4,62.4 55.6,62.4 62.6,59.6 L62.6,64.4 C55.6,67 40.4,67 33.4,64.4 Z" />
+    <path
+        android:fillColor="#C79A5B"
+        android:pathData="M41.6,36.4 L47.6,36.4 L47.6,42.2 L41.6,42.2 Z" />
+</vector>

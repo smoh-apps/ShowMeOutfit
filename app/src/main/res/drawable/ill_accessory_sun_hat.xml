@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Sun hat accessory illustration (SMO-S5-01): wide straw brim with a terracotta hatband.
+  Flat multi-tone art on a 96dp grid with explicit hex fills, so it is theme independent.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="#C79A5B"
+        android:pathData="M31,48 C31,34 36.6,25.6 48,25.6 C59.4,25.6 65,34 65,48 Z" />
+    <path
+        android:fillColor="#C79A5B"
+        android:pathData="M12,58 C12,52 28.2,47.4 48,47.4 C67.8,47.4 84,52 84,58 C84,64 67.8,68.6 48,68.6 C28.2,68.6 12,64 12,58 Z" />
+    <path
+        android:fillColor="#A97B3F"
+        android:pathData="M12,58 C12,61.6 19.6,64.8 30.4,66.6 C33,67 40,68 48,68 C56,68 63,67 65.6,66.6 C76.4,64.8 84,61.6 84,58 C84,62.6 80,66.6 72,68.6 L24,68.6 C16,66.6 12,62.6 12,58 Z" />
+    <path
+        android:fillColor="#C96A4A"
+        android:pathData="M31.4,43.4 L64.6,43.4 L65,49.4 L31.4,49.4 Z" />
+    <path
+        android:fillColor="#C96A4A"
+        android:pathData="M35.6,33.6 L60.4,33.6 C58.6,30.6 54.2,29 48,29 C41.8,29 37.4,30.6 35.6,33.6 Z" />
+    <path
+        android:fillColor="#E8D3C3"
+        android:pathData="M38.6,30.4 C41.4,32.2 44.4,33 48,33 C51.6,33 54.6,32.2 57.4,30.4 L56.4,34.4 C53.8,35.8 51,36.4 48,36.4 C45,36.4 42.2,35.8 39.6,34.4 Z" />
+</vector>
