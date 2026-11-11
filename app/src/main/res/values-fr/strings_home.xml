@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Loading -->
+    <string name="home_loading_title">Préparation de la tenue du jour</string>
+    <string name="home_loading_body">Nous vérifions la météo du jour et composons votre tenue.</string>
+    <string name="home_loading_content_description">Chargement de la recommandation de tenue du jour.</string>
+
+    <!-- Header -->
+    <string name="home_header_conditions">%1$s° · %2$s · ressenti %3$s°</string>
+    <string name="home_header_refresh">Actualiser</string>
+
+    <!-- Section headings -->
+    <string name="home_section_timeline">Au fil de la journée</string>
+    <string name="home_section_outfit">Votre tenue</string>
+    <string name="home_section_accessories">À ne pas oublier</string>
+    <string name="home_section_highlights">Les pics du jour</string>
+
+    <!-- Layer labels -->
+    <string name="home_layer_base">Sous-couche</string>
+    <string name="home_layer_mid">Couche intermédiaire</string>
+    <string name="home_layer_outer">Couche externe</string>
+    <string name="home_layer_bottom">Bas</string>
+    <string name="home_layer_footwear">Chaussures</string>
+    <string name="home_layer_not_needed">Pas nécessaire aujourd\'hui</string>
+    <string name="home_layer_mid_not_needed_description">L\'amplitude du jour reste confortable sans couche intermédiaire supplémentaire.</string>
+    <string name="home_layer_outer_not_needed_description">Aucune couche externe n\'est nécessaire pour les températures du jour.</string>
+
+    <!-- Garment names: unisex base label -->
+    <string name="home_garment_thermal_undershirt_name">Maillot thermique</string>
+    <string name="home_garment_long_sleeve_tee_name">T-shirt à manches longues</string>
+    <string name="home_garment_cotton_tee_name">T-shirt en coton</string>
+    <string name="home_garment_polo_shirt_name">Polo</string>
+    <string name="home_garment_linen_tee_name">T-shirt en lin</string>
+    <string name="home_garment_ultra_light_tank_name">Débardeur ultra-léger</string>
+    <string name="home_garment_wool_sweater_name">Pul en laine</string>
+    <string name="home_garment_knitted_sweater_name">Pul tricoté</string>
+    <string name="home_garment_cardigan_name">Gilet</string>
+    <string name="home_garment_hoodie_name">Sweat à capuche</string>
+    <string name="home_garment_light_overshirt_name">Surchemise légère</string>
+    <string name="home_garment_down_parka_name">Parka en duvet</string>
+    <string name="home_garment_wool_coat_name">Manteau en laine</string>
+    <string name="home_garment_puffer_jacket_name">Doudoune</string>
+    <string name="home_garment_denim_jacket_name">Veste en jean</string>
+    <string name="home_garment_light_jacket_name">Veste légère</string>
+    <string name="home_garment_windbreaker_name">Coupe-vent</string>
+    <string name="home_garment_raincoat_name">Imperméable</string>
+    <string name="home_garment_thermal_pants_name">Pantalon thermique</string>
+    <string name="home_garment_jeans_name">Jean</string>
+    <string name="home_garment_chinos_name">Chino</string>
+    <string name="home_garment_trousers_name">Pantalon</string>
+    <string name="home_garment_shorts_name">Short</string>
+    <string name="home_garment_winter_boots_name">Bottes d\'hiver</string>
+    <string name="home_garment_leather_boots_name">Bottes en cuir</string>
+    <string name="home_garment_sneakers_name">Baskets</string>
+    <string name="home_garment_waterproof_shoes_name">Chaussures imperméables</string>
+    <string name="home_garment_loafers_name">Mocassins</string>
+    <string name="home_garment_sandals_name">Sandales</string>
+
+    <!-- Garment names: fit variants (only where the cut actually differs) -->
+    <string name="home_garment_cotton_tee_name_men">T-shirt en coton pour homme</string>
+    <string name="home_garment_cotton_tee_name_women">T-shirt en coton pour femme</string>
+    <string name="home_garment_polo_shirt_name_men">Polo pour homme</string>
+    <string name="home_garment_polo_shirt_name_women">Polo pour femme</string>
+    <string name="home_garment_cardigan_name_men">Gilet pour homme</string>
+    <string name="home_garment_cardigan_name_women">Gilet pour femme</string>
+    <string name="home_garment_hoodie_name_men">Sweat à capuche pour homme</string>
+    <string name="home_garment_hoodie_name_women">Sweat à capuche pour femme</string>
+    <string name="home_garment_jeans_name_men">Jean pour homme</string>
+    <string name="home_garment_jeans_name_women">Jean pour femme</string>
+    <string name="home_garment_chinos_name_men">Chino pour homme</string>
+    <string name="home_garment_chinos_name_women">Chino pour femme</string>
+    <string name="home_garment_trousers_name_men">Pantalon pour homme</string>
+    <string name="home_garment_trousers_name_women">Pantalon pour femme</string>
+    <string name="home_garment_shorts_name_men">Short pour homme</string>
+    <string name="home_garment_shorts_name_women">Short pour femme</string>
+
+    <!-- Garment descriptions -->
+    <string name="home_garment_thermal_undershirt_description">Fine sous-couche isolante portée sous tout le reste.</string>
+    <string name="home_garment_long_sleeve_tee_description">Couverture légère pour les matins frais qui se réchauffent à midi.</string>
+    <string name="home_garment_cotton_tee_description">Base respirante du quotidien pour les heures douces à chaudes.</string>
+    <string name="home_garment_polo_shirt_description">Option à manches courtes un peu plus habillée, tout aussi respirante.</string>
+    <string name="home_garment_linen_tee_description">Tissu aéré qui supporte bien la chaleur et l\'humidité.</string>
+    <string name="home_garment_ultra_light_tank_description">Couverture minimale pour le moment le plus chaud de la journée.</string>
+    <string name="home_garment_wool_sweater_description">Couche intermédiaire chaude, respirante et résistante aux odeurs.</string>
+    <string name="home_garment_knitted_sweater_description">Couche intermédiaire douce pour un temps frais et stable.</string>
+    <string name="home_garment_cardigan_description">Facile à retirer dès que l\'après-midi se réchauffe.</string>
+    <string name="home_garment_hoodie_description">Couche intermédiaire décontractée avec capuche pour les coups de vent.</string>
+    <string name="home_garment_light_overshirt_description">Surchemise ouverte qui atténue la fraîcheur.</string>
+    <string name="home_garment_down_parka_description">L\'option la plus chaude pour les jours glacials ; elle coupe le vent.</string>
+    <string name="home_garment_wool_coat_description">Chaleur structurée pour les jours froids et secs.</string>
+    <string name="home_garment_puffer_jacket_description">Isolation compacte qui se range quand il fait plus doux.</string>
+    <string name="home_garment_denim_jacket_description">Petite couche supplémentaire pour les soirées fraîches.</string>
+    <string name="home_garment_light_jacket_description">Couche amovible pour une forte amplitude thermique en journée.</string>
+    <string name="home_garment_windbreaker_description">Bloque le vent fort sans apporter beaucoup de chaleur.</string>
+    <string name="home_garment_raincoat_description">Enveloppe imperméable pour les heures pluvieuses.</string>
+    <string name="home_garment_thermal_pants_description">Pantalon doublé pour les matins sous le point de congélation.</string>
+    <string name="home_garment_jeans_description">Pantalon durable du quotidien pour les jours frais à doux.</string>
+    <string name="home_garment_chinos_description">Pantalon en coton léger adapté au temps doux.</string>
+    <string name="home_garment_trousers_description">Option habillée du quotidien pour les journées changeantes.</string>
+    <string name="home_garment_shorts_description">Le meilleur choix dès que l\'après-midi devient chaude.</string>
+    <string name="home_garment_winter_boots_description">Isolées et adhérentes pour la neige et le gel.</string>
+    <string name="home_garment_leather_boots_description">Bottes robustes pour des rues froides et sèches.</string>
+    <string name="home_garment_sneakers_description">Chaussures confortables du quotidien pour un temps sec.</string>
+    <string name="home_garment_waterproof_shoes_description">Gardent les pieds au sec sous la pluie et dans les flaques.</string>
+    <string name="home_garment_loafers_description">Chaussures habillées et respirantes pour les jours doux.</string>
+    <string name="home_garment_sandals_description">Chaussures ouvertes pour les après-midi chauds.</string>
+
+    <!-- Accessories: names -->
+    <string name="home_accessory_umbrella_name">Parapluie</string>
+    <string name="home_accessory_sunglasses_name">Lunettes de soleil</string>
+    <string name="home_accessory_sun_hat_name">Chapeau de soleil</string>
+    <string name="home_accessory_scarf_name">Écharpe</string>
+    <string name="home_accessory_gloves_name">Gants</string>
+    <string name="home_accessory_extra_evening_layer_name">Couche supplémentaire pour le soir</string>
+    <string name="home_accessory_sunscreen_name">Crème solaire</string>
+    <string name="home_accessory_water_bottle_name">Bouteille d\'eau</string>
+
+    <!-- Accessories: icon descriptions (used when the glyph is rendered) -->
+    <string name="home_accessory_umbrella_icon_description">Parapluie</string>
+    <string name="home_accessory_sunglasses_icon_description">Lunettes de soleil</string>
+    <string name="home_accessory_sun_hat_icon_description">Chapeau de soleil</string>
+    <string name="home_accessory_scarf_icon_description">Écharpe</string>
+    <string name="home_accessory_gloves_icon_description">Gants</string>
+    <string name="home_accessory_extra_evening_layer_icon_description">Couche supplémentaire</string>
+    <string name="home_accessory_sunscreen_icon_description">Crème solaire</string>
+    <string name="home_accessory_water_bottle_icon_description">Bouteille d\'eau</string>
+
+    <!-- Accessories: why they were recommended -->
+    <string name="home_reason_rain_window">Pluie entre %1$s et %2$s.</string>
+    <string name="home_reason_rain_probability">Jusqu\'à %1$s%% de risque de pluie.</string>
+    <string name="home_reason_freezing">Gel toute la journée.</string>
+    <string name="home_reason_wind">Vent jusqu\'à %1$s km/h.</string>
+    <string name="home_reason_uv">L\'indice UV atteint %1$s.</string>
+    <string name="home_reason_diurnal_swing">Écart d\'environ %1$s° au cours de la journée.</string>
+    <string name="home_reason_extreme_heat">Pics à %1$s°. Buvez de l\'eau souvent et restez à l\'ombre.</string>
+    <string name="home_accessories_empty">Aucun accessoire nécessaire aujourd\'hui.</string>
+
+    <!-- Weather metric chips -->
+    <string name="home_metric_rain_label">Pluie</string>
+    <string name="home_metric_uv_label">UV</string>
+    <string name="home_metric_wind_label">Vent</string>
+    <string name="home_metric_percent_unit" formatted="false">%</string>
+    <string name="home_metric_wind_unit">km/h</string>
+
+    <!-- Headlines -->
+    <string name="home_headline_frost">Gel intense — habillez-vous chaudement</string>
+    <string name="home_headline_heatwave">Canicule — restez léger et bien hydraté</string>
+    <string name="home_headline_snow">Neige et gel — couvrez-vous bien</string>
+    <string name="home_headline_temp_swing">Un écart de %1$s° aujourd\'hui</string>
+    <string name="home_headline_rain">La pluie arrive</string>
+    <string name="home_headline_hot_uv">Chaud avec un UV intense</string>
+    <string name="home_headline_warm">Doux et agréable</string>
+    <string name="home_headline_chilly">Il fait frais dehors</string>
+    <string name="home_headline_mild">Doux et facile</string>
+
+    <!-- Summary sentence -->
+    <string name="home_summary_plain">%1$s° à %2$s° aujourd\'hui, sans pluie prévue.</string>
+    <string name="home_summary_rain_window">%1$s° à %2$s° aujourd\'hui, avec de la pluie probable entre %3$s et %4$s.</string>
+    <string name="home_summary_rain_chance">%1$s° à %2$s° aujourd\'hui, avec jusqu\'à %3$s%% de risque de pluie.</string>
+
+    <!-- Cache provenance -->
+    <plurals name="home_cache_age_hours">
+        <item quantity="one">%1$d heure</item>
+        <item quantity="many">%1$d heures</item>
+        <item quantity="other">%1$d heures</item>
+    </plurals>
+    <plurals name="home_cache_age_minutes">
+        <item quantity="one">%1$d minute</item>
+        <item quantity="many">%1$d minutes</item>
+        <item quantity="other">%1$d minutes</item>
+    </plurals>
+    <string name="home_cache_age_hours_minutes">%1$s %2$s</string>
+    <string name="home_banner_cache_fresh">Affichage des prévisions enregistrées il y a %1$s (moins de 3 heures).</string>
+    <string name="home_banner_cache_fresh_no_age">Affichage des prévisions enregistrées il y a moins de 3 heures.</string>
+    <string name="home_banner_cache_stale">Vous êtes hors ligne. Affichage des prévisions enregistrées il y a %1$s.</string>
+    <string name="home_banner_cache_stale_no_age">Vous êtes hors ligne. Affichage des dernières prévisions enregistrées.</string>
+    <string name="home_banner_refresh_failed">Actualisation impossible. Voici les dernières prévisions chargées.</string>
+
+    <!-- Weather condition descriptions -->
+    <string name="home_condition_clear_sky">Ciel dégagé</string>
+    <string name="home_condition_mainly_clear">Plutôt dégagé</string>
+    <string name="home_condition_partly_cloudy">Partiellement nuageux</string>
+    <string name="home_condition_overcast">Couvert</string>
+    <string name="home_condition_fog">Brouillard</string>
+    <string name="home_condition_depositing_rime_fog">Brouillard givrant</string>
+    <string name="home_condition_drizzle_light">Bruine légère</string>
+    <string name="home_condition_drizzle_moderate">Bruine</string>
+    <string name="home_condition_drizzle_dense">Bruine dense</string>
+    <string name="home_condition_freezing_drizzle_light">Bruine verglaçante légère</string>
+    <string name="home_condition_freezing_drizzle_dense">Bruine verglaçante</string>
+    <string name="home_condition_rain_slight">Pluie faible</string>
+    <string name="home_condition_rain_moderate">Pluie</string>
+    <string name="home_condition_rain_heavy">Pluie forte</string>
+    <string name="home_condition_freezing_rain_light">Pluie verglaçante faible</string>
+    <string name="home_condition_freezing_rain_heavy">Pluie verglaçante</string>
+    <string name="home_condition_snow_fall_slight">Neige faible</string>
+    <string name="home_condition_snow_fall_moderate">Neige</string>
+    <string name="home_condition_snow_fall_heavy">Fortes chutes de neige</string>
+    <string name="home_condition_snow_grains">Grains de neige</string>
+    <string name="home_condition_rain_showers_slight">Averses faibles</string>
+    <string name="home_condition_rain_showers_moderate">Averses</string>
+    <string name="home_condition_rain_showers_violent">Averses violentes</string>
+    <string name="home_condition_snow_showers_slight">Averses de neige faibles</string>
+    <string name="home_condition_snow_showers_heavy">Averses de neige</string>
+    <string name="home_condition_thunderstorm">Orage</string>
+    <string name="home_condition_thunderstorm_slight_hail">Orage de grêle</string>
+    <string name="home_condition_thunderstorm_heavy_hail">Orage violent de grêle</string>
+    <string name="home_condition_unknown">Conditions indisponibles</string>
+
+    <!-- Empty state -->
+    <string name="home_empty_title">Aucun lieu pour l\'instant</string>
+    <string name="home_empty_body">ShowMeOutfit a besoin d\'une ville pour composer la tenue du jour. Choisissez-en une pour commencer.</string>
+    <string name="home_empty_action">Choisir une ville</string>
+
+    <!-- Error state -->
+    <string name="home_error_title">Impossible de composer la tenue du jour</string>
+    <string name="home_error_retry">Réessayer</string>
+    <string name="home_error_change_city">Choisir une autre ville</string>
+    <string name="home_error_no_location">Aucune ville sélectionnée. Ajoutez-en une pour obtenir la tenue du jour.</string>
+    <string name="home_error_offline">Vous êtes hors ligne. Vérifiez votre connexion et réessayez.</string>
+    <string name="home_error_api">Le service météo n\'a pas répondu. Réessayez dans un instant.</string>
+    <string name="home_error_malformed">Les prévisions reçues sont illisibles. Réessayez.</string>
+    <string name="home_error_cache_expired">Les prévisions enregistrées sont trop anciennes. Actualisez pour obtenir les données du jour.</string>
+    <string name="home_error_location_permission">L\'autorisation de localisation est désactivée. Vous pouvez toujours choisir une ville.</string>
+    <string name="home_error_location_disabled">Les services de localisation sont désactivés. Choisissez une ville ou activez-les dans les réglages.</string>
+    <string name="home_error_location_unavailable">Nous n\'avons pas pu obtenir votre position. Choisissez plutôt une ville.</string>
+    <string name="home_error_unknown">Une erreur est survenue. Réessayez.</string>
+
+</resources>

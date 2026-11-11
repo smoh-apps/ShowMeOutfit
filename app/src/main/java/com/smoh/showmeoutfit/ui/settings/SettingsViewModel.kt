@@ -28,10 +28,13 @@ import kotlin.coroutines.cancellation.CancellationException
  */
 class SettingsViewModel(
     private val manageUserProfile: ManageUserProfileUseCase,
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val localeController: AppLocaleController
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(SettingsUiState())
+    private val _state = MutableStateFlow(
+        SettingsUiState(language = localeController.currentLanguage())
+    )
     val state: StateFlow<SettingsUiState> = _state.asStateFlow()
 
     private val writeMutex = Mutex()
@@ -66,6 +69,14 @@ class SettingsViewModel(
 
             SettingsIntent.ResetLocationToGps ->
                 updateProfile { it.copy(selectedLocation = null) }
+
+            is SettingsIntent.SetLanguage -> {
+                // Deliberately synchronous and outside the profile mutex: the locale is not part of
+                // the persisted profile, and callers recreate the activity immediately after this
+                // returns on API < 33, so the write has to be visible by then.
+                localeController.setLanguage(intent.language)
+                _state.update { it.copy(language = intent.language) }
+            }
 
             SettingsIntent.DismissSaveError ->
                 _state.update { it.copy(saveFailed = false) }

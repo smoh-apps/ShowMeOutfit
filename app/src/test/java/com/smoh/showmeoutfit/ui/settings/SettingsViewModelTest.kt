@@ -32,12 +32,14 @@ class SettingsViewModelTest {
 
     private val dispatcher = UnconfinedTestDispatcher()
     private lateinit var userRepository: FakeUserRepository
+    private lateinit var localeController: FakeLocaleController
 
     private val berlin = LocationInfo(52.52, 13.405, "Berlin", "Germany")
 
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
+        localeController = FakeLocaleController()
         userRepository = FakeUserRepository(
             UserProfile(
                 selectedLocation = berlin,
@@ -54,7 +56,8 @@ class SettingsViewModelTest {
 
     private fun viewModel() = SettingsViewModel(
         manageUserProfile = ManageUserProfileUseCase(userRepository),
-        ioDispatcher = dispatcher
+        ioDispatcher = dispatcher,
+        localeController = localeController
     )
 
     @Test
@@ -157,8 +160,7 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun `two rapid edits are serialized and both survive`() = runTest {
-        val gate = CompletableDeferred<Unit>()
+    fun `two rapid edits are serialized and both survive`() = runTest {        val gate = CompletableDeferred<Unit>()
         userRepository.writeGate = gate
         val viewModel = viewModel()
         runCurrent()
@@ -188,6 +190,60 @@ class SettingsViewModelTest {
         viewModel.onIntent(SettingsIntent.DismissSaveError)
 
         assertFalse(viewModel.state.value.saveFailed)
+    }
+
+    // --- Language picker (SMO-S5-04) --------------------------------------------------------
+
+    @Test
+    fun `the initial language comes from the locale controller`() = runTest {
+        localeController = FakeLocaleController(AppLanguage.FRENCH)
+
+        val viewModel = viewModel()
+        runCurrent()
+
+        assertEquals(AppLanguage.FRENCH, viewModel.state.value.language)
+        assertEquals(0, localeController.setCalls)
+    }
+
+    @Test
+    fun `switching to Vietnamese updates the state and writes through the controller once`() =
+        runTest {
+            val viewModel = viewModel()
+            runCurrent()
+            assertEquals(AppLanguage.SYSTEM, viewModel.state.value.language)
+
+            viewModel.onIntent(SettingsIntent.SetLanguage(AppLanguage.VIETNAMESE))
+
+            assertEquals(AppLanguage.VIETNAMESE, viewModel.state.value.language)
+            assertEquals(1, localeController.setCalls)
+            assertEquals(AppLanguage.VIETNAMESE, localeController.saved)
+        }
+
+    @Test
+    fun `switching language does not touch the persisted profile`() = runTest {
+        val viewModel = viewModel()
+        runCurrent()
+        val before = userRepository.profile.value
+
+        viewModel.onIntent(SettingsIntent.SetLanguage(AppLanguage.FRENCH))
+        runCurrent()
+
+        assertEquals(0, userRepository.writeAttempts)
+        assertEquals(before, userRepository.profile.value)
+    }
+
+    private class FakeLocaleController(
+        initial: AppLanguage = AppLanguage.SYSTEM
+    ) : AppLocaleController {
+        var saved: AppLanguage = initial
+        var setCalls = 0
+
+        override fun currentLanguage(): AppLanguage = saved
+
+        override fun setLanguage(language: AppLanguage) {
+            saved = language
+            setCalls++
+        }
     }
 
     private class FakeUserRepository(

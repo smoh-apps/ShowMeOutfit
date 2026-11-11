@@ -93,6 +93,13 @@ android {
             }
         }
     }
+    // SMO-S5-04: per-app locale switching is useless if Play splits vi/fr out of the base APK,
+    // so all locales ship in every device split.
+    bundle {
+        language {
+            enableSplit = false
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Entry point -->
+    <string name="settings_open_action">Cài đặt</string>
+    <string name="settings_back_action">Quay lại</string>
+
+    <!-- Screen frame -->
+    <string name="settings_title">Cài đặt</string>
+    <string name="settings_loading">Đang tải tùy chọn của bạn…</string>
+    <string name="settings_error_save">Không thể lưu thay đổi đó. Hãy thử lại.</string>
+    <string name="settings_error_dismiss">Bỏ qua</string>
+
+    <!-- Morning alert -->
+    <string name="settings_section_alerts">Nhắc nhở buổi sáng</string>
+    <string name="settings_alert_toggle_title">Thông báo trang phục hằng ngày</string>
+    <string name="settings_alert_toggle_summary">Trang phục và phụ kiện hôm nay, gửi vào giờ bạn chọn.</string>
+    <string name="settings_alert_time_title">Giờ gửi</string>
+    <string name="settings_alert_time_value">Mỗi ngày lúc %1$s</string>
+    <string name="settings_alert_time_change">Thay đổi</string>
+    <string name="settings_time_picker_title">Giờ nhắc nhở buổi sáng</string>
+    <string name="settings_time_picker_confirm">Đặt</string>
+    <string name="settings_time_picker_cancel">Hủy</string>
+
+    <!-- Comfort profile -->
+    <string name="settings_section_comfort">Hồ sơ cảm nhận</string>
+    <string name="settings_sensitivity_title">Độ nhạy nhiệt</string>
+    <string name="settings_sensitivity_helper">Dịch ngưỡng mặc áo tối đa 2,5 °C. Đây là hướng dẫn về cảm giác thoải mái, không phải lời khuyên y tế.</string>
+    <string name="settings_sensitivity_cold">Hay thấy lạnh</string>
+    <string name="settings_sensitivity_neutral">Bình thường</string>
+    <string name="settings_sensitivity_warm">Hay thấy nóng</string>
+
+    <string name="settings_gender_title">Kiểu dáng yêu thích</string>
+    <string name="settings_gender_all">Unisex</string>
+    <string name="settings_gender_men">Nam</string>
+    <string name="settings_gender_women">Nữ</string>
+
+    <string name="settings_age_title">Nhóm tuổi</string>
+    <string name="settings_age_edit">Sửa</string>
+    <string name="settings_age_dialog_title">Tuổi (theo năm)</string>
+    <string name="settings_age_dialog_helper">Chỉ nhóm tuổi được lưu. Để trống để xóa.</string>
+    <string name="settings_age_dialog_save">Lưu</string>
+    <string name="settings_age_dialog_cancel">Hủy</string>
+    <string name="settings_age_error">Nhập độ tuổi từ 0 đến 120.</string>
+
+    <!-- Location -->
+    <string name="settings_section_location">Vị trí</string>
+    <string name="settings_location_current">Vị trí hiện tại (GPS)</string>
+    <string name="settings_location_saved">Thành phố đã lưu: %1$s</string>
+    <string name="settings_location_reset">Đặt lại về vị trí GPS</string>
+    <string name="settings_location_reset_summary">Lần tới sẽ dùng vị trí mới từ thiết bị thay vì thành phố đã lưu.</string>
+
+    <!-- Language (SMO-S5-04). Autonyms are deliberately identical in every locale. -->
+    <string name="settings_section_language">Ngôn ngữ</string>
+    <string name="settings_language_helper">Thay đổi ngôn ngữ hiển thị của ứng dụng. Thay đổi có hiệu lực ngay lập tức.</string>
+    <string name="settings_language_system">Theo hệ thống</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_vietnamese">Tiếng Việt</string>
+    <string name="settings_language_french">Français</string>
+
+</resources>

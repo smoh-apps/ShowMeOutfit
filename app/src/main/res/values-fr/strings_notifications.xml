@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Channel -->
+    <string name="notification_channel_name">Tenue du matin</string>
+    <string name="notification_channel_description">Vos couches et accessoires du jour, envoyés à l\'heure de votre choix.</string>
+
+    <!-- Content -->
+    <string name="notification_title">Tenue du matin · %1$s–%2$s°</string>
+    <string name="notification_layer_line">%1$s : %2$s</string>
+    <string name="notification_layer_base">Sous-couche</string>
+    <string name="notification_layer_mid">Intermédiaire</string>
+    <string name="notification_layer_outer">Externe</string>
+    <string name="notification_layer_bottom">Bas</string>
+    <string name="notification_layer_footwear">Chaussures</string>
+    <string name="notification_accessories">À emporter : %1$s</string>
+    <string name="notification_no_accessories">Aucun extra nécessaire aujourd\'hui.</string>
+
+    <!-- Highlights (SMO-S3-04). Arguments arrive pre-formatted, hence %s for numbers. -->
+    <string name="notification_highlight_rain_window">Pluie %1$s–%2$s. Parapluie dans le sac.</string>
+    <string name="notification_highlight_rain_chance">%1$s%% de risque de pluie. Parapluie dans le sac.</string>
+    <string name="notification_highlight_uv">UV %1$s. Lunettes de soleil et crème solaire.</string>
+    <string name="notification_highlight_uv_hat">UV %1$s. Chapeau, lunettes de soleil et crème solaire.</string>
+    <string name="notification_highlight_wind">Vent jusqu\'à %1$s km/h. Le coupe-vent vous protège.</string>
+    <string name="notification_highlight_swing">Baisse de %1$s° plus tard. Emportez la couche du soir.</string>
+    <string name="notification_highlight_hydration">Pics à %1$s°. Emportez de l\'eau et restez à l\'ombre.</string>
+
+</resources>

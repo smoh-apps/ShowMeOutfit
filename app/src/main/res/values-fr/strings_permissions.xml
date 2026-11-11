@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Android 13+ notifications -->
+    <string name="settings_permission_notifications_title">Les notifications sont désactivées</string>
+    <string name="settings_permission_notifications_summary">Votre alerte du matin est active, mais Android ne l\'affichera qu\'une fois les notifications autorisées.</string>
+    <string name="settings_permission_notifications_action">Autoriser les notifications</string>
+    <string name="settings_permission_dialog_title">Autoriser les alertes du matin ?</string>
+    <string name="settings_permission_dialog_body">ShowMeOutfit envoie une notification par jour avec vos couches et accessoires. Android a besoin de votre autorisation, et vous pouvez la révoquer à tout moment dans les réglages système.</string>
+    <string name="settings_permission_dialog_confirm">Autoriser</string>
+    <string name="settings_permission_dialog_cancel">Plus tard</string>
+
+    <!-- Android 12+ exact alarms -->
+    <string name="settings_permission_exact_alarm_title">L\'heure exacte est restreinte</string>
+    <string name="settings_permission_exact_alarm_summary">Android peut livrer l\'alerte en retard. Autorisez les alarmes exactes pour la recevoir à l\'heure choisie.</string>
+    <string name="settings_permission_exact_alarm_action">Ouvrir les réglages</string>
+
+</resources>
