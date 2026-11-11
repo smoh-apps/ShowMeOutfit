@@ -10,6 +10,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.Density
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -54,6 +55,8 @@ class AccessibilityTest {
     fun timeline_reads_as_one_summary_and_does_not_announce_its_tick_labels() {
         val outfit = previewTodayOutfit()
         showHome(HomeUiState.Content(outfit))
+        // The chart lives in the collapsed drawer, so the drawer has to be opened first.
+        expandTimeline()
 
         composeRule.onNodeWithContentDescription(expectedTimelineDescription(outfit)).assertExists()
 
@@ -152,6 +155,14 @@ class AccessibilityTest {
     }
 
     // --- Helpers ----------------------------------------------------------------------------
+
+    /** Opens the collapsible weather drawer; the chart is folded away by default. */
+    private fun expandTimeline() {
+        composeRule.onNodeWithTag(HomeTestTags.TIMELINE_TOGGLE)
+            .performScrollTo()
+            .performClick()
+        composeRule.waitForIdle()
+    }
 
     private fun showHome(state: HomeUiState, fontScale: Float = 1f) {
         composeRule.setContent {
