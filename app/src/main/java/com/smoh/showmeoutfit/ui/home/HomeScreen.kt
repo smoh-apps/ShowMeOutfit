@@ -33,12 +33,13 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
@@ -58,7 +59,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.smoh.showmeoutfit.R
 import com.smoh.showmeoutfit.domain.model.CurrentCondition
 import com.smoh.showmeoutfit.domain.model.DomainError
-import com.smoh.showmeoutfit.domain.model.Garment
 import com.smoh.showmeoutfit.domain.model.OutfitRecommendation
 import com.smoh.showmeoutfit.domain.model.TodayOutfit
 import com.smoh.showmeoutfit.domain.model.WeatherData
@@ -66,7 +66,6 @@ import com.smoh.showmeoutfit.domain.model.WeatherOrigin
 import com.smoh.showmeoutfit.ui.components.AccessoryBadge
 import com.smoh.showmeoutfit.ui.components.DiurnalTimelineBar
 import com.smoh.showmeoutfit.ui.components.OfflineBanner
-import com.smoh.showmeoutfit.ui.components.OutfitLayerCard
 import com.smoh.showmeoutfit.ui.components.TimelinePoint
 import com.smoh.showmeoutfit.ui.components.WeatherMetricChip
 import com.smoh.showmeoutfit.ui.theme.DesignTokens
@@ -89,6 +88,14 @@ object HomeTestTags {
     const val TIMELINE = "home_timeline"
     const val METRICS = "home_metrics"
     const val OPEN_SETTINGS = "home_open_settings"
+    const val OUTFIT_GRID = "home_outfit_grid"
+    const val GARMENT_DETAIL_SHEET = "home_garment_detail_sheet"
+
+    /** Prefix for the per-tile tags: `outfit_tile_base`, `outfit_tile_mid`, … */
+    const val OUTFIT_TILE_PREFIX = "outfit_tile_"
+
+    /** Tag for the tile of one active layer ([layerKey] is `base`, `mid`, `outer`, `bottom`, `footwear`). */
+    fun outfitTile(layerKey: String): String = OUTFIT_TILE_PREFIX + layerKey.lowercase(Locale.ROOT)
 }
 
 private val HourLabelFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
@@ -241,6 +248,9 @@ private fun HomeContentState(
     val accent = LocalWeatherPalette.current[
         GarmentTextMapper.conditionGroup(weather.snapshot.current.weatherCode)
     ].accent
+    // The detail sheet is transient presentation state: it owns no domain data and closes without
+    // touching the recommendation, so it stays local to the content composable.
+    var inspectedTile by remember { mutableStateOf<OutfitTileUi?>(null) }
 
     PullToRefreshBox(
         isRefreshing = state.isRefreshing,
@@ -303,46 +313,13 @@ private fun HomeContentState(
             )
 
             SectionHeading(title = stringResource(R.string.home_section_outfit))
-            LayerCard(
-                layerLabel = stringResource(R.string.home_layer_base),
-                garment = recommendation.baseLayer,
-                accentColor = accent
-            )
-            val midLayer = recommendation.midLayer
-            if (midLayer != null) {
-                LayerCard(
-                    layerLabel = stringResource(R.string.home_layer_mid),
-                    garment = midLayer,
-                    accentColor = accent
-                )
-            } else {
-                NotNeededLayerCard(
-                    layerLabel = stringResource(R.string.home_layer_mid),
-                    description = stringResource(R.string.home_layer_mid_not_needed_description)
-                )
-            }
-            val outerLayer = recommendation.outerLayer
-            if (outerLayer != null) {
-                LayerCard(
-                    layerLabel = stringResource(R.string.home_layer_outer),
-                    garment = outerLayer,
-                    accentColor = accent
-                )
-            } else {
-                NotNeededLayerCard(
-                    layerLabel = stringResource(R.string.home_layer_outer),
-                    description = stringResource(R.string.home_layer_outer_not_needed_description)
-                )
-            }
-            LayerCard(
-                layerLabel = stringResource(R.string.home_layer_bottom),
-                garment = recommendation.bottomLayer,
-                accentColor = accent
-            )
-            LayerCard(
-                layerLabel = stringResource(R.string.home_layer_footwear),
-                garment = recommendation.footwear,
-                accentColor = accent
+            // Outfit-first: only the layers that were actually recommended get a tile, so the grid
+            // never pads itself with "not needed" placeholders.
+            OutfitBentoGrid(
+                recommendation = recommendation,
+                accentColor = accent,
+                modifier = Modifier.testTag(HomeTestTags.OUTFIT_GRID),
+                onGarmentClick = { tile -> inspectedTile = tile }
             )
 
             SectionHeading(title = stringResource(R.string.home_section_accessories))
@@ -353,6 +330,14 @@ private fun HomeContentState(
 
             Spacer(modifier = Modifier.height(DesignTokens.Spacing.lg))
         }
+    }
+
+    // Rendered as a dialog window, so it sits outside the scrolling content and above the scrim.
+    inspectedTile?.let { tile ->
+        GarmentDetailSheet(
+            tile = tile,
+            onDismissRequest = { inspectedTile = null }
+        )
     }
 }
 
@@ -452,40 +437,6 @@ private fun SectionHeading(title: String) {
 }
 
 @Composable
-private fun LayerCard(
-    layerLabel: String,
-    garment: Garment,
-    accentColor: Color
-) {
-    OutfitLayerCard(
-        layerLabel = layerLabel,
-        title = stringResource(
-            GarmentTextMapper.garmentNameRes(garment.id, garment.fit)
-        ),
-        description = stringResource(
-            GarmentTextMapper.garmentDescriptionRes(garment.id, garment.fit)
-        ),
-        accentColor = accentColor
-    )
-}
-
-/**
- * "Not needed today" replacement for an absent mid/outer layer.
- *
- * Rendered as a real card instead of an empty gap so the five-layer model stays legible, and the
- * muted accent never carries the meaning on its own: the title says it in words.
- */
-@Composable
-private fun NotNeededLayerCard(layerLabel: String, description: String) {
-    OutfitLayerCard(
-        layerLabel = layerLabel,
-        title = stringResource(R.string.home_layer_not_needed),
-        description = description,
-        accentColor = MaterialTheme.colorScheme.outline
-    )
-}
-
-@Composable
 private fun AccessorySection(recommendation: OutfitRecommendation) {
     if (recommendation.accessories.isEmpty()) {
         Text(
@@ -501,7 +452,8 @@ private fun AccessorySection(recommendation: OutfitRecommendation) {
             Column(verticalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.xxs)) {
                 AccessoryBadge(
                     label = stringResource(GarmentTextMapper.accessoryNameRes(alert.type)),
-                    priority = GarmentTextMapper.accessoryPriority(alert.priority)
+                    priority = GarmentTextMapper.accessoryPriority(alert.priority),
+                    iconRes = GarmentVisualMapper.accessoryDrawableRes(alert.type)
                 )
                 Text(
                     text = localizedText(GarmentTextMapper.accessoryReason(alert.reason)),

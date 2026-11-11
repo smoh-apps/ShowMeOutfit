@@ -86,27 +86,35 @@ class HomeScreenTest {
     }
 
     @Test
-    fun content_renders_all_five_layer_labels() {
+    fun content_renders_only_the_active_layer_tiles() {
+        // The sample has a base, mid, bottom and footwear layer but no outer layer.
         val outfit = previewTodayOutfit()
+        assertEquals(null, outfit.recommendation.outerLayer)
+
         setState(HomeUiState.Content(outfit))
 
+        composeRule.onNodeWithTag(HomeTestTags.OUTFIT_GRID).assertExists()
+
         listOf(
-            R.string.home_layer_base,
-            R.string.home_layer_mid,
-            R.string.home_layer_outer,
-            R.string.home_layer_bottom,
-            R.string.home_layer_footwear
-        ).forEach { labelRes ->
-            composeRule.onNodeWithText(text(labelRes))
+            "base" to R.string.home_layer_base,
+            "mid" to R.string.home_layer_mid,
+            "bottom" to R.string.home_layer_bottom,
+            "footwear" to R.string.home_layer_footwear
+        ).forEach { (layerKey, labelRes) ->
+            composeRule.onNodeWithTag(HomeTestTags.outfitTile(layerKey))
                 .performScrollTo()
                 .assertIsDisplayed()
+            composeRule.onNodeWithText(text(labelRes)).assertExists()
         }
 
-        // Every recommended garment resolves to real copy inside its card.
+        // The absent layer gets no tile and no label at all.
+        composeRule.onNodeWithTag(HomeTestTags.outfitTile("outer")).assertDoesNotExist()
+        composeRule.onNodeWithText(text(R.string.home_layer_outer)).assertDoesNotExist()
+
+        // Every recommended garment resolves to real copy inside its tile.
         listOfNotNull(
             outfit.recommendation.baseLayer,
             outfit.recommendation.midLayer,
-            outfit.recommendation.outerLayer,
             outfit.recommendation.bottomLayer,
             outfit.recommendation.footwear
         ).forEach { garment ->
@@ -115,18 +123,66 @@ class HomeScreenTest {
     }
 
     @Test
-    fun content_renders_a_not_needed_card_instead_of_a_gap_for_absent_layers() {
-        // The sample has no outer layer.
+    fun no_not_needed_placeholder_is_rendered_for_an_absent_layer() {
         val outfit = previewTodayOutfit()
         assertEquals(null, outfit.recommendation.outerLayer)
 
         setState(HomeUiState.Content(outfit))
 
-        composeRule.onNodeWithText(text(R.string.home_layer_not_needed))
-            .performScrollTo()
-            .assertIsDisplayed()
+        // The outfit grid only shows layers that exist; there is no "not needed" filler card.
+        composeRule.onNodeWithText(text(R.string.home_layer_not_needed)).assertDoesNotExist()
         composeRule.onNodeWithText(text(R.string.home_layer_outer_not_needed_description))
-            .assertExists()
+            .assertDoesNotExist()
+        composeRule.onNodeWithTag(HomeTestTags.outfitTile("outer")).assertDoesNotExist()
+    }
+
+    @Test
+    fun tapping_a_tile_opens_the_detail_sheet_with_the_full_description() {
+        val outfit = previewTodayOutfit()
+        val base = requireNotNull(outfit.recommendation.baseLayer)
+        setState(HomeUiState.Content(outfit))
+
+        composeRule.onNodeWithTag(HomeTestTags.outfitTile("base"))
+            .performScrollTo()
+            .performClick()
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithTag(HomeTestTags.GARMENT_DETAIL_SHEET).assertExists()
+        // The description is not in the tile, so finding it proves the sheet expanded the garment.
+        composeRule.onNodeWithText(
+            context.getString(GarmentTextMapper.garmentDescriptionRes(base.id, base.fit))
+        ).assertExists()
+    }
+
+    @Test
+    fun outfit_grid_keeps_every_active_tile_and_title_at_two_hundred_percent_font() {
+        val outfit = previewTodayOutfit()
+
+        composeRule.setContent {
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale = 2f)) {
+                ShowMeOutfitTheme(darkTheme = false, dynamicColor = false) {
+                    HomeScreen(state = HomeUiState.Content(outfit), onIntent = {}, onEffect = {})
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(HomeTestTags.OUTFIT_GRID).assertExists()
+
+        listOf(
+            "base" to outfit.recommendation.baseLayer,
+            "mid" to outfit.recommendation.midLayer,
+            "bottom" to outfit.recommendation.bottomLayer,
+            "footwear" to outfit.recommendation.footwear
+        ).forEach { (layerKey, garment) ->
+            composeRule.onNodeWithTag(HomeTestTags.outfitTile(layerKey))
+                .performScrollTo()
+                .assertIsDisplayed()
+            composeRule.onNodeWithText(garmentName(requireNotNull(garment)))
+                .assertIsDisplayed()
+        }
+
+        composeRule.onNodeWithTag(HomeTestTags.outfitTile("outer")).assertDoesNotExist()
     }
 
     @Test
