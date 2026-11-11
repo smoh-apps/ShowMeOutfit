@@ -27,9 +27,6 @@
     <string name="home_layer_outer">Outer layer</string>
     <string name="home_layer_bottom">Bottoms</string>
     <string name="home_layer_footwear">Footwear</string>
-    <string name="home_layer_not_needed">Not needed today</string>
-    <string name="home_layer_mid_not_needed_description">Today\'s range stays comfortable without an extra middle layer.</string>
-    <string name="home_layer_outer_not_needed_description">No outer layer is needed for today\'s temperatures.</string>
 
     <!-- Garment names: unisex base label -->
     <string name="home_garment_thermal_undershirt_name">Thermal undershirt</string>
@@ -148,6 +145,12 @@
     <!-- Literal unit symbol: never used as a format string, so the escape rule does not apply. -->
     <string name="home_metric_percent_unit" formatted="false">%</string>
     <string name="home_metric_wind_unit">km/h</string>
+
+    <!-- Collapsible weather drawer (toggle action + spoken state) -->
+    <string name="home_weather_expand_timeline">Show hourly timeline</string>
+    <string name="home_weather_collapse_timeline">Hide hourly timeline</string>
+    <string name="home_weather_state_expanded">Expanded</string>
+    <string name="home_weather_state_collapsed">Collapsed</string>
 
     <!-- Headlines -->
     <string name="home_headline_frost">Hard frost — dress for the cold</string>
