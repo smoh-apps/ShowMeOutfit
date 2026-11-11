@@ -55,8 +55,9 @@ import java.util.Locale
  * Collapsed is the resting state because that is what keeps the outfit grid above the fold; the
  * flag is [rememberSaveable] so a rotation never opens the chart on its own.
  *
- * The whole header is a single button-role node whose label and state are spoken explicitly — the
- * chevron is decorative and carries no description of its own.
+ * The title row is the button-role node whose label and state are spoken explicitly — the chevron is
+ * decorative and carries no description of its own. The peak chips stay outside that node so they
+ * keep their own focus and never swallow the toggle's tap.
  */
 @Composable
 fun CollapsibleWeatherDrawer(
@@ -90,38 +91,44 @@ fun CollapsibleWeatherDrawer(
         border = BorderStroke(DesignTokens.Hairline, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(modifier = Modifier.padding(horizontal = DesignTokens.Spacing.md)) {
-            Column(
+            // Only the title row toggles: it is the sole button-role node, merged so TalkBack reads
+            // one label ("show hourly timeline, collapsed") instead of stopping on the title and
+            // the chevron separately.
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = DesignTokens.MinTouchTarget)
                     .testTag(HomeTestTags.TIMELINE_TOGGLE)
                     .clickable { expanded = !expanded }
-                    // Merged so TalkBack reads one node ("show hourly timeline, collapsed") instead
-                    // of stopping on the title, the chips and the chevron separately.
                     .semantics(mergeDescendants = true) {
                         role = Role.Button
                         contentDescription = actionLabel
                         stateDescription = stateLabel
                     }
                     .padding(vertical = DesignTokens.Spacing.sm),
-                verticalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.sm)
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    SectionHeading(title = stringResource(R.string.home_section_highlights))
-                    Spacer(modifier = Modifier.weight(1f))
-                    Icon(
-                        imageVector = if (expanded) {
-                            Icons.Filled.KeyboardArrowUp
-                        } else {
-                            Icons.Filled.KeyboardArrowDown
-                        },
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(DesignTokens.IconSize.lg)
-                    )
-                }
-                PeakMetricChips(recommendation = recommendation)
+                SectionHeading(title = stringResource(R.string.home_section_highlights))
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(
+                    imageVector = if (expanded) {
+                        Icons.Filled.KeyboardArrowUp
+                    } else {
+                        Icons.Filled.KeyboardArrowDown
+                    },
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(DesignTokens.IconSize.lg)
+                )
             }
+            // Read-only peaks sit outside the toggle, so tapping a chip never folds the chart.
+            PeakMetricChips(
+                recommendation = recommendation,
+                modifier = Modifier.padding(
+                    top = DesignTokens.Spacing.sm,
+                    bottom = DesignTokens.Spacing.sm
+                )
+            )
 
             AnimatedVisibility(
                 visible = expanded,
@@ -149,11 +156,12 @@ fun CollapsibleWeatherDrawer(
 /**
  * Peak rain, UV and wind, always visible.
  *
- * The row keeps its own merge boundary: it sits inside the header button, and merging the readouts
- * into that button would leave one unreadable run-on label instead of three metric chips.
+ * The row keeps its own merge boundary and is not clickable: it sits beside the title button, never
+ * inside it, so merging the readouts into that button would leave one unreadable run-on label
+ * instead of three metric chips.
  */
 @Composable
-private fun PeakMetricChips(recommendation: OutfitRecommendation) {
+private fun PeakMetricChips(recommendation: OutfitRecommendation, modifier: Modifier = Modifier) {
     val highlights = recommendation.weatherHighlights
     val locale = Locale.getDefault()
     // Three chips side by side stop being readable once the text doubles. FlowRow either keeps
@@ -161,7 +169,7 @@ private fun PeakMetricChips(recommendation: OutfitRecommendation) {
     val itemsPerRow = if (LocalDensity.current.fontScale >= LargeFontScale) 1 else 3
 
     FlowRow(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .testTag(HomeTestTags.METRICS)
             .semantics(mergeDescendants = true) {},
