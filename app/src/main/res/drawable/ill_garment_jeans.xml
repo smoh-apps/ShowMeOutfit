@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Jeans illustration (SMO-S5-01): indigo denim, pale topstitching, camel rivet.
+  Flat multi-tone art on a 96dp grid with explicit hex fills, so it is theme independent.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="#3B5C8A"
+        android:pathData="M29,22 L67,22 C69.4,22 71.2,23.9 71,26.3 L69.6,52 L65.8,80.4 C65.5,82.6 63.6,84.2 61.4,84.2 L55.4,84.2 C53.2,84.2 51.4,82.4 51.4,80.2 L50.6,60 L48,56 L45.4,60 L44.6,80.2 C44.6,82.4 42.8,84.2 40.6,84.2 L34.6,84.2 C32.4,84.2 30.5,82.6 30.2,80.4 L26.4,52 L25,26.3 C24.8,23.9 26.6,22 29,22 Z" />
+    <path
+        android:fillColor="#2C4670"
+        android:pathData="M48,56 L69.6,52 L65.8,80.4 C65.5,82.6 63.6,84.2 61.4,84.2 L55.4,84.2 C53.2,84.2 51.4,82.4 51.4,80.2 L50.6,60 Z" />
+    <path
+        android:fillColor="#2C4670"
+        android:pathData="M29,22 L67,22 C69.4,22 71.2,23.9 71,26.3 L70.8,32.4 L25.2,32.4 L25,26.3 C24.8,23.9 26.6,22 29,22 Z" />
+    <path
+        android:fillColor="#D9E2F0"
+        android:pathData="M30.4,32.4 L44.4,32.4 L44.4,33.4 L30.4,33.4 Z M51.6,32.4 L65.6,32.4 L65.6,33.4 L51.6,33.4 Z M37.4,44 L38.2,44 L38.8,80 L38,80 Z M58,44 L58.8,44 L58.6,80 L57.8,80 Z" />
+    <path
+        android:fillColor="#D9E2F0"
+        android:pathData="M31.4,34.6 C36,39.4 42,41 46,41 L46,42.4 C41,42.4 34.6,40.4 30.4,35.4 Z" />
+    <path
+        android:fillColor="#C79A5B"
+        android:pathData="M45.8,25.2 h4.4 v3.4 h-4.4 z" />
+</vector>

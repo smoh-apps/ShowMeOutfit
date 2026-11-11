@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Sunscreen accessory illustration (SMO-S5-01): white bottle, sky label, sunny yellow cap.
+  Flat multi-tone art on a 96dp grid with explicit hex fills, so it is theme independent.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="#F2C94C"
+        android:pathData="M43,14 L53,14 C55,14 56,15 56,17 L56,23 L40,23 L40,17 C40,15 41,14 43,14 Z" />
+    <path
+        android:fillColor="#D9A72E"
+        android:pathData="M40,23 L56,23 L56,28 L40,28 Z" />
+    <path
+        android:fillColor="#F7F7F5"
+        android:pathData="M36,34 L60,34 C64.4,34 67,37 67,41 L67,72 C67,77 63.6,81 58.6,81 L37.4,81 C32.4,81 29,77 29,72 L29,41 C29,37 31.6,34 36,34 Z" />
+    <path
+        android:fillColor="#C9CDD2"
+        android:pathData="M56,34 L60,34 C64.4,34 67,37 67,41 L67,72 C67,77 63.6,81 58.6,81 L54,81 C58,79.6 60.4,76.4 60.4,72 L60.4,41 C60.4,37.4 58.6,35 56,34 Z" />
+    <path
+        android:fillColor="#7FB3D5"
+        android:pathData="M31.6,50 L63,50 L63,70 L31.6,70 Z" />
+    <path
+        android:fillColor="#F2C94C"
+        android:pathData="M47.3,55 a5,5 0 1,0 0,10 a5,5 0 1,0 0,-10 z" />
+    <path
+        android:fillColor="#D9A72E"
+        android:pathData="M46.6,46.6 h1.6 v3.4 h-1.6 z M46.6,70 h1.6 v3.4 h-1.6 z M37.8,57.6 h3.4 v1.6 h-3.4 z M53.6,57.6 h3.4 v1.6 h-3.4 z" />
+    <path
+        android:fillColor="#F7F7F5"
+        android:pathData="M33.6,40 L35.6,40 L35.6,56 L33.6,56 Z" />
+</vector>

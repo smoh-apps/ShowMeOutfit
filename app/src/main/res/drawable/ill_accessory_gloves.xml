@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Gloves accessory illustration (SMO-S5-01): leather glove with four fingers and a ribbed cuff.
+  Flat multi-tone art on a 96dp grid with explicit hex fills, so it is theme independent.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="#7A4E2D"
+        android:pathData="M28.6,44 L28.6,28.4 C28.6,25.2 30.8,23 34,23 C37.2,23 39.4,25.2 39.4,28.4 L39.4,44 Z" />
+    <path
+        android:fillColor="#7A4E2D"
+        android:pathData="M40.6,44 L40.6,26 C40.6,22.8 42.8,20.6 46,20.6 C49.2,20.6 51.4,22.8 51.4,26 L51.4,44 Z" />
+    <path
+        android:fillColor="#7A4E2D"
+        android:pathData="M52.6,44 L52.6,27.4 C52.6,24.2 54.8,22 58,22 C61.2,22 63.4,24.2 63.4,27.4 L63.4,44 Z" />
+    <path
+        android:fillColor="#7A4E2D"
+        android:pathData="M64.6,44 L64.6,32.4 C64.6,29.6 66.6,27.6 69.4,27.6 C72,27.6 73.4,29.6 73.4,32.4 L73.4,44 Z" />
+    <path
+        android:fillColor="#7A4E2D"
+        android:pathData="M28.4,50 L21.2,46.4 C18.4,45.2 16,46.8 16,49.6 C16,52.4 17.8,54.6 20.6,55.4 L28.4,57.2 Z" />
+    <path
+        android:fillColor="#7A4E2D"
+        android:pathData="M28.6,38 C28.6,33.6 32.2,30.6 36.6,30.6 L62.4,30.6 C66.8,30.6 70.2,33.6 70.2,38 L70.2,60 C70.2,64.4 66.6,67.8 62.2,67.8 L36.6,67.8 C32.2,67.8 28.6,64.4 28.6,60 Z" />
+    <path
+        android:fillColor="#E8D3C3"
+        android:pathData="M27.4,56.6 L71.4,56.6 L71.4,60.6 L27.4,60.6 Z" />
+    <path
+        android:fillColor="#5C3720"
+        android:pathData="M27,60.6 L71.8,60.6 L71.8,67 C71.8,71.6 68,75.4 63.4,75.4 L35.4,75.4 C30.8,75.4 27,71.6 27,67 Z" />
+    <path
+        android:fillColor="#C79A5B"
+        android:pathData="M32.4,60.6 h2.2 v14.8 h-2.2 z M39.6,60.6 h2.2 v14.8 h-2.2 z M46.8,60.6 h2.2 v14.8 h-2.2 z M54,60.6 h2.2 v14.8 h-2.2 z M61.2,60.6 h2.2 v14 h-2.2 z M68.4,60.6 h2.2 v12 h-2.2 z" />
+</vector>
