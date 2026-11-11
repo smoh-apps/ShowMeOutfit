@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -123,6 +124,11 @@ fun OutfitBentoGrid(
                 onClick = { onGarmentClick(tile) },
                 modifier = Modifier.weight(1f)
             )
+        }
+        // Odd layer count (e.g. base + mid + outer + bottom + footwear) would otherwise let the
+        // orphaned tile stretch across the whole row; an invisible twin keeps it at half width.
+        if (itemsPerRow == 2 && tiles.size % 2 == 1) {
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }
