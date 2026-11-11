@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Startup routing -->
+    <string name="app_startup_loading">Đang chuẩn bị trang phục của bạn…</string>
+
+    <!-- Screen frame -->
+    <string name="onboarding_title">Cá nhân hóa cho bạn</string>
+    <string name="onboarding_subtitle">Ba lựa chọn nhanh giúp mọi gợi ý phù hợp hơn với bạn. Bạn có thể thay đổi bất cứ lúc nào trong Cài đặt.</string>
+    <string name="onboarding_footer_privacy">Chỉ nhóm tuổi của bạn được lưu, không bao giờ lưu ngày sinh.</string>
+
+    <!-- Gender / fit -->
+    <string name="onboarding_gender_title">Kiểu dáng yêu thích</string>
+    <string name="onboarding_gender_helper">Mục này chỉ thay đổi tên gọi và kiểu cắt của trang phục. Không bao giờ thay đổi quy tắc thời tiết.</string>
+    <string name="onboarding_gender_all">Unisex</string>
+    <string name="onboarding_gender_men">Nam</string>
+    <string name="onboarding_gender_women">Nữ</string>
+
+    <!-- Age -->
+    <string name="onboarding_age_title">Tuổi của bạn</string>
+    <string name="onboarding_age_label">Tuổi (theo năm)</string>
+    <string name="onboarding_age_placeholder">Không bắt buộc</string>
+    <string name="onboarding_age_helper">Chỉ dùng để chọn nhóm cảm nhận nhiệt. Bạn có thể để trống nếu muốn.</string>
+    <string name="onboarding_age_error_range">Nhập độ tuổi từ 0 đến 120.</string>
+    <string name="onboarding_age_band_label">Hồ sơ cảm nhận: %1$s</string>
+    <string name="onboarding_age_band_unspecified">trung tính (không điều chỉnh)</string>
+    <string name="onboarding_age_band_child_0_5">trẻ nhỏ (0–5)</string>
+    <string name="onboarding_age_band_child_6_12">trẻ em (6–12)</string>
+    <string name="onboarding_age_band_teen_13_19">thiếu niên (13–19)</string>
+    <string name="onboarding_age_band_adult_20_39">người lớn (20–39)</string>
+    <string name="onboarding_age_band_adult_40_59">người lớn (40–59)</string>
+    <string name="onboarding_age_band_senior_60_plus">người cao tuổi (60+)</string>
+
+    <!-- Thermal sensitivity -->
+    <string name="onboarding_sensitivity_title">Bạn cảm thấy lạnh thế nào?</string>
+    <string name="onboarding_sensitivity_helper">Mục này dịch ngưỡng mặc áo tối đa 2,5 °C.</string>
+    <string name="onboarding_sensitivity_cold">Tôi dễ bị lạnh</string>
+    <string name="onboarding_sensitivity_neutral">Bình thường</string>
+    <string name="onboarding_sensitivity_warm">Tôi dễ bị nóng</string>
+    <string name="onboarding_sensitivity_cold_description">Thêm áo ấm sớm hơn vào ngày mát.</string>
+    <string name="onboarding_sensitivity_neutral_description">Giữ nguyên ngưỡng tiêu chuẩn.</string>
+    <string name="onboarding_sensitivity_warm_description">Chờ lâu hơn trước khi thêm lớp áo.</string>
+
+    <!-- Actions -->
+    <string name="onboarding_get_started">Bắt đầu</string>
+    <string name="onboarding_skip">Bỏ qua lúc này</string>
+    <string name="onboarding_saving">Đang lưu…</string>
+    <string name="onboarding_error_save">Không thể lưu hồ sơ của bạn. Hãy thử lại.</string>
+
+</resources>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- AccessoryBadge -->
+    <string name="component_accessory_priority_critical">Essentiel</string>
+    <string name="component_accessory_priority_recommended">Recommandé</string>
+    <string name="component_accessory_priority_optional">Facultatif</string>
+    <string name="component_accessory_badge_content_description">Accessoire %1$s : %2$s</string>
+
+    <!-- WeatherMetricChip -->
+    <string name="component_metric_chip_content_description">%1$s : %2$s</string>
+
+    <!-- DiurnalTimelineBar -->
+    <string name="component_timeline_content_description" tools:ignore="PluralsCandidate">Prévisions de la journée de %1$s à %2$s. Températures entre %3$.0f et %4$.0f degrés Celsius. Probabilité de pluie maximale de %5$d pour cent. Indice UV maximal de %6$.1f.</string>
+    <string name="component_timeline_range">%1$.0f° à %2$.0f°</string>
+    <string name="component_timeline_legend_temperature">Température</string>
+    <string name="component_timeline_legend_rain">Risque de pluie</string>
+    <string name="component_timeline_legend_uv">Indice UV</string>
+    <string name="component_timeline_empty">Aucune prévision horaire disponible pour le moment</string>
+</resources>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="location_search_title">Choisir une ville</string>
+    <string name="location_search_hint">Rechercher une ville</string>
+    <string name="location_search_clear">Effacer la recherche</string>
+    <string name="location_search_use_current">Utiliser ma position</string>
+    <string name="location_search_locating">Localisation en cours…</string>
+    <string name="location_search_searching">Recherche…</string>
+    <string name="location_search_dismiss">Fermer</string>
+    <string name="location_search_retry">Réessayer</string>
+
+    <string name="location_search_empty">Aucune ville ne correspond à « %1$s ».</string>
+    <string name="location_search_prompt">Saisissez au moins deux caractères ou utilisez votre position actuelle.</string>
+    <plurals name="location_search_result_count">
+        <item quantity="one">%1$d ville trouvée</item>
+        <item quantity="many">%1$d villes trouvées</item>
+        <item quantity="other">%1$d villes trouvées</item>
+    </plurals>
+    <string name="location_search_city_with_country">%1$s, %2$s</string>
+    <string name="location_search_result_content_description">%1$s. Appuyez deux fois pour utiliser cette ville.</string>
+
+    <string name="location_search_error_offline">Vous êtes hors ligne. Vérifiez votre connexion et réessayez.</string>
+    <string name="location_search_error_api">La recherche de ville est indisponible pour le moment. Réessayez dans un instant.</string>
+    <string name="location_search_error_malformed">La recherche de ville a renvoyé un résultat illisible. Essayez une autre orthographe.</string>
+    <string name="location_search_error_unknown">Une erreur est survenue pendant la recherche. Réessayez.</string>
+    <string name="location_search_error_permission_denied">L\'autorisation de localisation est désactivée. Vous pouvez toujours rechercher une ville ci-dessous.</string>
+    <string name="location_search_error_disabled">Les services de localisation sont désactivés sur cet appareil. Recherchez une ville ou activez-les dans les réglages.</string>
+    <string name="location_search_error_unavailable">Nous n\'avons pas pu obtenir votre position. Recherchez plutôt une ville.</string>
+
+    <string name="location_search_permission_title">La météo près de chez vous</string>
+    <string name="location_search_permission_body">ShowMeOutfit utilise votre position approximative pour choisir les bonnes prévisions. Vous pouvez aussi rechercher une ville manuellement.</string>
+    <string name="location_search_permission_continue">Continuer</string>
+    <string name="location_search_permission_not_now">Plus tard</string>
+    <string name="location_search_permission_open_settings">Ouvrir les réglages</string>
+</resources>

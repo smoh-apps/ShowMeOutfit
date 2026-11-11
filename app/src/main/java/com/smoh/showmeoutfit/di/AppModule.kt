@@ -40,6 +40,8 @@ import com.smoh.showmeoutfit.ui.notifications.AndroidOutfitNotifier
 import com.smoh.showmeoutfit.ui.onboarding.OnboardingViewModel
 import com.smoh.showmeoutfit.ui.permissions.AlertsPermissionReader
 import com.smoh.showmeoutfit.ui.permissions.AndroidAlertsPermissionReader
+import com.smoh.showmeoutfit.ui.settings.AndroidAppLocaleController
+import com.smoh.showmeoutfit.ui.settings.AppLocaleController
 import com.smoh.showmeoutfit.ui.settings.SettingsViewModel
 import com.smoh.showmeoutfit.ui.app.AppViewModel
 import io.ktor.client.HttpClient
@@ -92,6 +94,10 @@ val storageModule = module {
     }
     single {
         UserPreferencesStore(dataStore = get())
+    }
+    // Backs the in-app language picker; SettingsViewModel resolves it through viewModelOf.
+    single<AppLocaleController> {
+        AndroidAppLocaleController(context = androidContext())
     }
 }
 
