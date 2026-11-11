@@ -22,9 +22,6 @@
     <string name="home_layer_outer">Couche externe</string>
     <string name="home_layer_bottom">Bas</string>
     <string name="home_layer_footwear">Chaussures</string>
-    <string name="home_layer_not_needed">Pas nécessaire aujourd\'hui</string>
-    <string name="home_layer_mid_not_needed_description">L\'amplitude du jour reste confortable sans couche intermédiaire supplémentaire.</string>
-    <string name="home_layer_outer_not_needed_description">Aucune couche externe n\'est nécessaire pour les températures du jour.</string>
 
     <!-- Garment names: unisex base label -->
     <string name="home_garment_thermal_undershirt_name">Maillot thermique</string>
@@ -142,6 +139,12 @@
     <string name="home_metric_wind_label">Vent</string>
     <string name="home_metric_percent_unit" formatted="false">%</string>
     <string name="home_metric_wind_unit">km/h</string>
+
+    <!-- Collapsible weather drawer (toggle action + spoken state) -->
+    <string name="home_weather_expand_timeline">Afficher la courbe horaire</string>
+    <string name="home_weather_collapse_timeline">Masquer la courbe horaire</string>
+    <string name="home_weather_state_expanded">Développé</string>
+    <string name="home_weather_state_collapsed">Réduit</string>
 
     <!-- Headlines -->
     <string name="home_headline_frost">Gel intense — habillez-vous chaudement</string>

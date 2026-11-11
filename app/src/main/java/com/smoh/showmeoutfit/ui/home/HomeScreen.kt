@@ -4,7 +4,6 @@ import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -64,10 +63,8 @@ import com.smoh.showmeoutfit.domain.model.TodayOutfit
 import com.smoh.showmeoutfit.domain.model.WeatherData
 import com.smoh.showmeoutfit.domain.model.WeatherOrigin
 import com.smoh.showmeoutfit.ui.components.AccessoryBadge
-import com.smoh.showmeoutfit.ui.components.DiurnalTimelineBar
 import com.smoh.showmeoutfit.ui.components.OfflineBanner
 import com.smoh.showmeoutfit.ui.components.TimelinePoint
-import com.smoh.showmeoutfit.ui.components.WeatherMetricChip
 import com.smoh.showmeoutfit.ui.theme.DesignTokens
 import com.smoh.showmeoutfit.ui.theme.LocalWeatherPalette
 import com.smoh.showmeoutfit.ui.theme.ShowMeOutfitTheme
@@ -86,6 +83,7 @@ object HomeTestTags {
     const val CACHE_BANNER = "home_cache_banner"
     const val REFRESH_FAILED_BANNER = "home_refresh_failed_banner"
     const val TIMELINE = "home_timeline"
+    const val TIMELINE_TOGGLE = "home_timeline_toggle"
     const val METRICS = "home_metrics"
     const val OPEN_SETTINGS = "home_open_settings"
     const val OUTFIT_GRID = "home_outfit_grid"
@@ -306,12 +304,6 @@ private fun HomeContentState(
                 )
             }
 
-            SectionHeading(title = stringResource(R.string.home_section_timeline))
-            DiurnalTimelineBar(
-                points = points,
-                modifier = Modifier.testTag(HomeTestTags.TIMELINE)
-            )
-
             SectionHeading(title = stringResource(R.string.home_section_outfit))
             // Outfit-first: only the layers that were actually recommended get a tile, so the grid
             // never pads itself with "not needed" placeholders.
@@ -325,8 +317,12 @@ private fun HomeContentState(
             SectionHeading(title = stringResource(R.string.home_section_accessories))
             AccessorySection(recommendation = recommendation)
 
-            SectionHeading(title = stringResource(R.string.home_section_highlights))
-            MetricSection(recommendation = recommendation)
+            // Weather detail last: the peaks stay visible, the chart costs a tap. That is what keeps
+            // the outfit above the fold on a phone.
+            CollapsibleWeatherDrawer(
+                recommendation = recommendation,
+                points = points
+            )
 
             Spacer(modifier = Modifier.height(DesignTokens.Spacing.lg))
         }
@@ -428,7 +424,7 @@ private fun cacheAgeText(age: CacheAge): String {
 }
 
 @Composable
-private fun SectionHeading(title: String) {
+internal fun SectionHeading(title: String) {
     Text(
         text = title,
         style = MaterialTheme.typography.titleMedium,
@@ -463,42 +459,6 @@ private fun AccessorySection(recommendation: OutfitRecommendation) {
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun MetricSection(recommendation: OutfitRecommendation) {
-    val highlights = recommendation.weatherHighlights
-    val locale = Locale.getDefault()
-    // Three chips side by side stop being readable once the text doubles. FlowRow either keeps
-    // them in one row (normal scale) or stacks them full width (200%), so nothing clips.
-    val itemsPerRow = if (LocalDensity.current.fontScale >= LargeFontScale) 1 else 3
-
-    FlowRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .testTag(HomeTestTags.METRICS),
-        horizontalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.sm),
-        verticalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.sm),
-        maxItemsInEachRow = itemsPerRow
-    ) {
-        WeatherMetricChip(
-            label = stringResource(R.string.home_metric_rain_label),
-            value = TextArg.Count(highlights.maxPrecipitationProb).format(locale),
-            unit = stringResource(R.string.home_metric_percent_unit),
-            modifier = Modifier.weight(1f)
-        )
-        WeatherMetricChip(
-            label = stringResource(R.string.home_metric_uv_label),
-            value = TextArg.Number(highlights.maxUvIndex, decimals = 1).format(locale),
-            modifier = Modifier.weight(1f)
-        )
-        WeatherMetricChip(
-            label = stringResource(R.string.home_metric_wind_label),
-            value = TextArg.Number(highlights.maxWindSpeedKmh, decimals = 0).format(locale),
-            unit = stringResource(R.string.home_metric_wind_unit),
-            modifier = Modifier.weight(1f)
-        )
     }
 }
 

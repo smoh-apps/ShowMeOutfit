@@ -22,9 +22,6 @@
     <string name="home_layer_outer">Lớp ngoài</string>
     <string name="home_layer_bottom">Quần</string>
     <string name="home_layer_footwear">Giày dép</string>
-    <string name="home_layer_not_needed">Hôm nay không cần</string>
-    <string name="home_layer_mid_not_needed_description">Nhiệt độ hôm nay dễ chịu, không cần thêm lớp giữa.</string>
-    <string name="home_layer_outer_not_needed_description">Nhiệt độ hôm nay không cần lớp áo ngoài.</string>
 
     <!-- Garment names: unisex base label -->
     <string name="home_garment_thermal_undershirt_name">Áo giữ nhiệt</string>
@@ -142,6 +139,12 @@
     <string name="home_metric_wind_label">Gió</string>
     <string name="home_metric_percent_unit" formatted="false">%</string>
     <string name="home_metric_wind_unit">km/h</string>
+
+    <!-- Collapsible weather drawer (toggle action + spoken state) -->
+    <string name="home_weather_expand_timeline">Hiện biểu đồ theo giờ</string>
+    <string name="home_weather_collapse_timeline">Ẩn biểu đồ theo giờ</string>
+    <string name="home_weather_state_expanded">Đang mở rộng</string>
+    <string name="home_weather_state_collapsed">Đang thu gọn</string>
 
     <!-- Headlines -->
     <string name="home_headline_frost">Giá buốt — mặc thật ấm</string>

@@ -129,11 +129,10 @@ class HomeScreenTest {
 
         setState(HomeUiState.Content(outfit))
 
-        // The outfit grid only shows layers that exist; there is no "not needed" filler card.
-        composeRule.onNodeWithText(text(R.string.home_layer_not_needed)).assertDoesNotExist()
-        composeRule.onNodeWithText(text(R.string.home_layer_outer_not_needed_description))
-            .assertDoesNotExist()
+        // The outfit grid only shows layers that exist: no filler tile and no placeholder copy for
+        // the missing layer (the old "not needed" strings went away with the bento grid rework).
         composeRule.onNodeWithTag(HomeTestTags.outfitTile("outer")).assertDoesNotExist()
+        composeRule.onNodeWithText(text(R.string.home_layer_outer)).assertDoesNotExist()
     }
 
     @Test
@@ -206,6 +205,12 @@ class HomeScreenTest {
     fun content_renders_timeline_and_metric_chips() {
         setState(HomeUiState.Content(previewTodayOutfit()))
 
+        // The peaks are always on screen; the chart needs the drawer opened first.
+        composeRule.onNodeWithTag(HomeTestTags.METRICS).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag(HomeTestTags.TIMELINE).assertDoesNotExist()
+
+        composeRule.onNodeWithTag(HomeTestTags.TIMELINE_TOGGLE).performScrollTo().performClick()
+
         composeRule.onNodeWithTag(HomeTestTags.TIMELINE).assertExists()
 
         // WeatherMetricChip exposes "<label>: <value>" as one content description; the visible
@@ -219,6 +224,71 @@ class HomeScreenTest {
                 .performScrollTo()
                 .assertIsDisplayed()
         }
+    }
+
+    @Test
+    fun the_hourly_timeline_is_hidden_until_the_drawer_is_opened() {
+        setState(HomeUiState.Content(previewTodayOutfit()))
+
+        composeRule.onNodeWithTag(HomeTestTags.TIMELINE).assertDoesNotExist()
+
+        composeRule.onNodeWithTag(HomeTestTags.TIMELINE_TOGGLE).performScrollTo().performClick()
+
+        composeRule.onNodeWithTag(HomeTestTags.TIMELINE).assertExists()
+    }
+
+    @Test
+    fun tapping_the_timeline_toggle_twice_folds_the_chart_away_again() {
+        setState(HomeUiState.Content(previewTodayOutfit()))
+
+        composeRule.onNodeWithTag(HomeTestTags.TIMELINE_TOGGLE).performScrollTo().performClick()
+        composeRule.onNodeWithTag(HomeTestTags.TIMELINE).assertExists()
+
+        composeRule.onNodeWithTag(HomeTestTags.TIMELINE_TOGGLE).performScrollTo().performClick()
+        composeRule.onNodeWithTag(HomeTestTags.TIMELINE).assertDoesNotExist()
+    }
+
+    @Test
+    fun the_peak_metric_chips_are_readable_without_opening_the_drawer() {
+        setState(HomeUiState.Content(previewTodayOutfit()))
+
+        composeRule.onNodeWithTag(HomeTestTags.METRICS).performScrollTo().assertIsDisplayed()
+
+        listOf(
+            R.string.home_metric_rain_label,
+            R.string.home_metric_uv_label,
+            R.string.home_metric_wind_label
+        ).forEach { labelRes ->
+            composeRule.onNodeWithContentDescription("${text(labelRes)}: ", substring = true)
+                .assertIsDisplayed()
+        }
+    }
+
+    @Test
+    fun the_timeline_toggle_announces_whether_the_chart_is_open() {
+        setState(HomeUiState.Content(previewTodayOutfit()))
+
+        composeRule.onNodeWithTag(HomeTestTags.TIMELINE_TOGGLE)
+            .assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.StateDescription,
+                    text(R.string.home_weather_state_collapsed)
+                )
+            )
+        composeRule.onNodeWithContentDescription(text(R.string.home_weather_expand_timeline))
+            .assertIsDisplayed()
+
+        composeRule.onNodeWithTag(HomeTestTags.TIMELINE_TOGGLE).performScrollTo().performClick()
+
+        composeRule.onNodeWithTag(HomeTestTags.TIMELINE_TOGGLE)
+            .assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.StateDescription,
+                    text(R.string.home_weather_state_expanded)
+                )
+            )
+        composeRule.onNodeWithContentDescription(text(R.string.home_weather_collapse_timeline))
+            .assertExists()
     }
 
     @Test
