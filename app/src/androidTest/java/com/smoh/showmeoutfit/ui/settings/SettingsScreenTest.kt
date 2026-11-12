@@ -6,6 +6,7 @@ import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.smoh.showmeoutfit.domain.model.AgeBand
@@ -272,10 +273,19 @@ class SettingsScreenTest {
             permissionState = AlertsPermissionState()
         )
 
-        composeRule.onNodeWithTag(SettingsTestTags.LANGUAGE_VIETNAMESE).assertIsSelected()
-        composeRule.onNodeWithTag(SettingsTestTags.LANGUAGE_SYSTEM).assertIsNotSelected()
-        composeRule.onNodeWithTag(SettingsTestTags.LANGUAGE_ENGLISH).assertIsNotSelected()
-        composeRule.onNodeWithTag(SettingsTestTags.LANGUAGE_FRENCH).assertIsNotSelected()
+        composeRule.onNodeWithTag(SettingsTestTags.LANGUAGE_VIETNAMESE)
+            .performScrollTo()
+            .assertIsDisplayed()
+            .assertIsSelected()
+        composeRule.onNodeWithTag(SettingsTestTags.LANGUAGE_SYSTEM)
+            .performScrollTo()
+            .assertIsNotSelected()
+        composeRule.onNodeWithTag(SettingsTestTags.LANGUAGE_ENGLISH)
+            .performScrollTo()
+            .assertIsNotSelected()
+        composeRule.onNodeWithTag(SettingsTestTags.LANGUAGE_FRENCH)
+            .performScrollTo()
+            .assertIsNotSelected()
     }
 
     @Test
@@ -290,8 +300,12 @@ class SettingsScreenTest {
             onIntent = { intents += it }
         )
 
-        composeRule.onNodeWithTag(SettingsTestTags.LANGUAGE_FRENCH).performClick()
-        composeRule.onNodeWithTag(SettingsTestTags.LANGUAGE_SYSTEM).performClick()
+        composeRule.onNodeWithTag(SettingsTestTags.LANGUAGE_FRENCH)
+            .performScrollTo()
+            .performClick()
+        composeRule.onNodeWithTag(SettingsTestTags.LANGUAGE_SYSTEM)
+            .performScrollTo()
+            .performClick()
 
         assertEquals(
             listOf(

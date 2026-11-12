@@ -66,7 +66,14 @@ val networkModule = module {
         HttpClientFactory.create(OkHttp.create())
     }
     single<RemoteWeatherDataSource> {
-        OpenMeteoDataSource(httpClient = get())
+        val localeController: AppLocaleController = get()
+        OpenMeteoDataSource(
+            httpClient = get(),
+            languageProvider = {
+                localeController.currentLanguage().tag
+                    ?: java.util.Locale.getDefault().language.ifBlank { "en" }
+            }
+        )
     }
 }
 

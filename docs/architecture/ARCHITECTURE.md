@@ -326,7 +326,7 @@ To keep the primary focus on **clothing and accessory recommendations** rather t
 ### 8.3 End-to-End Multi-Language Architecture (`EN`, `VI`, `FR`)
 1. **Per-App Language Infrastructure:**
    - Declares supported locales (`en`, `vi`, `fr`) in `res/xml/locales_config.xml` wired into `AndroidManifest.xml`.
-   - Integrates AndroidX `AppCompatDelegate.setApplicationLocales(LocaleListCompat)` with an in-app Language Picker in `SettingsScreen` (System Default, English, Tiếng Việt, Français).
+   - Integrates `AndroidAppLocaleController` (`LocaleManager.setApplicationLocales` on API 33+ with a `SharedPreferences` + `createConfigurationContext` / `Locale.setDefault` fallback on API 26–32) with an in-app Language Picker in `SettingsScreen` (System Default, English, Tiếng Việt, Français).
 2. **Localized Fashion & Weather Catalogs:**
    - Full resource translations under `res/values-vi/` and `res/values-fr/` across all 8 modular string files (`strings*.xml`), using natural, culturally idiomatic garment names and plural rules.
 3. **Locale-Aware Geocoding (`OpenMeteoDataSource`):**
