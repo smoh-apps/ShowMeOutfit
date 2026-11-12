@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Android 13+ notifications -->
+    <string name="settings_permission_notifications_title">Thông báo đang tắt</string>
+    <string name="settings_permission_notifications_summary">Nhắc nhở buổi sáng đã bật, nhưng Android sẽ không hiển thị cho đến khi bạn cho phép thông báo.</string>
+    <string name="settings_permission_notifications_action">Cho phép thông báo</string>
+    <string name="settings_permission_dialog_title">Cho phép nhắc nhở buổi sáng?</string>
+    <string name="settings_permission_dialog_body">ShowMeOutfit gửi một thông báo mỗi ngày với trang phục và phụ kiện của bạn. Android cần bạn cho phép trước, và bạn có thể thu hồi bất cứ lúc nào trong cài đặt hệ thống.</string>
+    <string name="settings_permission_dialog_confirm">Cho phép</string>
+    <string name="settings_permission_dialog_cancel">Để sau</string>
+
+    <!-- Android 12+ exact alarms -->
+    <string name="settings_permission_exact_alarm_title">Thời gian chính xác bị hạn chế</string>
+    <string name="settings_permission_exact_alarm_summary">Android có thể gửi nhắc nhở muộn. Hãy cho phép báo thức chính xác để nhận đúng giờ bạn chọn.</string>
+    <string name="settings_permission_exact_alarm_action">Mở cài đặt</string>
+
+</resources>

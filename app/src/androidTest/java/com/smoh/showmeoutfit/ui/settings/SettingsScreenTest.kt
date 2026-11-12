@@ -1,9 +1,12 @@
 package com.smoh.showmeoutfit.ui.settings
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.smoh.showmeoutfit.domain.model.AgeBand
@@ -46,7 +49,10 @@ class SettingsScreenTest {
                 morningNotificationTime = LocalTime.of(7, 0)
             )
         )
-        viewModel = SettingsViewModel(ManageUserProfileUseCase(userRepository))
+        viewModel = SettingsViewModel(
+            manageUserProfile = ManageUserProfileUseCase(userRepository),
+            localeController = FakeLocaleController()
+        )
     }
 
     private fun showSettings(onBack: () -> Unit = {}) {
@@ -254,10 +260,76 @@ class SettingsScreenTest {
         composeRule.onNodeWithTag(SettingsTestTags.EXACT_ALARM_NOTICE).assertDoesNotExist()
     }
 
+    // --- Language picker (SMO-S5-04) ---------------------------------------------------------
+
+    @Test
+    fun the_vietnamese_language_row_is_marked_selected_from_state() {
+        showScreen(
+            state = SettingsUiState(
+                profile = UserProfile(isConfigured = true),
+                isLoading = false,
+                language = AppLanguage.VIETNAMESE
+            ),
+            permissionState = AlertsPermissionState()
+        )
+
+        composeRule.onNodeWithTag(SettingsTestTags.LANGUAGE_VIETNAMESE)
+            .performScrollTo()
+            .assertIsDisplayed()
+            .assertIsSelected()
+        composeRule.onNodeWithTag(SettingsTestTags.LANGUAGE_SYSTEM)
+            .performScrollTo()
+            .assertIsNotSelected()
+        composeRule.onNodeWithTag(SettingsTestTags.LANGUAGE_ENGLISH)
+            .performScrollTo()
+            .assertIsNotSelected()
+        composeRule.onNodeWithTag(SettingsTestTags.LANGUAGE_FRENCH)
+            .performScrollTo()
+            .assertIsNotSelected()
+    }
+
+    @Test
+    fun every_language_row_dispatches_its_own_intent() {
+        val intents = mutableListOf<SettingsIntent>()
+        showScreen(
+            state = SettingsUiState(
+                profile = UserProfile(isConfigured = true),
+                isLoading = false
+            ),
+            permissionState = AlertsPermissionState(),
+            onIntent = { intents += it }
+        )
+
+        composeRule.onNodeWithTag(SettingsTestTags.LANGUAGE_FRENCH)
+            .performScrollTo()
+            .performClick()
+        composeRule.onNodeWithTag(SettingsTestTags.LANGUAGE_SYSTEM)
+            .performScrollTo()
+            .performClick()
+
+        assertEquals(
+            listOf(
+                SettingsIntent.SetLanguage(AppLanguage.FRENCH),
+                SettingsIntent.SetLanguage(AppLanguage.SYSTEM)
+            ),
+            intents
+        )
+    }
+
     private fun alertsEnabledState() = SettingsUiState(
         profile = UserProfile(isNotificationEnabled = true, isConfigured = true),
         isLoading = false
     )
+
+    private class FakeLocaleController : AppLocaleController {
+        private var saved = AppLanguage.SYSTEM
+
+        override fun currentLanguage(): AppLanguage = saved
+
+        override fun setLanguage(language: AppLanguage) {
+            saved = language
+        }
+    }
 
     private companion object {
         const val TIMEOUT_MILLIS = 5_000L

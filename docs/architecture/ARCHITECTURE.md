@@ -3,7 +3,7 @@
 | Attribute | Specification Details |
 | :--- | :--- |
 | **Document ID** | `SMO-ARCH-SPEC` |
-| **Document Version** | `1.0.0` |
+| **Document Version** | `1.1.0` |
 | **Status** | `APPROVED` |
 | **Target Platform** | Android (Min SDK 26, Target SDK 35/37) |
 | **Primary Language** | Kotlin 2.2+ |
@@ -19,6 +19,7 @@
 | Version | Date | Author | Description of Changes |
 | :--- | :--- | :--- | :--- |
 | **v1.0.0** | Oct 2026 | Senior Android Architect | Initial approved baseline architecture: Clean Architecture design, diurnal recommendation engine, standalone offline-first strategy, and battery-compliant morning scheduling. |
+| **v1.1.0** | Nov 2026 | Senior Android Architect | Post-MVP UX & Localization Evolution: Outfit-first visual hierarchy (`OutfitBentoGrid`, collapsible weather drawer), styled multi-color clothing vector illustrations (`GarmentVisualMapper`), and end-to-end multi-language architecture (`EN`, `VI`, `FR`) with Android 13+ per-app locale support and localized geocoding. |
 
 ---
 
@@ -301,3 +302,33 @@ classDiagram
     IOutfitRecommendationEngine <|.. RuleBasedPresetEngine : Phase 1 MVP
     IOutfitRecommendationEngine <|.. PersonalWardrobeEngine : Phase 2 Extension
 ```
+
+---
+
+## 8. v1.1.0 Architecture Enhancements: Visual Outfit-First UX & Localization
+
+Following post-MVP user feedback, version `1.1.0` introduces three structural enhancements while preserving 100% domain layer purity:
+
+### 8.1 Outfit-First Information Hierarchy & Progressive Disclosure
+To keep the primary focus on **clothing and accessory recommendations** rather than raw meteorological data:
+1. **Compact Weather Context Header:** Condenses city name, current/apparent temperature, condition description, and daily headline into a tight top bar above the fold.
+2. **Hero Visual Outfit Grid (`OutfitBentoGrid`):**
+   - Renders only **active** recommended layers (`baseLayer`, active `midLayer`, active `outerLayer`, `bottomLayer`, `footwear`) as styled multi-color visual cards in a 2-column flat-lay grid.
+   - Eliminates empty `"Not needed today"` placeholder cards and removes multi-line prose descriptions from the default card surface.
+   - **Tap-to-Inspect Detail Sheet:** Tapping any garment tile opens a modal bottom sheet displaying the full fabric rationale and diurnal wearing tip.
+3. **Visual Accessory Alert Strip:** Displays recommended accessories with multi-color vector icons and compact trigger badges (e.g., `15:00–17:00`, `UV 6.0`) directly below the outfit grid.
+4. **Collapsible Weather & Diurnal Drawer:** Places the `WeatherMetricChip` summary (`Rain`, `UV`, `Wind`) in an expandable card header at the bottom of the screen; the full `DiurnalTimelineBar` chart is revealed on tap when the user wants to inspect hourly curves.
+
+### 8.2 Styled Multi-Color Garment & Accessory Visual Mapping
+- **`GarmentVisualMapper` (`ui/home/`):** Pure-Kotlin presentation mapper resolving every `GarmentId` (29 items) and `AccessoryType` (8 items) to styled multi-color Android `VectorDrawable` resources (`@DrawableRes Int`).
+- **Forward Compatibility with Milestone 2 (Virtual Closet):** Each visual tile accepts a visual source model that defaults to `GarmentVisualMapper.garmentDrawableRes(id, fit)` in `v1.1.0` and seamlessly upgrades to user-captured wardrobe photos (`Uri`) in `v2.0.0` with fallback to the preset vector illustration.
+
+### 8.3 End-to-End Multi-Language Architecture (`EN`, `VI`, `FR`)
+1. **Per-App Language Infrastructure:**
+   - Declares supported locales (`en`, `vi`, `fr`) in `res/xml/locales_config.xml` wired into `AndroidManifest.xml`.
+   - Integrates `AndroidAppLocaleController` (`LocaleManager.setApplicationLocales` on API 33+ with a `SharedPreferences` + `createConfigurationContext` / `Locale.setDefault` fallback on API 26–32) with an in-app Language Picker in `SettingsScreen` (System Default, English, Tiếng Việt, Français).
+2. **Localized Fashion & Weather Catalogs:**
+   - Full resource translations under `res/values-vi/` and `res/values-fr/` across all 8 modular string files (`strings*.xml`), using natural, culturally idiomatic garment names and plural rules.
+3. **Locale-Aware Geocoding (`OpenMeteoDataSource`):**
+   - `geocodeLocation(query, languageCode)` dynamically forwards the active locale language code (`en`, `vi`, `fr`) to the Open-Meteo Geocoding REST API so city and country names match the user's selected language.
+

@@ -107,6 +107,10 @@ object SettingsTestTags {
     const val AGE_INPUT = "settings_age_input"
     const val AGE_SAVE = "settings_age_save"
     const val RESET_LOCATION = "settings_reset_location"
+    const val LANGUAGE_SYSTEM = "settings_language_system"
+    const val LANGUAGE_ENGLISH = "settings_language_english"
+    const val LANGUAGE_VIETNAMESE = "settings_language_vietnamese"
+    const val LANGUAGE_FRENCH = "settings_language_french"
     const val PERMISSION_NOTICE = "settings_permission_notice"
     const val PERMISSION_ACTION = "settings_permission_action"
     const val PERMISSION_DIALOG_CONFIRM = "settings_permission_dialog_confirm"
@@ -151,7 +155,16 @@ fun SettingsRoute(
 
     SettingsScreen(
         state = state,
-        onIntent = viewModel::onIntent,
+        onIntent = { intent ->
+            viewModel.onIntent(intent)
+            // API 33+ recreates the activity itself when the application locales change; below
+            // that the language only applies on the next attachBaseContext, so recreate here.
+            if (intent is SettingsIntent.SetLanguage &&
+                Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+            ) {
+                context.findActivity()?.recreate()
+            }
+        },
         onBack = onBack,
         modifier = modifier,
         permissionState = permissionState,
@@ -501,6 +514,39 @@ fun SettingsScreen(
                 Text(stringResource(R.string.settings_location_reset))
             }
 
+            HorizontalDivider()
+            SectionTitle(stringResource(R.string.settings_section_language))
+
+            Text(
+                text = stringResource(R.string.settings_language_helper),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            AppLanguage.entries.forEach { language ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = DesignTokens.MinTouchTarget)
+                        .selectable(
+                            selected = state.language == language,
+                            role = Role.RadioButton,
+                            onClick = { onIntent(SettingsIntent.SetLanguage(language)) }
+                        )
+                        .testTag(languageTestTag(language)),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = state.language == language,
+                        onClick = null
+                    )
+                    Text(
+                        text = stringResource(languageLabelRes(language)),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(start = DesignTokens.Spacing.sm)
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(DesignTokens.Spacing.xl))
         }
     }
@@ -726,6 +772,20 @@ private fun genderLabelRes(gender: GenderPreference): Int = when (gender) {
     GenderPreference.ALL -> R.string.settings_gender_all
     GenderPreference.MEN -> R.string.settings_gender_men
     GenderPreference.WOMEN -> R.string.settings_gender_women
+}
+
+private fun languageLabelRes(language: AppLanguage): Int = when (language) {
+    AppLanguage.SYSTEM -> R.string.settings_language_system
+    AppLanguage.ENGLISH -> R.string.settings_language_english
+    AppLanguage.VIETNAMESE -> R.string.settings_language_vietnamese
+    AppLanguage.FRENCH -> R.string.settings_language_french
+}
+
+private fun languageTestTag(language: AppLanguage): String = when (language) {
+    AppLanguage.SYSTEM -> SettingsTestTags.LANGUAGE_SYSTEM
+    AppLanguage.ENGLISH -> SettingsTestTags.LANGUAGE_ENGLISH
+    AppLanguage.VIETNAMESE -> SettingsTestTags.LANGUAGE_VIETNAMESE
+    AppLanguage.FRENCH -> SettingsTestTags.LANGUAGE_FRENCH
 }
 
 // --- Previews ----------------------------------------------------------------------------

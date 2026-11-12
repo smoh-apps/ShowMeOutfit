@@ -9,7 +9,9 @@ data class SettingsUiState(
     val profile: UserProfile = UserProfile(),
     val isLoading: Boolean = true,
     val isSaving: Boolean = false,
-    val saveFailed: Boolean = false
+    val saveFailed: Boolean = false,
+    /** Language currently shown by the picker; [AppLanguage.SYSTEM] follows the device. */
+    val language: AppLanguage = AppLanguage.SYSTEM
 )
 
 sealed interface SettingsIntent {
@@ -26,6 +28,12 @@ sealed interface SettingsIntent {
 
     /** Drops the saved city so the next recommendation resolves a fresh device fix. */
     data object ResetLocationToGps : SettingsIntent
+
+    /**
+     * Switches the app locale. The ViewModel applies it synchronously so the caller can recreate
+     * the activity right after this intent is dispatched on API < 33.
+     */
+    data class SetLanguage(val language: AppLanguage) : SettingsIntent
 
     data object DismissSaveError : SettingsIntent
 }

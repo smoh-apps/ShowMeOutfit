@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Wool coat illustration (SMO-S5-01): camel wool, wide lapels, leather belt.
+  Flat multi-tone art on a 96dp grid with explicit hex fills, so it is theme independent.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="#A97B3F"
+        android:pathData="M38,22 Q48,29.5 58,22 L62,22 C64.6,22 66.4,23.8 66.5,26.4 L79,34.5 C81.4,36.1 82.4,39.1 81.1,41.7 L77,72 C76.4,74.4 74.2,76 71.7,76 L67.4,76 L68.4,84 L27.6,84 L28.6,76 L24.3,76 C21.8,76 19.6,74.4 19,72 L14.9,41.7 C13.6,39.1 14.6,36.1 17,34.5 L29.5,26.4 C29.6,23.8 31.4,22 34,22 Z" />
+    <path
+        android:fillColor="#8A6537"
+        android:pathData="M29.8,26.4 L17,34.5 C14.6,36.1 13.6,39.1 14.9,41.7 L19,72 C19.6,74.4 21.8,76 24.3,76 L28.6,76 Z" />
+    <path
+        android:fillColor="#C79A5B"
+        android:pathData="M38,22 L48.6,40.6 L45,45.4 L33,26.6 Z" />
+    <path
+        android:fillColor="#C79A5B"
+        android:pathData="M58,22 L47.4,40.6 L51,45.4 L63,26.6 Z" />
+    <path
+        android:fillColor="#5C3720"
+        android:pathData="M29.2,58.4 L66.8,58.4 L66.9,64.4 L29.1,64.4 Z" />
+    <path
+        android:fillColor="#C79A5B"
+        android:pathData="M44.4,57.2 L51.6,57.2 L51.6,65.6 L44.4,65.6 Z" />
+    <path
+        android:fillColor="#24324A"
+        android:pathData="M47.2,57.8 L48.8,57.8 L48.8,65 L47.2,65 Z" />
+</vector>

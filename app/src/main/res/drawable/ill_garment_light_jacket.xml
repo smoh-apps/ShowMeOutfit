@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Light jacket illustration (SMO-S5-01): sage shell, cream zip and ribbed trims.
+  Flat multi-tone art on a 96dp grid with explicit hex fills, so it is theme independent.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="#8FA98C"
+        android:pathData="M38,23 Q48,31 58,23 L62,23 C64.4,23 66,24.6 66.4,26.8 L78.6,34.8 C81,36.4 82,39.4 80.7,42 L75.8,52.2 C74.6,54.6 71.6,55.6 69.2,54.4 L66.3,53 L66.4,68 C66.4,70.2 64.6,72 62.4,72 L33.6,72 C31.4,72 29.6,70.2 29.6,68 L29.7,53 L26.8,54.4 C24.4,55.6 21.4,54.6 20.2,52.2 L15.3,42 C14,39.4 15,36.4 17.4,34.8 L29.6,26.8 C30,24.6 31.6,23 34,23 Z" />
+    <path
+        android:fillColor="#6F8C6C"
+        android:pathData="M29.8,27 L17.4,34.8 C15,36.4 14,39.4 15.3,42 L20.2,52.2 C21.4,54.6 24.4,55.6 26.8,54.4 L29.7,53 Z" />
+    <path
+        android:fillColor="#6F8C6C"
+        android:pathData="M29.6,66 L66.4,66 L66.4,68 C66.4,70.2 64.6,72 62.4,72 L33.6,72 C31.4,72 29.6,70.2 29.6,68 Z" />
+    <path
+        android:fillColor="#6F8C6C"
+        android:pathData="M37.6,22.6 Q48,31.6 58.4,22.6 L60.8,24.2 Q48,34.4 35.2,24.2 Z" />
+    <path
+        android:fillColor="#F7F7F5"
+        android:pathData="M47,24 L48.6,24 L48.6,68 L47,68 Z" />
+    <path
+        android:fillColor="#F7F7F5"
+        android:pathData="M47.8,62 L51.4,62 L51.4,67 L47.8,67 Z" />
+    <path
+        android:fillColor="#6F8C6C"
+        android:pathData="M33.4,38 L43,38 L43,41 L33.4,41 Z M53,38 L62.6,38 L62.6,41 L53,41 Z" />
+</vector>

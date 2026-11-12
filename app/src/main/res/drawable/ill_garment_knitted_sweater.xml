@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Knitted sweater illustration (SMO-S5-01): terracotta knit with cream stitch bands and a rolled collar.
+  Flat multi-tone art on a 96dp grid with explicit hex fills, so it is theme independent.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="#C96A4A"
+        android:pathData="M39,23.5 Q48,31 57,23.5 L62,23.5 C64.2,23.5 65.8,25 66.2,27 L78.4,34.6 C80.8,36.2 81.8,39.2 80.5,41.8 L75.4,66 C74.8,68.4 72.6,70 70.1,70 L66.4,70 L66.4,74 C66.4,76.2 64.6,78 62.4,78 L33.6,78 C31.4,78 29.6,76.2 29.6,74 L29.6,70 L25.9,70 C23.4,70 21.2,68.4 20.6,66 L15.5,41.8 C14.2,39.2 15.2,36.2 17.6,34.6 L30,27 C30.4,25 32,23.5 34.2,23.5 Z" />
+    <path
+        android:fillColor="#A64F33"
+        android:pathData="M29.8,27 L17.6,34.6 C15.2,36.2 14.2,39.2 15.5,41.8 L20.6,66 C21.2,68.4 23.4,70 25.9,70 L29.6,70 Z" />
+    <path
+        android:fillColor="#F2E4DA"
+        android:pathData="M30,44 L66,44 L66,47.4 L30,47.4 Z M30,53.6 L66,53.6 L66,57 L30,57 Z" />
+    <path
+        android:fillColor="#F2E4DA"
+        android:pathData="M38.6,23.6 Q48,32.4 57.4,23.6 L61.6,26.4 Q48,37.6 34.4,26.4 Z" />
+    <path
+        android:fillColor="#A64F33"
+        android:pathData="M29.6,68.8 L66.4,68.8 L66.4,74 C66.4,76.2 64.6,78 62.4,78 L33.6,78 C31.4,78 29.6,76.2 29.6,74 Z" />
+    <path
+        android:fillColor="#F2E4DA"
+        android:pathData="M41,60 L43,60 L43,66 L41,66 Z M53,60 L55,60 L55,66 L53,66 Z" />
+</vector>

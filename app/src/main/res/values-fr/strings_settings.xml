@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Entry point -->
+    <string name="settings_open_action">Réglages</string>
+    <string name="settings_back_action">Retour</string>
+
+    <!-- Screen frame -->
+    <string name="settings_title">Réglages</string>
+    <string name="settings_loading">Chargement de vos préférences…</string>
+    <string name="settings_error_save">Impossible d\'enregistrer cette modification. Réessayez.</string>
+    <string name="settings_error_dismiss">Fermer</string>
+
+    <!-- Morning alert -->
+    <string name="settings_section_alerts">Alerte du matin</string>
+    <string name="settings_alert_toggle_title">Notification de tenue quotidienne</string>
+    <string name="settings_alert_toggle_summary">Les couches et accessoires du jour, envoyés à l\'heure de votre choix.</string>
+    <string name="settings_alert_time_title">Heure d\'envoi</string>
+    <string name="settings_alert_time_value">Chaque jour à %1$s</string>
+    <string name="settings_alert_time_change">Modifier</string>
+    <string name="settings_time_picker_title">Heure de l\'alerte du matin</string>
+    <string name="settings_time_picker_confirm">Définir</string>
+    <string name="settings_time_picker_cancel">Annuler</string>
+
+    <!-- Comfort profile -->
+    <string name="settings_section_comfort">Profil de confort</string>
+    <string name="settings_sensitivity_title">Sensibilité thermique</string>
+    <string name="settings_sensitivity_helper">Ajuste les seuils de couches jusqu\'à 2,5 °C. Il s\'agit d\'un conseil de confort, pas d\'un avis médical.</string>
+    <string name="settings_sensitivity_cold">Sensible au froid</string>
+    <string name="settings_sensitivity_neutral">Neutre</string>
+    <string name="settings_sensitivity_warm">Sensible à la chaleur</string>
+
+    <string name="settings_gender_title">Préférence de coupe</string>
+    <string name="settings_gender_all">Unisexe</string>
+    <string name="settings_gender_men">Homme</string>
+    <string name="settings_gender_women">Femme</string>
+
+    <string name="settings_age_title">Tranche d\'âge</string>
+    <string name="settings_age_edit">Modifier</string>
+    <string name="settings_age_dialog_title">Âge en années</string>
+    <string name="settings_age_dialog_helper">Seule la tranche est enregistrée. Laissez vide pour l\'effacer.</string>
+    <string name="settings_age_dialog_save">Enregistrer</string>
+    <string name="settings_age_dialog_cancel">Annuler</string>
+    <string name="settings_age_error">Saisissez un âge entre 0 et 120.</string>
+
+    <!-- Location -->
+    <string name="settings_section_location">Lieu</string>
+    <string name="settings_location_current">Position actuelle (GPS)</string>
+    <string name="settings_location_saved">Ville enregistrée : %1$s</string>
+    <string name="settings_location_reset">Revenir à la position GPS</string>
+    <string name="settings_location_reset_summary">Utilisera une nouvelle position de l\'appareil la prochaine fois au lieu de la ville enregistrée.</string>
+
+    <!-- Language (SMO-S5-04). Autonyms are deliberately identical in every locale. -->
+    <string name="settings_section_language">Langue</string>
+    <string name="settings_language_helper">Change la langue d\'affichage de l\'application. Le changement prend effet immédiatement.</string>
+    <string name="settings_language_system">Langue du système</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_vietnamese">Tiếng Việt</string>
+    <string name="settings_language_french">Français</string>
+
+</resources>

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Loading -->
+    <string name="home_loading_title">Đang chuẩn bị trang phục hôm nay</string>
+    <string name="home_loading_body">Đang kiểm tra thời tiết hôm nay và phối đồ cho bạn.</string>
+    <string name="home_loading_content_description">Đang tải gợi ý trang phục hôm nay.</string>
+
+    <!-- Header -->
+    <string name="home_header_conditions">%1$s° · %2$s · cảm giác như %3$s°</string>
+    <string name="home_header_refresh">Làm mới</string>
+
+    <!-- Section headings -->
+    <string name="home_section_timeline">Diễn biến trong ngày</string>
+    <string name="home_section_outfit">Trang phục của bạn</string>
+    <string name="home_section_accessories">Đừng quên</string>
+    <string name="home_section_highlights">Đỉnh điểm hôm nay</string>
+
+    <!-- Layer labels -->
+    <string name="home_layer_base">Lớp trong cùng</string>
+    <string name="home_layer_mid">Lớp giữa</string>
+    <string name="home_layer_outer">Lớp ngoài</string>
+    <string name="home_layer_bottom">Quần</string>
+    <string name="home_layer_footwear">Giày dép</string>
+
+    <!-- Garment names: unisex base label -->
+    <string name="home_garment_thermal_undershirt_name">Áo giữ nhiệt</string>
+    <string name="home_garment_long_sleeve_tee_name">Áo thun dài tay</string>
+    <string name="home_garment_cotton_tee_name">Áo thun cotton</string>
+    <string name="home_garment_polo_shirt_name">Áo polo</string>
+    <string name="home_garment_linen_tee_name">Áo thun lanh</string>
+    <string name="home_garment_ultra_light_tank_name">Áo ba lỗ siêu nhẹ</string>
+    <string name="home_garment_wool_sweater_name">Áo len lông cừu</string>
+    <string name="home_garment_knitted_sweater_name">Áo len dệt kim</string>
+    <string name="home_garment_cardigan_name">Áo khoác cardigan</string>
+    <string name="home_garment_hoodie_name">Áo hoodie</string>
+    <string name="home_garment_light_overshirt_name">Áo sơ mi khoác nhẹ</string>
+    <string name="home_garment_down_parka_name">Áo parka lông vũ</string>
+    <string name="home_garment_wool_coat_name">Áo măng tô len</string>
+    <string name="home_garment_puffer_jacket_name">Áo phao</string>
+    <string name="home_garment_denim_jacket_name">Áo khoác denim</string>
+    <string name="home_garment_light_jacket_name">Áo khoác nhẹ</string>
+    <string name="home_garment_windbreaker_name">Áo chống gió</string>
+    <string name="home_garment_raincoat_name">Áo mưa</string>
+    <string name="home_garment_thermal_pants_name">Quần giữ nhiệt</string>
+    <string name="home_garment_jeans_name">Quần jean</string>
+    <string name="home_garment_chinos_name">Quần chinos</string>
+    <string name="home_garment_trousers_name">Quần âu</string>
+    <string name="home_garment_shorts_name">Quần short</string>
+    <string name="home_garment_winter_boots_name">Bốt mùa đông</string>
+    <string name="home_garment_leather_boots_name">Bốt da</string>
+    <string name="home_garment_sneakers_name">Giày sneaker</string>
+    <string name="home_garment_waterproof_shoes_name">Giày chống nước</string>
+    <string name="home_garment_loafers_name">Giày lười</string>
+    <string name="home_garment_sandals_name">Dép xăng đan</string>
+
+    <!-- Garment names: fit variants (only where the cut actually differs) -->
+    <string name="home_garment_cotton_tee_name_men">Áo thun cotton nam</string>
+    <string name="home_garment_cotton_tee_name_women">Áo thun cotton nữ</string>
+    <string name="home_garment_polo_shirt_name_men">Áo polo nam</string>
+    <string name="home_garment_polo_shirt_name_women">Áo polo nữ</string>
+    <string name="home_garment_cardigan_name_men">Áo cardigan nam</string>
+    <string name="home_garment_cardigan_name_women">Áo cardigan nữ</string>
+    <string name="home_garment_hoodie_name_men">Áo hoodie nam</string>
+    <string name="home_garment_hoodie_name_women">Áo hoodie nữ</string>
+    <string name="home_garment_jeans_name_men">Quần jean nam</string>
+    <string name="home_garment_jeans_name_women">Quần jean nữ</string>
+    <string name="home_garment_chinos_name_men">Quần chinos nam</string>
+    <string name="home_garment_chinos_name_women">Quần chinos nữ</string>
+    <string name="home_garment_trousers_name_men">Quần âu nam</string>
+    <string name="home_garment_trousers_name_women">Quần âu nữ</string>
+    <string name="home_garment_shorts_name_men">Quần short nam</string>
+    <string name="home_garment_shorts_name_women">Quần short nữ</string>
+
+    <!-- Garment descriptions -->
+    <string name="home_garment_thermal_undershirt_description">Lớp lót mỏng giữ nhiệt, mặc bên trong mọi lớp khác.</string>
+    <string name="home_garment_long_sleeve_tee_description">Che phủ nhẹ cho buổi sáng se lạnh rồi ấm dần vào giữa trưa.</string>
+    <string name="home_garment_cotton_tee_description">Lớp lót thoáng khí hằng ngày cho những giờ ấm áp.</string>
+    <string name="home_garment_polo_shirt_description">Kiểu tay ngắn lịch sự hơn một chút mà vẫn thoáng.</string>
+    <string name="home_garment_linen_tee_description">Chất vải thoáng mát, xử lý tốt nắng nóng và độ ẩm.</string>
+    <string name="home_garment_ultra_light_tank_description">Che phủ tối thiểu cho lúc nóng nhất trong ngày.</string>
+    <string name="home_garment_wool_sweater_description">Lớp giữa ấm áp, thoáng khí và ít giữ mùi.</string>
+    <string name="home_garment_knitted_sweater_description">Lớp giữa mềm mại cho tiết trời mát ổn định.</string>
+    <string name="home_garment_cardigan_description">Dễ cởi ra khi chiều ấm lên.</string>
+    <string name="home_garment_hoodie_description">Lớp giữa thường ngày có mũ trùm cho lúc gió nhẹ.</string>
+    <string name="home_garment_light_overshirt_description">Áo khoác ngoài để mở cúc, giúp xua tan cái lạnh nhẹ.</string>
+    <string name="home_garment_down_parka_description">Lựa chọn dày nhất cho ngày giá buốt; chặn gió hoàn toàn.</string>
+    <string name="home_garment_wool_coat_description">Giữ ấm vững chắc cho ngày lạnh và khô.</string>
+    <string name="home_garment_puffer_jacket_description">Lớp giữ nhiệt gọn nhẹ, gấp lại được khi trời ấm.</string>
+    <string name="home_garment_denim_jacket_description">Lớp phủ nhẹ cho buổi tối se lạnh.</string>
+    <string name="home_garment_light_jacket_description">Lớp có thể cởi ra khi nhiệt độ chênh lệch lớn trong ngày.</string>
+    <string name="home_garment_windbreaker_description">Chặn gió mạnh mà không thêm nhiều hơi ấm.</string>
+    <string name="home_garment_raincoat_description">Lớp chống nước cho những giờ có mưa.</string>
+    <string name="home_garment_thermal_pants_description">Quần có lót cho buổi sáng dưới điểm đóng băng.</string>
+    <string name="home_garment_jeans_description">Quần bền bỉ hằng ngày cho ngày mát đến se lạnh.</string>
+    <string name="home_garment_chinos_description">Quần cotton nhẹ phù hợp thời tiết ôn hòa.</string>
+    <string name="home_garment_trousers_description">Lựa chọn lịch sự hằng ngày cho ngày thời tiết thay đổi.</string>
+    <string name="home_garment_shorts_description">Lựa chọn tốt nhất khi buổi chiều trở nên nóng.</string>
+    <string name="home_garment_winter_boots_description">Có lót và bám tốt cho tuyết và sương giá.</string>
+    <string name="home_garment_leather_boots_description">Bốt chắc chắn cho đường phố lạnh và khô.</string>
+    <string name="home_garment_sneakers_description">Giày thoải mái hằng ngày cho thời tiết khô.</string>
+    <string name="home_garment_waterproof_shoes_description">Giữ chân khô qua mưa và vũng nước.</string>
+    <string name="home_garment_loafers_description">Giày lịch sự, thoáng khí cho ngày ôn hòa.</string>
+    <string name="home_garment_sandals_description">Giày hở cho buổi chiều nóng bức.</string>
+
+    <!-- Accessories: names -->
+    <string name="home_accessory_umbrella_name">Ô</string>
+    <string name="home_accessory_sunglasses_name">Kính râm</string>
+    <string name="home_accessory_sun_hat_name">Mũ chống nắng</string>
+    <string name="home_accessory_scarf_name">Khăn quàng</string>
+    <string name="home_accessory_gloves_name">Găng tay</string>
+    <string name="home_accessory_extra_evening_layer_name">Lớp áo cho buổi tối</string>
+    <string name="home_accessory_sunscreen_name">Kem chống nắng</string>
+    <string name="home_accessory_water_bottle_name">Bình nước</string>
+
+    <!-- Accessories: icon descriptions (used when the glyph is rendered) -->
+    <string name="home_accessory_umbrella_icon_description">Ô</string>
+    <string name="home_accessory_sunglasses_icon_description">Kính râm</string>
+    <string name="home_accessory_sun_hat_icon_description">Mũ chống nắng</string>
+    <string name="home_accessory_scarf_icon_description">Khăn quàng</string>
+    <string name="home_accessory_gloves_icon_description">Găng tay</string>
+    <string name="home_accessory_extra_evening_layer_icon_description">Lớp áo thêm</string>
+    <string name="home_accessory_sunscreen_icon_description">Kem chống nắng</string>
+    <string name="home_accessory_water_bottle_icon_description">Bình nước</string>
+
+    <!-- Accessories: why they were recommended -->
+    <string name="home_reason_rain_window">Mưa từ %1$s đến %2$s.</string>
+    <string name="home_reason_rain_probability">Khả năng mưa lên tới %1$s%%.</string>
+    <string name="home_reason_freezing">Giá lạnh cả ngày.</string>
+    <string name="home_reason_wind">Gió lên tới %1$s km/h.</string>
+    <string name="home_reason_uv">Chỉ số UV cao nhất là %1$s.</string>
+    <string name="home_reason_diurnal_swing">Nhiệt độ chênh lệch khoảng %1$s° trong ngày.</string>
+    <string name="home_reason_extreme_heat">Cao nhất %1$s°. Uống nước thường xuyên và ở trong bóng mát.</string>
+    <string name="home_accessories_empty">Hôm nay không cần phụ kiện.</string>
+
+    <!-- Weather metric chips -->
+    <string name="home_metric_rain_label">Mưa</string>
+    <string name="home_metric_uv_label">UV</string>
+    <string name="home_metric_wind_label">Gió</string>
+    <string name="home_metric_percent_unit" formatted="false">%</string>
+    <string name="home_metric_wind_unit">km/h</string>
+
+    <!-- Collapsible weather drawer (toggle action + spoken state) -->
+    <string name="home_weather_expand_timeline">Hiện biểu đồ theo giờ</string>
+    <string name="home_weather_collapse_timeline">Ẩn biểu đồ theo giờ</string>
+    <string name="home_weather_state_expanded">Đang mở rộng</string>
+    <string name="home_weather_state_collapsed">Đang thu gọn</string>
+
+    <!-- Headlines -->
+    <string name="home_headline_frost">Giá buốt — mặc thật ấm</string>
+    <string name="home_headline_heatwave">Nắng nóng — ăn mặc nhẹ và uống đủ nước</string>
+    <string name="home_headline_snow">Tuyết và sương giá — mặc thật ấm</string>
+    <string name="home_headline_temp_swing">Hôm nay chênh lệch %1$s°</string>
+    <string name="home_headline_rain">Sắp có mưa</string>
+    <string name="home_headline_hot_uv">Nóng và UV mạnh</string>
+    <string name="home_headline_warm">Ấm áp và dễ chịu</string>
+    <string name="home_headline_chilly">Trời se lạnh</string>
+    <string name="home_headline_mild">Ôn hòa và nhẹ nhàng</string>
+
+    <!-- Summary sentence -->
+    <string name="home_summary_plain">%1$s° đến %2$s° hôm nay, không có mưa.</string>
+    <string name="home_summary_rain_window">%1$s° đến %2$s° hôm nay, có khả năng mưa từ %3$s đến %4$s.</string>
+    <string name="home_summary_rain_chance">%1$s° đến %2$s° hôm nay, khả năng mưa lên tới %3$s%%.</string>
+
+    <!-- Cache provenance -->
+    <!-- Vietnamese has a single plural form; the "one" item is kept for key parity with the base. -->
+    <plurals name="home_cache_age_hours" tools:ignore="UnusedQuantity">
+        <item quantity="one">%1$d giờ</item>
+        <item quantity="other">%1$d giờ</item>
+    </plurals>
+    <plurals name="home_cache_age_minutes" tools:ignore="UnusedQuantity">
+        <item quantity="one">%1$d phút</item>
+        <item quantity="other">%1$d phút</item>
+    </plurals>
+    <string name="home_cache_age_hours_minutes">%1$s %2$s</string>
+    <string name="home_banner_cache_fresh">Đang hiển thị dự báo đã lưu từ %1$s trước (chưa quá 3 giờ).</string>
+    <string name="home_banner_cache_fresh_no_age">Đang hiển thị dự báo đã lưu từ chưa đầy 3 giờ trước.</string>
+    <string name="home_banner_cache_stale">Bạn đang ngoại tuyến. Đang hiển thị dự báo đã lưu từ %1$s trước.</string>
+    <string name="home_banner_cache_stale_no_age">Bạn đang ngoại tuyến. Đang hiển thị dự báo lưu gần nhất.</string>
+    <string name="home_banner_refresh_failed">Không thể làm mới. Đây là dự báo gần nhất bạn đã tải.</string>
+
+    <!-- Weather condition descriptions -->
+    <string name="home_condition_clear_sky">Trời quang</string>
+    <string name="home_condition_mainly_clear">Quang đãng</string>
+    <string name="home_condition_partly_cloudy">Có mây rải rác</string>
+    <string name="home_condition_overcast">Âm u</string>
+    <string name="home_condition_fog">Sương mù</string>
+    <string name="home_condition_depositing_rime_fog">Sương mù đóng băng</string>
+    <string name="home_condition_drizzle_light">Mưa phùn nhẹ</string>
+    <string name="home_condition_drizzle_moderate">Mưa phùn</string>
+    <string name="home_condition_drizzle_dense">Mưa phùn dày hạt</string>
+    <string name="home_condition_freezing_drizzle_light">Mưa phùn đóng băng nhẹ</string>
+    <string name="home_condition_freezing_drizzle_dense">Mưa phùn đóng băng</string>
+    <string name="home_condition_rain_slight">Mưa nhẹ</string>
+    <string name="home_condition_rain_moderate">Mưa</string>
+    <string name="home_condition_rain_heavy">Mưa to</string>
+    <string name="home_condition_freezing_rain_light">Mưa đóng băng nhẹ</string>
+    <string name="home_condition_freezing_rain_heavy">Mưa đóng băng</string>
+    <string name="home_condition_snow_fall_slight">Tuyết rơi nhẹ</string>
+    <string name="home_condition_snow_fall_moderate">Tuyết rơi</string>
+    <string name="home_condition_snow_fall_heavy">Tuyết rơi dày</string>
+    <string name="home_condition_snow_grains">Hạt tuyết</string>
+    <string name="home_condition_rain_showers_slight">Mưa rào nhẹ</string>
+    <string name="home_condition_rain_showers_moderate">Mưa rào</string>
+    <string name="home_condition_rain_showers_violent">Mưa rào dữ dội</string>
+    <string name="home_condition_snow_showers_slight">Mưa tuyết nhẹ</string>
+    <string name="home_condition_snow_showers_heavy">Mưa tuyết</string>
+    <string name="home_condition_thunderstorm">Giông bão</string>
+    <string name="home_condition_thunderstorm_slight_hail">Giông bão kèm mưa đá</string>
+    <string name="home_condition_thunderstorm_heavy_hail">Giông bão dữ dội kèm mưa đá</string>
+    <string name="home_condition_unknown">Không có thông tin thời tiết</string>
+
+    <!-- Empty state -->
+    <string name="home_empty_title">Chưa có vị trí</string>
+    <string name="home_empty_body">ShowMeOutfit cần một thành phố để chuẩn bị trang phục hôm nay. Hãy chọn một thành phố để bắt đầu.</string>
+    <string name="home_empty_action">Chọn thành phố</string>
+
+    <!-- Error state -->
+    <string name="home_error_title">Không thể chuẩn bị trang phục hôm nay</string>
+    <string name="home_error_retry">Thử lại</string>
+    <string name="home_error_change_city">Chọn thành phố khác</string>
+    <string name="home_error_no_location">Chưa chọn thành phố. Hãy thêm một thành phố để xem trang phục hôm nay.</string>
+    <string name="home_error_offline">Bạn đang ngoại tuyến. Hãy kiểm tra kết nối và thử lại.</string>
+    <string name="home_error_api">Dịch vụ thời tiết không phản hồi. Hãy thử lại sau giây lát.</string>
+    <string name="home_error_malformed">Dự báo trả về không đọc được. Hãy thử lại.</string>
+    <string name="home_error_cache_expired">Dự báo đã lưu đã quá cũ. Hãy làm mới để lấy dữ liệu hôm nay.</string>
+    <string name="home_error_location_permission">Quyền vị trí đang tắt. Bạn vẫn có thể chọn thành phố.</string>
+    <string name="home_error_location_disabled">Dịch vụ vị trí đang tắt. Hãy chọn thành phố hoặc bật dịch vụ trong cài đặt.</string>
+    <string name="home_error_location_unavailable">Không thể xác định vị trí. Hãy chọn thành phố.</string>
+    <string name="home_error_unknown">Đã xảy ra lỗi. Hãy thử lại.</string>
+
+</resources>

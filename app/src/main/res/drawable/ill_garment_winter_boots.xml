@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Winter boots illustration (SMO-S5-01): insulated leather shaft, fleece cuff, lugged sole.
+  Flat multi-tone art on a 96dp grid with explicit hex fills, so it is theme independent.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="#5C3720"
+        android:pathData="M21.6,20 L42.4,20 C44.8,20 46.4,21.6 46.4,24 L46.4,44.4 L66.2,48.4 C76,50.4 82.4,55 82.4,59.4 L18.2,59.4 Z" />
+    <path
+        android:fillColor="#7A4E2D"
+        android:pathData="M46.4,44.4 L66.2,48.4 C76,50.4 82.4,55 82.4,59.4 L46.4,59.4 Z" />
+    <path
+        android:fillColor="#E8D3C3"
+        android:pathData="M17.2,25.8 L47.4,25.8 L47.4,21 C47.4,19.8 46.2,18.6 44.4,18.6 L19.8,18.6 C18,18.6 17.2,19.8 17.2,21 Z" />
+    <path
+        android:fillColor="#C79A5B"
+        android:pathData="M26.4,30.4 h11.6 v2 h-11.6 z M26.4,36.4 h11.6 v2 h-11.6 z M26.4,42.4 h11.6 v2 h-11.6 z" />
+    <path
+        android:fillColor="#24324A"
+        android:pathData="M18,59.4 L80.4,59.4 C82.4,59.4 84,61 84,63 L84,67.4 C84,70.4 81.8,72.6 79,72.6 L19.4,72.6 C16.6,72.6 14.4,70.4 14.4,67.4 L14.4,63 C14.4,61 16,59.4 18,59.4 Z" />
+    <path
+        android:fillColor="#5C6066"
+        android:pathData="M14.4,66.4 L84,66.4 L84,67.4 C84,70.4 81.8,72.6 79,72.6 L19.4,72.6 C16.6,72.6 14.4,70.4 14.4,67.4 Z" />
+</vector>

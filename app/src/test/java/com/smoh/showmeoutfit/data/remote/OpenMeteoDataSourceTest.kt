@@ -30,6 +30,27 @@ class OpenMeteoDataSourceTest {
         return OpenMeteoDataSource(client)
     }
 
+    /**
+     * Mock engine that records the outgoing `language` query parameter of every request while
+     * still serving a valid geocoding payload, so localization assertions stay independent of the
+     * response parsing path.
+     */
+    private fun buildLanguageCapturingDataSource(
+        capturedLanguages: MutableList<String?> = mutableListOf(),
+        languageProvider: () -> String
+    ): Pair<OpenMeteoDataSource, MutableList<String?>> {
+        val mockEngine = MockEngine { request ->
+            capturedLanguages += request.url.parameters["language"]
+            respond(
+                content = GEOCODING_RESPONSE_JSON,
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            )
+        }
+        val client = HttpClientFactory.create(mockEngine)
+        return OpenMeteoDataSource(client, languageProvider) to capturedLanguages
+    }
+
     private val berlinLocation = LocationInfo(
         latitude = 52.52,
         longitude = 13.405,
@@ -137,6 +158,68 @@ class OpenMeteoDataSourceTest {
         val result = dataSource.geocodeLocation("XyzZyxNonExistentCity99")
         assertTrue(result.isSuccess)
         assertTrue(result.getOrThrow().isEmpty())
+    }
+
+    @Test
+    fun `geocodeLocation sends vietnamese language code when provider returns vi`() = runTest {
+        val (dataSource, capturedLanguages) = buildLanguageCapturingDataSource { "vi" }
+
+        val result = dataSource.geocodeLocation("Hà Nội")
+
+        assertTrue(result.isSuccess)
+        assertEquals("vi", capturedLanguages.single())
+    }
+
+    @Test
+    fun `geocodeLocation sends french language code when provider returns fr`() = runTest {
+        val (dataSource, capturedLanguages) = buildLanguageCapturingDataSource { "fr" }
+
+        val result = dataSource.geocodeLocation("Paris")
+
+        assertTrue(result.isSuccess)
+        assertEquals("fr", capturedLanguages.single())
+    }
+
+    @Test
+    fun `geocodeLocation falls back to english when provider returns a blank language`() = runTest {
+        val (dataSource, capturedLanguages) = buildLanguageCapturingDataSource { "" }
+
+        val result = dataSource.geocodeLocation("Paris")
+
+        assertTrue(result.isSuccess)
+        assertEquals("en", capturedLanguages.single())
+    }
+
+    @Test
+    fun `geocodeLocation normalizes a regional tag to its primary lowercase subtag`() = runTest {
+        val (dataSource, capturedLanguages) = buildLanguageCapturingDataSource { "vi-VN" }
+
+        val result = dataSource.geocodeLocation("Hà Nội")
+
+        assertTrue(result.isSuccess)
+        assertEquals("vi", capturedLanguages.single())
+    }
+
+    @Test
+    fun `geocodeLocation normalizes an uppercase language code to lowercase`() = runTest {
+        val (dataSource, capturedLanguages) = buildLanguageCapturingDataSource { "FR" }
+
+        val result = dataSource.geocodeLocation("Paris")
+
+        assertTrue(result.isSuccess)
+        assertEquals("fr", capturedLanguages.single())
+    }
+
+    @Test
+    fun `geocodeLocation re-reads the provider so a locale switch applies to later requests`() = runTest {
+        var activeLanguage = "vi"
+        val (dataSource, capturedLanguages) = buildLanguageCapturingDataSource { activeLanguage }
+
+        dataSource.geocodeLocation("Hà Nội")
+        activeLanguage = "fr"
+        dataSource.geocodeLocation("Paris")
+
+        assertEquals(listOf<String?>("vi", "fr"), capturedLanguages)
     }
 
     companion object {

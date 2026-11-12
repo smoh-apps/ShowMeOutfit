@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Channel -->
+    <string name="notification_channel_name">Trang phục buổi sáng</string>
+    <string name="notification_channel_description">Trang phục và phụ kiện hằng ngày của bạn, gửi vào giờ bạn chọn.</string>
+
+    <!-- Content -->
+    <string name="notification_title">Trang phục buổi sáng · %1$s–%2$s°</string>
+    <string name="notification_layer_line">%1$s: %2$s</string>
+    <string name="notification_layer_base">Lớp trong</string>
+    <string name="notification_layer_mid">Lớp giữa</string>
+    <string name="notification_layer_outer">Lớp ngoài</string>
+    <string name="notification_layer_bottom">Quần</string>
+    <string name="notification_layer_footwear">Giày</string>
+    <string name="notification_accessories">Mang thêm: %1$s</string>
+    <string name="notification_no_accessories">Hôm nay không cần thêm gì.</string>
+
+    <!-- Highlights (SMO-S3-04). Arguments arrive pre-formatted, hence %s for numbers. -->
+    <string name="notification_highlight_rain_window">Mưa %1$s–%2$s. Nhớ mang ô.</string>
+    <string name="notification_highlight_rain_chance">%1$s%% khả năng mưa. Nhớ mang ô.</string>
+    <string name="notification_highlight_uv">UV %1$s. Kính râm và kem chống nắng.</string>
+    <string name="notification_highlight_uv_hat">UV %1$s. Mũ chống nắng, kính râm và kem chống nắng.</string>
+    <string name="notification_highlight_wind">Gió lên tới %1$s km/h. Áo chống gió sẽ giúp bạn.</string>
+    <string name="notification_highlight_swing">Giảm %1$s° về sau. Nhớ mang lớp áo buổi tối.</string>
+    <string name="notification_highlight_hydration">Cao nhất %1$s°. Mang theo nước và ở trong bóng mát.</string>
+
+</resources>

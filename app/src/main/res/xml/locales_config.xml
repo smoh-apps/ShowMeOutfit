@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Per-app language support (API 33+). The in-app picker writes the same list through
+  LocaleManager#setApplicationLocales; this file makes the app appear in the system language
+  settings on Android 13+ and declares the three supported locales.
+-->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en" />
+    <locale android:name="vi" />
+    <locale android:name="fr" />
+</locale-config>

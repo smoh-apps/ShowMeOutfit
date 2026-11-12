@@ -40,6 +40,8 @@ import com.smoh.showmeoutfit.ui.notifications.AndroidOutfitNotifier
 import com.smoh.showmeoutfit.ui.onboarding.OnboardingViewModel
 import com.smoh.showmeoutfit.ui.permissions.AlertsPermissionReader
 import com.smoh.showmeoutfit.ui.permissions.AndroidAlertsPermissionReader
+import com.smoh.showmeoutfit.ui.settings.AndroidAppLocaleController
+import com.smoh.showmeoutfit.ui.settings.AppLocaleController
 import com.smoh.showmeoutfit.ui.settings.SettingsViewModel
 import com.smoh.showmeoutfit.ui.app.AppViewModel
 import io.ktor.client.HttpClient
@@ -64,7 +66,14 @@ val networkModule = module {
         HttpClientFactory.create(OkHttp.create())
     }
     single<RemoteWeatherDataSource> {
-        OpenMeteoDataSource(httpClient = get())
+        val localeController: AppLocaleController = get()
+        OpenMeteoDataSource(
+            httpClient = get(),
+            languageProvider = {
+                localeController.currentLanguage().tag
+                    ?: java.util.Locale.getDefault().language.ifBlank { "en" }
+            }
+        )
     }
 }
 
@@ -92,6 +101,10 @@ val storageModule = module {
     }
     single {
         UserPreferencesStore(dataStore = get())
+    }
+    // Backs the in-app language picker; SettingsViewModel resolves it through viewModelOf.
+    single<AppLocaleController> {
+        AndroidAppLocaleController(context = androidContext())
     }
 }
 

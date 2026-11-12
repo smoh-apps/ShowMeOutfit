@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- AccessoryBadge -->
+    <string name="component_accessory_priority_critical">Thiết yếu</string>
+    <string name="component_accessory_priority_recommended">Khuyến nghị</string>
+    <string name="component_accessory_priority_optional">Tùy chọn</string>
+    <string name="component_accessory_badge_content_description">Phụ kiện %1$s: %2$s</string>
+
+    <!-- WeatherMetricChip -->
+    <string name="component_metric_chip_content_description">%1$s: %2$s</string>
+
+    <!-- DiurnalTimelineBar -->
+    <string name="component_timeline_content_description" tools:ignore="PluralsCandidate">Dự báo trong ngày từ %1$s đến %2$s. Nhiệt độ từ %3$.0f đến %4$.0f độ C. Xác suất mưa cao nhất là %5$d phần trăm. Chỉ số UV cao nhất là %6$.1f.</string>
+    <string name="component_timeline_range">%1$.0f° đến %2$.0f°</string>
+    <string name="component_timeline_legend_temperature">Nhiệt độ</string>
+    <string name="component_timeline_legend_rain">Khả năng mưa</string>
+    <string name="component_timeline_legend_uv">Chỉ số UV</string>
+    <string name="component_timeline_empty">Chưa có dự báo theo giờ</string>
+</resources>

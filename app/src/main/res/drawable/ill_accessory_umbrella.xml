@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Umbrella accessory illustration (SMO-S5-01): indigo canopy with gores and a walnut hook handle.
+  Flat multi-tone art on a 96dp grid with explicit hex fills, so it is theme independent.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="#3B5C8A"
+        android:pathData="M15.4,52 C15.4,33.6 30,18.4 48,18.4 C66,18.4 80.6,33.6 80.6,52 Q74,58.6 67.6,52 Q61,58.6 54.6,52 Q48,58.6 41.4,52 Q34.8,58.6 28.4,52 Q22,58.6 15.4,52 Z" />
+    <path
+        android:fillColor="#2C4670"
+        android:pathData="M47.2,18.8 L48.8,18.8 L49,52 L47,52 Z M30.2,22.6 L32,21.6 L37.2,50.6 L35.2,51.4 Z M64,21.6 L65.8,22.6 L60.8,51.4 L58.8,50.6 Z" />
+    <path
+        android:fillColor="#5C3720"
+        android:pathData="M46.6,51 L49.4,51 L49.4,74 L46.6,74 Z" />
+    <path
+        android:fillColor="#5C3720"
+        android:pathData="M49.4,71.4 C49.4,79.4 46.6,82.4 41.8,82.4 C37.4,82.4 34.4,79.4 34.4,75 L37.6,75 C37.6,77.6 39.2,79.2 41.8,79.2 C44.6,79.2 46.2,77.2 46.2,71.4 Z" />
+    <path
+        android:fillColor="#C79A5B"
+        android:pathData="M44.6,15.4 L51.4,15.4 L49.8,18.8 L46.2,18.8 Z M45.4,64 L50.6,64 L50.6,68 L45.4,68 Z" />
+    <path
+        android:fillColor="#D9E2F0"
+        android:pathData="M33,27.6 C38.4,22.8 44.6,20.6 48,20.6 L48,24 C44.8,24 39.6,26 35.2,29.8 Z" />
+</vector>

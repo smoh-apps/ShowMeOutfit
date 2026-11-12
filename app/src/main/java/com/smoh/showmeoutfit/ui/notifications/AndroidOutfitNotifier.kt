@@ -14,6 +14,7 @@ import com.smoh.showmeoutfit.domain.model.TodayOutfit
 import com.smoh.showmeoutfit.domain.notification.OutfitNotifier
 import com.smoh.showmeoutfit.ui.AppRoutes
 import com.smoh.showmeoutfit.ui.home.GarmentTextMapper
+import com.smoh.showmeoutfit.ui.settings.AndroidAppLocaleController
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -55,41 +56,46 @@ class AndroidOutfitNotifier(
         return channel?.importance == NotificationManager.IMPORTANCE_NONE
     }
 
+    private fun localizedContext(): Context =
+        AndroidAppLocaleController(context).wrapContext(context)
+
     private fun ensureChannel() {
+        val localized = localizedContext()
         val channel = NotificationChannel(
             CHANNEL_ID,
-            context.getString(R.string.notification_channel_name),
+            localized.getString(R.string.notification_channel_name),
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
-            description = context.getString(R.string.notification_channel_description)
+            description = localized.getString(R.string.notification_channel_description)
         }
         context.getSystemService(NotificationManager::class.java)
             ?.createNotificationChannel(channel)
     }
 
     private fun build(outfit: TodayOutfit): android.app.Notification {
+        val localized = localizedContext()
         val recommendation = outfit.recommendation
         val lineSeparator = System.lineSeparator()
         val layerLines = buildList {
-            add(layerLine(R.string.notification_layer_base, recommendation.baseLayer))
-            recommendation.midLayer?.let { add(layerLine(R.string.notification_layer_mid, it)) }
-            recommendation.outerLayer?.let { add(layerLine(R.string.notification_layer_outer, it)) }
-            add(layerLine(R.string.notification_layer_bottom, recommendation.bottomLayer))
-            add(layerLine(R.string.notification_layer_footwear, recommendation.footwear))
+            add(layerLine(localized, R.string.notification_layer_base, recommendation.baseLayer))
+            recommendation.midLayer?.let { add(layerLine(localized, R.string.notification_layer_mid, it)) }
+            recommendation.outerLayer?.let { add(layerLine(localized, R.string.notification_layer_outer, it)) }
+            add(layerLine(localized, R.string.notification_layer_bottom, recommendation.bottomLayer))
+            add(layerLine(localized, R.string.notification_layer_footwear, recommendation.footwear))
         }
 
         val accessories = recommendation.accessories
-            .map { context.getString(GarmentTextMapper.accessoryNameRes(it.type)) }
+            .map { localized.getString(GarmentTextMapper.accessoryNameRes(it.type)) }
         val accessoryLine = if (accessories.isEmpty()) {
-            context.getString(R.string.notification_no_accessories)
+            localized.getString(R.string.notification_no_accessories)
         } else {
-            context.getString(R.string.notification_accessories, accessories.joinToString(", "))
+            localized.getString(R.string.notification_accessories, accessories.joinToString(", "))
         }
 
         // Highlights are only useful when they add a reason the layer list does not already show,
         // so they sit in their own paragraph and stay out of the collapsed single line.
         val highlights = NotificationHighlights.of(recommendation)
-            .map { mapped -> context.getString(mapped.resId, *mapped.resolve(Locale.getDefault())) }
+            .map { mapped -> localized.getString(mapped.resId, *mapped.resolve(Locale.getDefault())) }
         val body = buildList {
             addAll(layerLines)
             add(accessoryLine)
@@ -99,10 +105,10 @@ class AndroidOutfitNotifier(
             }
         }.joinToString(lineSeparator)
 
-        return NotificationCompat.Builder(context, CHANNEL_ID)
+        return NotificationCompat.Builder(localized, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification_outfit)
             .setContentTitle(
-                context.getString(
+                localized.getString(
                     R.string.notification_title,
                     formatTemperature(recommendation.summary.tempMinCelsius),
                     formatTemperature(recommendation.summary.tempMaxCelsius)
@@ -123,10 +129,10 @@ class AndroidOutfitNotifier(
             .build()
     }
 
-    private fun layerLine(labelRes: Int, garment: Garment): String = context.getString(
+    private fun layerLine(localized: Context, labelRes: Int, garment: Garment): String = localized.getString(
         R.string.notification_layer_line,
-        context.getString(labelRes),
-        context.getString(GarmentTextMapper.garmentNameRes(garment.id, garment.fit))
+        localized.getString(labelRes),
+        localized.getString(GarmentTextMapper.garmentNameRes(garment.id, garment.fit))
     )
 
     /**

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Thermal pants illustration (SMO-S5-01): warm base-layer knit with cream waistband and cuffs.
+  Flat multi-tone art on a 96dp grid with explicit hex fills, so it is theme independent.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="#6A5145"
+        android:pathData="M29,22 L67,22 C69.4,22 71.2,23.9 71,26.3 L69.6,52 L65.8,80.4 C65.5,82.6 63.6,84.2 61.4,84.2 L55.4,84.2 C53.2,84.2 51.4,82.4 51.4,80.2 L50.6,60 L48,56 L45.4,60 L44.6,80.2 C44.6,82.4 42.8,84.2 40.6,84.2 L34.6,84.2 C32.4,84.2 30.5,82.6 30.2,80.4 L26.4,52 L25,26.3 C24.8,23.9 26.6,22 29,22 Z" />
+    <path
+        android:fillColor="#584337"
+        android:pathData="M48,56 L69.6,52 L65.8,80.4 C65.5,82.6 63.6,84.2 61.4,84.2 L55.4,84.2 C53.2,84.2 51.4,82.4 51.4,80.2 L50.6,60 Z" />
+    <path
+        android:fillColor="#F2E4DA"
+        android:pathData="M29,22 L67,22 C69.4,22 71.2,23.9 71,26.3 L70.8,32 L25.2,32 L25,26.3 C24.8,23.9 26.6,22 29,22 Z" />
+    <path
+        android:fillColor="#F2E4DA"
+        android:pathData="M30.4,76 L44.4,76 L44.4,84.2 L40.6,84.2 C38.4,84.2 30.7,82.6 30.4,80.4 Z" />
+    <path
+        android:fillColor="#F2E4DA"
+        android:pathData="M51.6,76 L65.6,76 L65.6,80.4 C65.3,82.6 57.6,84.2 55.4,84.2 L51.6,84.2 Z" />
+    <path
+        android:fillColor="#584337"
+        android:pathData="M34.4,40 L36.4,40 L36.4,76 L34.4,76 Z M59.6,40 L61.6,40 L61.6,76 L59.6,76 Z" />
+</vector>
