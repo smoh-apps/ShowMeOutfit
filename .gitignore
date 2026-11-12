@@ -5,6 +5,7 @@
 # Sprint Actions & Operational Planning (kept outside git tracking)
 .sprint/
 sprint-planning/
+.qoder/
 
 /.idea/caches
 /.idea/libraries
@@ -24,6 +25,7 @@ local.properties
 # Sprint Actions & Operational Planning (kept outside git tracking)
 .sprint/
 sprint-planning/
+.qoder/
 
 # Generated GitHub Pages artifact (SMO-S3-05)
 /public/

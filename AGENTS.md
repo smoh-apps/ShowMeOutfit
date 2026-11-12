@@ -68,15 +68,15 @@ ShowMeOutfit/
 | Milestone | Target | Sprints | Status |
 | :--- | :--- | :--- | :--- |
 | **Milestone 1** | Standalone Weather Outfit MVP (v1.0.0) | Sprint 1 – Sprint 4 (73 SP) | ✅ Completed |
-| **Milestone 1.5** | Visual Outfit-First UX & Multi-Language (v1.1.0) | Sprint 5 (20 SP) | 🟡 Active Target |
-| **Milestone 2** | Smart Wardrobe & Digital Closet (v2.0.0) | Sprint 6 – Sprint 7 (38 SP) | ⚪ Backlog |
+| **Milestone 1.5** | Visual Outfit-First UX & Multi-Language (v1.1.0) | Sprint 5 (20 SP) | ✅ Completed |
+| **Milestone 2** | Smart Wardrobe & Digital Closet (v2.0.0) | Sprint 6 – Sprint 7 (38 SP) | 🟡 Next Target |
 
 ### Current Project State
 - **Sprint 1 (COMPLETED):** Core diurnal recommendation engine, domain foundation, Open-Meteo Ktor client, Room caching, DataStore preferences, Koin DI, and 27 passing unit tests. Merged into `main` via PR #1.
 - **Sprint 2 (COMPLETED):** Jetpack Compose UI (Material 3), Home Dashboard, diurnal timeline curve, outfit layer cards, and GPS/search location integration. Merged into `main` via PR #2.
 - **Sprint 3 (COMPLETED):** Morning notification scheduler (`AlarmManager` exact wake-up + `WorkManager`), Android 12/13 permission flows, Onboarding & Settings screens. Merged into `main` via PR #3.
 - **Sprint 4 (COMPLETED):** Production S-M-O branding icon, Doze mode validation, extreme weather edge cases, accessibility/200% font scale, R8 optimization, and signed release AAB packaging. Merged into `main` via PR #4.
-- **Sprint 5 (NEXT / ACTIVE TARGET — v1.1.0):** Styled multi-color clothing & accessory illustrations (`GarmentVisualMapper`), Outfit-First 2-column Bento grid with tap-to-inspect detail sheet, collapsible weather/timeline drawer, and full Vietnamese (`vi`) + French (`fr`) localization with in-app language picker and localized geocoding.
+- **Sprint 5 (COMPLETED — v1.1.0):** Styled multi-color clothing & accessory illustrations (`GarmentVisualMapper`), Outfit-First 2-column Bento grid with tap-to-inspect detail sheet, collapsible weather/timeline drawer, and full Vietnamese (`vi`) + French (`fr`) localization with in-app language picker and localized geocoding.
 
 > 📖 **Deep Dive:** See [`.sprint/ROADMAP_AND_MILESTONES.md`](.sprint/ROADMAP_AND_MILESTONES.md) and completed execution verification in [`.sprint/sprint_1_closure_report.md`](.sprint/sprint_1_closure_report.md).
 

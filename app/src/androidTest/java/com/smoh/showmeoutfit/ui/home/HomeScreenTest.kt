@@ -269,6 +269,7 @@ class HomeScreenTest {
         setState(HomeUiState.Content(previewTodayOutfit()))
 
         composeRule.onNodeWithTag(HomeTestTags.TIMELINE_TOGGLE)
+            .performScrollTo()
             .assert(
                 SemanticsMatcher.expectValue(
                     SemanticsProperties.StateDescription,

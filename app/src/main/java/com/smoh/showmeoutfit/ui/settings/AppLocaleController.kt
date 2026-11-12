@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
 import android.os.LocaleList
-import androidx.annotation.RequiresApi
 import androidx.core.content.edit
 import java.util.Locale
 
@@ -36,12 +35,15 @@ class AndroidAppLocaleController(context: Context) : AppLocaleController {
         get() = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
 
     override fun currentLanguage(): AppLanguage {
-        val platformTag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            applicationLocaleTag()
-        } else {
-            null
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val localeManager = context.getSystemService(LocaleManager::class.java)
+            if (localeManager != null) {
+                val locales = localeManager.applicationLocales
+                val platformTag = if (locales.isEmpty) null else locales[0].toLanguageTag()
+                return AppLanguage.fromTag(platformTag)
+            }
         }
-        return AppLanguage.fromTag(platformTag ?: storedTag())
+        return AppLanguage.fromTag(storedTag())
     }
 
     // commit rather than apply: the value has to be readable from attachBaseContext, which the
@@ -54,6 +56,11 @@ class AndroidAppLocaleController(context: Context) : AppLocaleController {
                 ?.let { LocaleList.forLanguageTags(it) }
                 ?: LocaleList.getEmptyLocaleList()
             context.getSystemService(LocaleManager::class.java)?.applicationLocales = locales
+        } else {
+            val targetLocale = language.tag
+                ?.let(Locale::forLanguageTag)
+                ?: systemDefaultLocale
+            Locale.setDefault(targetLocale)
         }
     }
 
@@ -65,25 +72,24 @@ class AndroidAppLocaleController(context: Context) : AppLocaleController {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) return base
 
         val tag = storedTag()
+        val targetLocale = if (tag.isNullOrBlank()) {
+            systemDefaultLocale
+        } else {
+            Locale.forLanguageTag(tag)
+        }
+        Locale.setDefault(targetLocale)
         if (tag.isNullOrBlank()) return base
 
         val configuration = Configuration(base.resources.configuration)
-        configuration.setLocale(Locale.forLanguageTag(tag))
+        configuration.setLocale(targetLocale)
         return base.createConfigurationContext(configuration)
     }
 
     private fun storedTag(): String? = preferences.getString(KEY_LANGUAGE_TAG, null)
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    private fun applicationLocaleTag(): String? {
-        val locales = context.getSystemService(LocaleManager::class.java)
-            ?.applicationLocales
-        if (locales == null || locales.isEmpty) return null
-        return locales[0].toLanguageTag()
-    }
-
     private companion object {
         const val PREFERENCES_NAME = "app_locale"
         const val KEY_LANGUAGE_TAG = "language_tag"
+        val systemDefaultLocale: Locale = Locale.getDefault()
     }
 }

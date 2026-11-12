@@ -73,6 +73,7 @@ jobs:
 
       - name: Build signed release
         env:
+          ALPHA_VERSION_CODE: ${{ github.run_number }}
           RELEASE_KEYSTORE_PATH: ${{ runner.temp }}/keys/release.jks
           RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}

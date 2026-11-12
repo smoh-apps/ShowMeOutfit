@@ -38,10 +38,10 @@ android {
         applicationId = "com.smoh.showmeoutfit"
         minSdk = 26
         targetSdk = 37
-        // Monotonic per published build: the Pages workflow passes `github.run_number`, so each
-        // alpha supersedes the previous one. Local builds keep 1.
-        versionCode = providers.environmentVariable("ALPHA_VERSION_CODE").orNull?.toIntOrNull() ?: 1
-        versionName = "1.0"
+        // Monotonic per published build: the Pages/Release workflows pass `github.run_number`, so
+        // each published build supersedes the previous one. Local builds default to 2 (v1.1.0).
+        versionCode = providers.environmentVariable("ALPHA_VERSION_CODE").orNull?.toIntOrNull() ?: 2
+        versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
