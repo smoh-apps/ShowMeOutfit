@@ -118,10 +118,21 @@ android {
         )
         warningsAsErrors = false
     }
+    // MigrationTestHelper reads the exported schemas from the instrumentation assets, so the
+    // schema directory is packaged into the androidTest APK under the database class path.
+    sourceSets {
+        getByName("androidTest").assets.srcDir("$projectDir/schemas")
+    }
 }
 
 kotlin {
     jvmToolchain(17)
+}
+
+// Room schema export (SMO-S6-01): MigrationTestHelper needs the versioned JSON files, so every
+// schema bump is checked in under app/schemas and the v1 -> v2 migration is verified in CI.
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {
@@ -179,6 +190,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.work.testing)
+    androidTestImplementation(libs.room.testing)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
