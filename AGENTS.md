@@ -69,7 +69,8 @@ ShowMeOutfit/
 | :--- | :--- | :--- | :--- |
 | **Milestone 1** | Standalone Weather Outfit MVP (v1.0.0) | Sprint 1 – Sprint 4 (73 SP) | ✅ Completed |
 | **Milestone 1.5** | Visual Outfit-First UX & Multi-Language (v1.1.0) | Sprint 5 (20 SP) | ✅ Completed |
-| **Milestone 2** | Smart Wardrobe & Digital Closet (v2.0.0) | Sprint 6 – Sprint 7 (38 SP) | 🟡 Next Target |
+| **Milestone 2** | Realistic Outfit Lookbook, Icon-First Weather & Virtual Closet Inventory (v2.0.0) | Sprint 6 (25 SP) | 🟡 Active Target |
+| **Milestone 2.1** | On-Device Closet Media & Smart Wardrobe Engine (v2.1.0) | Sprint 7 (20 SP) | ⏳ Planned |
 
 ### Current Project State
 - **Sprint 1 (COMPLETED):** Core diurnal recommendation engine, domain foundation, Open-Meteo Ktor client, Room caching, DataStore preferences, Koin DI, and 27 passing unit tests. Merged into `main` via PR #1.
