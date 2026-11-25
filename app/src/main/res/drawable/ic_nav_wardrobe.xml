@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Clothes-hanger nav glyph for the future Virtual Closet (SMO-S6-03). Outline, tintable. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:strokeColor="#FF000000" android:strokeWidth="1.9" android:strokeLineCap="round" android:pathData="M12,9.2L12,7.4A2.2,2.2 0 1,1 14.2,5.2"/>
+    <path android:strokeColor="#FF000000" android:strokeWidth="1.9" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M12,9.6L3.6,16.2C3,16.7 3.4,17.6 4.1,17.6L19.9,17.6C20.6,17.6 21,16.7 20.4,16.2Z"/>
+</vector>
