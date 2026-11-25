@@ -146,6 +146,18 @@
     <string name="home_weather_state_expanded">Đang mở rộng</string>
     <string name="home_weather_state_collapsed">Đang thu gọn</string>
 
+    <!-- Icon-first weather capsule (SMO-S6-03) -->
+    <string name="home_capsule_change_location">Đổi vị trí: %1$s</string>
+    <string name="home_capsule_temp_current">%1$s°</string>
+    <string name="home_capsule_temp_range">%1$s°–%2$s°</string>
+    <string name="home_capsule_rain_value">%1$s%%</string>
+    <string name="home_capsule_rain_peak">Mưa cao nhất %1$s phần trăm</string>
+    <string name="home_capsule_uv_peak">Chỉ số UV cao nhất %1$s</string>
+    <string name="home_capsule_wind_peak">Gió mạnh tới %1$s km/h</string>
+    <string name="home_capsule_refresh">Làm mới</string>
+    <string name="home_capsule_timeline_show">Hiện biểu đồ theo giờ</string>
+    <string name="home_capsule_timeline_hide">Ẩn biểu đồ theo giờ</string>
+
     <!-- Headlines -->
     <string name="home_headline_frost">Giá buốt — mặc thật ấm</string>
     <string name="home_headline_heatwave">Nắng nóng — ăn mặc nhẹ và uống đủ nước</string>

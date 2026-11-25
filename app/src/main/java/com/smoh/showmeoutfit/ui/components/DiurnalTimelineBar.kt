@@ -54,11 +54,16 @@ private val TimelineMaxFontScale = 1.5f
  * The chart grows with the user font scale (capped at 150%) so labels stay readable at 200%
  * text size. The whole component is exposed as one semantics node with a spoken summary of
  * hour range, temperature range, peak rain chance and peak UV index.
+ *
+ * [accentColor] colours the temperature curve only. It defaults to the theme primary, and the
+ * weather capsule passes its condition accent so the curve belongs to the sky it describes; the
+ * rain and UV bands keep their semantic palette colours either way.
  */
 @Composable
 fun DiurnalTimelineBar(
     points: List<TimelinePoint>,
     modifier: Modifier = Modifier,
+    accentColor: Color = MaterialTheme.colorScheme.primary,
 ) {
     if (points.isEmpty()) {
         EmptyTimeline(modifier = modifier)
@@ -66,7 +71,7 @@ fun DiurnalTimelineBar(
     }
 
     val palette = LocalWeatherPalette.current
-    val curveColor = MaterialTheme.colorScheme.primary
+    val curveColor = accentColor
     val rainColor = palette[WeatherConditionGroup.RAIN].accent
     val uvColor = palette[WeatherConditionGroup.HEAT].accent
     val gridColor = MaterialTheme.colorScheme.outlineVariant

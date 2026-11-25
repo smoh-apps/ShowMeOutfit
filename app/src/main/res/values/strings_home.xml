@@ -152,6 +152,18 @@
     <string name="home_weather_state_expanded">Expanded</string>
     <string name="home_weather_state_collapsed">Collapsed</string>
 
+    <!-- Icon-first weather capsule (SMO-S6-03) -->
+    <string name="home_capsule_change_location">Change location: %1$s</string>
+    <string name="home_capsule_temp_current">%1$s°</string>
+    <string name="home_capsule_temp_range">%1$s°–%2$s°</string>
+    <string name="home_capsule_rain_value">%1$s%%</string>
+    <string name="home_capsule_rain_peak">Rain peak %1$s percent</string>
+    <string name="home_capsule_uv_peak">UV index peak %1$s</string>
+    <string name="home_capsule_wind_peak">Wind up to %1$s km/h</string>
+    <string name="home_capsule_refresh">Refresh</string>
+    <string name="home_capsule_timeline_show">Show hourly timeline</string>
+    <string name="home_capsule_timeline_hide">Hide hourly timeline</string>
+
     <!-- Headlines -->
     <string name="home_headline_frost">Hard frost — dress for the cold</string>
     <string name="home_headline_heatwave">Heatwave — keep it light and stay hydrated</string>
