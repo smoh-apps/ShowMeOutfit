@@ -368,4 +368,3 @@ Following post-`v1.1.0` user feedback and Milestone 2 scoping (see [`docs/design
   - **Local Media Pipeline:** Camera/gallery capture, EXIF rotation normalization, and `512×512` WebP compression stored privately under `Context.filesDir/wardrobe/` populating `WardrobeItem.photoRelativePath`.
   - **Smart Closet Matcher (`PersonalWardrobeEngine : IOutfitRecommendationEngine`):** Matches registered `wardrobe_items` against diurnal temperature swings, precipitation windows, and wind thresholds, falling back per missing layer to `RuleBasedPresetEngine`.
 
-
