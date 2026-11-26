@@ -6,7 +6,9 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.room.Room
-import com.smoh.showmeoutfit.core.database.WeatherDatabase
+import com.smoh.showmeoutfit.core.database.AppDatabase
+import com.smoh.showmeoutfit.core.database.MIGRATION_1_2
+import com.smoh.showmeoutfit.core.database.dao.WardrobeDao
 import com.smoh.showmeoutfit.core.database.dao.WeatherSnapshotDao
 import com.smoh.showmeoutfit.core.datastore.UserPreferencesStore
 import com.smoh.showmeoutfit.core.network.HttpClientFactory
@@ -24,12 +26,14 @@ import com.smoh.showmeoutfit.data.scheduler.MorningOutfitRoutine
 import com.smoh.showmeoutfit.data.scheduler.MorningScheduleCoordinator
 import com.smoh.showmeoutfit.data.repository.LocationRepositoryImpl
 import com.smoh.showmeoutfit.data.repository.UserRepositoryImpl
+import com.smoh.showmeoutfit.data.repository.WardrobeRepositoryImpl
 import com.smoh.showmeoutfit.data.repository.WeatherRepositoryImpl
 import com.smoh.showmeoutfit.domain.engine.IOutfitRecommendationEngine
 import com.smoh.showmeoutfit.domain.engine.RuleBasedPresetEngine
 import com.smoh.showmeoutfit.domain.notification.OutfitNotifier
 import com.smoh.showmeoutfit.domain.repository.LocationRepository
 import com.smoh.showmeoutfit.domain.repository.UserRepository
+import com.smoh.showmeoutfit.domain.repository.WardrobeRepository
 import com.smoh.showmeoutfit.domain.repository.WeatherRepository
 import com.smoh.showmeoutfit.domain.usecase.GetTodayOutfitRecommendationUseCase
 import com.smoh.showmeoutfit.domain.usecase.ManageUserProfileUseCase
@@ -78,15 +82,20 @@ val networkModule = module {
 }
 
 val databaseModule = module {
-    single<WeatherDatabase> {
+    single<AppDatabase> {
+        // No destructive fallback: v1.1.0 devices upgrade in place through MIGRATION_1_2, so the
+        // cached forecast and the user's wardrobe survive an app update.
         Room.databaseBuilder(
             androidContext(),
-            WeatherDatabase::class.java,
-            WeatherDatabase.DATABASE_NAME
-        ).fallbackToDestructiveMigration(dropAllTables = false).build()
+            AppDatabase::class.java,
+            AppDatabase.DATABASE_NAME
+        ).addMigrations(MIGRATION_1_2).build()
     }
     single<WeatherSnapshotDao> {
-        get<WeatherDatabase>().weatherSnapshotDao()
+        get<AppDatabase>().weatherSnapshotDao()
+    }
+    single<WardrobeDao> {
+        get<AppDatabase>().wardrobeDao()
     }
     single<DataStore<Preferences>> {
         PreferenceDataStoreFactory.create(
@@ -117,6 +126,9 @@ val repositoryModule = module {
     }
     single<UserRepository> {
         UserRepositoryImpl(preferencesStore = get())
+    }
+    single<WardrobeRepository> {
+        WardrobeRepositoryImpl(dao = get())
     }
     single<LocationRepository> {
         LocationRepositoryImpl(

@@ -23,14 +23,14 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class WeatherSnapshotDaoTest {
 
-    private lateinit var database: WeatherDatabase
+    private lateinit var database: AppDatabase
     private lateinit var dao: WeatherSnapshotDao
 
     @Before
     fun setUp() {
         database = Room.inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
-            WeatherDatabase::class.java
+            AppDatabase::class.java
         ).allowMainThreadQueries().build()
         dao = database.weatherSnapshotDao()
     }

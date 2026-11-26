@@ -1,0 +1,137 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "feaaf2f1b6f3ded8d60342e61b03de15",
+    "entities": [
+      {
+        "tableName": "weather_snapshots",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `fetchedAtEpochMs` INTEGER NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `cityName` TEXT NOT NULL, `country` TEXT, `timezone` TEXT, `currentTempCelsius` REAL NOT NULL, `currentApparentTempCelsius` REAL NOT NULL, `currentHumidityPercent` INTEGER NOT NULL, `currentWeatherCode` INTEGER NOT NULL, `currentWindSpeedKmh` REAL NOT NULL, `currentTimeIso` TEXT NOT NULL, `dailyMaxTempCelsius` REAL NOT NULL, `dailyMinTempCelsius` REAL NOT NULL, `dailyMaxPrecipProb` INTEGER NOT NULL, `dailyWeatherCode` INTEGER NOT NULL, `dailyDateIso` TEXT NOT NULL, `hourlyJson` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fetchedAtEpochMs",
+            "columnName": "fetchedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "latitude",
+            "columnName": "latitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "longitude",
+            "columnName": "longitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cityName",
+            "columnName": "cityName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "country",
+            "columnName": "country",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timezone",
+            "columnName": "timezone",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "currentTempCelsius",
+            "columnName": "currentTempCelsius",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currentApparentTempCelsius",
+            "columnName": "currentApparentTempCelsius",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currentHumidityPercent",
+            "columnName": "currentHumidityPercent",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currentWeatherCode",
+            "columnName": "currentWeatherCode",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currentWindSpeedKmh",
+            "columnName": "currentWindSpeedKmh",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currentTimeIso",
+            "columnName": "currentTimeIso",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dailyMaxTempCelsius",
+            "columnName": "dailyMaxTempCelsius",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dailyMinTempCelsius",
+            "columnName": "dailyMinTempCelsius",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dailyMaxPrecipProb",
+            "columnName": "dailyMaxPrecipProb",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dailyWeatherCode",
+            "columnName": "dailyWeatherCode",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dailyDateIso",
+            "columnName": "dailyDateIso",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hourlyJson",
+            "columnName": "hourlyJson",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'feaaf2f1b6f3ded8d60342e61b03de15')"
+    ]
+  }
+}
