@@ -48,6 +48,7 @@ import com.smoh.showmeoutfit.ui.settings.AndroidAppLocaleController
 import com.smoh.showmeoutfit.ui.settings.AppLocaleController
 import com.smoh.showmeoutfit.ui.settings.SettingsViewModel
 import com.smoh.showmeoutfit.ui.app.AppViewModel
+import com.smoh.showmeoutfit.ui.wardrobe.WardrobeViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import kotlinx.coroutines.CoroutineDispatcher
@@ -173,6 +174,7 @@ val presentationModule = module {
     viewModelOf(::LocationSearchViewModel)
     viewModelOf(::OnboardingViewModel)
     viewModelOf(::SettingsViewModel)
+    viewModelOf(::WardrobeViewModel)
 }
 
 /**
