@@ -13,7 +13,7 @@
 
     <!-- Home navigation and closet membership -->
     <string name="home_open_wardrobe">Open wardrobe</string>
-    <string name="home_in_closet_indicator">In wardrobe</string>
+    <string name="home_in_closet_indicator">✓ In closet</string>
 
     <!-- Section headings -->
     <string name="home_section_outfit">Your outfit</string>
