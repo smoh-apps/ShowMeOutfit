@@ -3,8 +3,11 @@ package com.smoh.showmeoutfit.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smoh.showmeoutfit.domain.model.DomainError
+import com.smoh.showmeoutfit.domain.model.GarmentId
+import com.smoh.showmeoutfit.domain.model.LayerCategory
 import com.smoh.showmeoutfit.domain.model.LocationInfo
 import com.smoh.showmeoutfit.domain.repository.UserRepository
+import com.smoh.showmeoutfit.domain.repository.WardrobeRepository
 import com.smoh.showmeoutfit.domain.usecase.GetTodayOutfitRecommendationUseCase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +39,7 @@ import kotlinx.coroutines.withContext
 class HomeViewModel(
     private val getTodayOutfit: GetTodayOutfitRecommendationUseCase,
     private val userRepository: UserRepository,
+    private val wardrobeRepository: WardrobeRepository,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : ViewModel() {
 
@@ -47,6 +51,12 @@ class HomeViewModel(
 
     private var loadJob: Job? = null
 
+    /**
+     * Closet identities outlive transient weather states. Room emissions never trigger weather IO;
+     * they only update this snapshot and, when available, the current [HomeUiState.Content].
+     */
+    private var latestClosetKeys: Set<Pair<LayerCategory, GarmentId>> = emptySet()
+
     /** A trigger arrived while a request was running and still needs to be served. */
     private var reloadPending = false
 
@@ -55,6 +65,7 @@ class HomeViewModel(
 
     init {
         observeProfileChanges()
+        observeClosetChanges()
         onIntent(HomeIntent.Load)
     }
 
@@ -105,7 +116,9 @@ class HomeViewModel(
 
         val previous = _state.value
         _state.value = result.fold(
-            onSuccess = { HomeUiState.Content(outfit = it) },
+            onSuccess = {
+                HomeUiState.Content(outfit = it, closetItemKeys = latestClosetKeys)
+            },
             onFailure = { failure ->
                 val error = failure.toDomainError()
                 when {
@@ -147,6 +160,20 @@ class HomeViewModel(
             userRepository.getUserProfile()
                 .drop(1) // The initial emission is covered by the first Load.
                 .collect { load(forceRefresh = false) }
+        }
+    }
+
+    private fun observeClosetChanges() {
+        viewModelScope.launch {
+            wardrobeRepository.observeAll().collect { items ->
+                latestClosetKeys = items
+                    .map { it.category to it.garmentId }
+                    .toSet()
+                val current = _state.value
+                if (current is HomeUiState.Content) {
+                    _state.value = current.copy(closetItemKeys = latestClosetKeys)
+                }
+            }
         }
     }
 

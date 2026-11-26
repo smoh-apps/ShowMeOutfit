@@ -20,6 +20,7 @@ import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.filter
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
@@ -36,6 +37,8 @@ import com.smoh.showmeoutfit.domain.engine.GarmentCatalog
 import com.smoh.showmeoutfit.domain.model.AccessoryAlert
 import com.smoh.showmeoutfit.domain.model.AccessoryReason
 import com.smoh.showmeoutfit.domain.model.AccessoryType
+import com.smoh.showmeoutfit.domain.model.GarmentId
+import com.smoh.showmeoutfit.domain.model.LayerCategory
 import com.smoh.showmeoutfit.domain.model.OutfitRecommendation
 import com.smoh.showmeoutfit.domain.model.PriorityLevel
 import com.smoh.showmeoutfit.domain.model.TodayOutfit
@@ -89,6 +92,7 @@ class OutfitLookbookTest {
     private fun setCanvas(
         recommendation: OutfitRecommendation = previewTodayOutfit().recommendation,
         rtl: Boolean = false,
+        closetItemKeys: Set<Pair<LayerCategory, GarmentId>> = emptySet(),
         onGarmentClick: (OutfitTileUi) -> Unit = {},
         onAccessoryClick: (AccessoryAlert) -> Unit = {}
     ) {
@@ -106,6 +110,7 @@ class OutfitLookbookTest {
                         )
                         OutfitLookbookChips(
                             recommendation = recommendation,
+                            closetItemKeys = closetItemKeys,
                             onGarmentClick = onGarmentClick,
                             onAccessoryClick = onAccessoryClick
                         )
@@ -283,6 +288,34 @@ class OutfitLookbookTest {
             )
             composeRule.onAllNodesWithText(name).assertCountEquals(1)
         }
+        recommendation.accessories.forEach { alert ->
+            composeRule.onAllNodesWithText(accessoryLabel(alert)).assertCountEquals(1)
+        }
+    }
+
+    @Test
+    fun closet_badges_stay_in_chip_semantics_without_changing_the_silent_canvas() {
+        val recommendation = previewTodayOutfit().recommendation
+        val base = recommendation.baseLayer
+        val name = context.getString(GarmentTextMapper.garmentNameRes(base.id, base.fit))
+        val indicator = text(R.string.home_in_closet_indicator)
+        setCanvas(
+            recommendation = recommendation,
+            closetItemKeys = setOf(base.category to base.id)
+        )
+
+        composeRule.onAllNodes(
+            hasAnyAncestor(hasTestTag(HomeTestTags.OUTFIT_LOOKBOOK)),
+            useUnmergedTree = true
+        ).filter(SemanticsMatcher.keyIsDefined(SemanticsProperties.Text)).assertCountEquals(0)
+        composeRule.onAllNodes(
+            hasAnyAncestor(hasTestTag(HomeTestTags.OUTFIT_LOOKBOOK)),
+            useUnmergedTree = true
+        ).filter(SemanticsMatcher.keyIsDefined(SemanticsActions.OnClick)).assertCountEquals(0)
+
+        composeRule.onNode(hasText(name) and hasText(indicator)).assertExists()
+        composeRule.onAllNodesWithText(name).assertCountEquals(1)
+        composeRule.onAllNodesWithText(indicator).assertCountEquals(1)
         recommendation.accessories.forEach { alert ->
             composeRule.onAllNodesWithText(accessoryLabel(alert)).assertCountEquals(1)
         }

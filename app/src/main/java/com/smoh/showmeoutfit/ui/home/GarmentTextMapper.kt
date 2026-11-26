@@ -8,7 +8,6 @@ import com.smoh.showmeoutfit.domain.model.GarmentFit
 import com.smoh.showmeoutfit.domain.model.GarmentId
 import com.smoh.showmeoutfit.domain.model.HeadlineReason
 import com.smoh.showmeoutfit.domain.model.PriorityLevel
-import com.smoh.showmeoutfit.domain.model.SummaryData
 import com.smoh.showmeoutfit.domain.model.WeatherCode
 import com.smoh.showmeoutfit.ui.components.AccessoryPriority
 import com.smoh.showmeoutfit.ui.theme.WeatherConditionGroup
@@ -380,7 +379,7 @@ object GarmentTextMapper {
         WeatherCode.UNKNOWN to R.string.home_condition_unknown
     )
 
-    // --- Headline and summary -------------------------------------------------------------
+    // --- Headline -------------------------------------------------------------------------
 
     /** Headline copy; `LargeTempSwing` carries the delta the UI formats before substituting it. */
     fun headline(reason: HeadlineReason): MappedText = when (reason) {
@@ -397,31 +396,5 @@ object GarmentTextMapper {
         HeadlineReason.WarmAndPleasant -> MappedText(R.string.home_headline_warm)
         HeadlineReason.Chilly -> MappedText(R.string.home_headline_chilly)
         HeadlineReason.Mild -> MappedText(R.string.home_headline_mild)
-    }
-
-    /**
-     * Daily summary sentence.
-     *
-     * The rain clause is chosen from the structured [SummaryData.rainReason] so the sentence and
-     * the umbrella badge never disagree.
-     */
-    fun summary(summary: SummaryData): MappedText {
-        val rangeArgs = listOf(
-            TextArg.Number(summary.tempMinCelsius, decimals = 0),
-            TextArg.Number(summary.tempMaxCelsius, decimals = 0)
-        )
-        return when (val rain = summary.rainReason) {
-            is AccessoryReason.RainWindow -> MappedText(
-                resId = R.string.home_summary_rain_window,
-                args = rangeArgs + listOf(TextArg.Clock(rain.start), TextArg.Clock(rain.end))
-            )
-
-            is AccessoryReason.RainProbability -> MappedText(
-                resId = R.string.home_summary_rain_chance,
-                args = rangeArgs + TextArg.Count(rain.peakPercent)
-            )
-
-            else -> MappedText(resId = R.string.home_summary_plain, args = rangeArgs)
-        }
     }
 }

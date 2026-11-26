@@ -1,6 +1,8 @@
 package com.smoh.showmeoutfit.ui.home
 
 import com.smoh.showmeoutfit.domain.model.DomainError
+import com.smoh.showmeoutfit.domain.model.GarmentId
+import com.smoh.showmeoutfit.domain.model.LayerCategory
 import com.smoh.showmeoutfit.domain.model.LocationInfo
 import com.smoh.showmeoutfit.domain.model.TodayOutfit
 
@@ -23,7 +25,9 @@ sealed interface HomeUiState {
          * Provenance alone cannot express this: a `NETWORK` snapshot that could not be refreshed
          * is stale in time but not cached, so the UI needs this flag to say so.
          */
-        val refreshFailed: Boolean = false
+        val refreshFailed: Boolean = false,
+        /** Exact catalog identities owned by the user; fit and custom names do not affect membership. */
+        val closetItemKeys: Set<Pair<LayerCategory, GarmentId>> = emptySet()
     ) : HomeUiState
 
     /** No location and no cached recommendation; the user must pick a city. */

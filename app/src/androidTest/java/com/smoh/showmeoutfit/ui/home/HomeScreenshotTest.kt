@@ -18,7 +18,7 @@ import java.io.File
 /**
  * QA artifact: renders the Content state and writes a PNG to the app's external files directory so
  * the sprint evidence can be pulled with
- * `adb pull /sdcard/Android/data/com.smoh.showmeoutfit/files/qa_s2-03_home.png`.
+ * `adb pull /sdcard/Android/data/com.smoh.showmeoutfit/files/qa_s6-06_home.png`.
  *
  * It doubles as a rendering smoke test: a crash, a zero-sized layout or an unreadable screenshot
  * fails the build.
@@ -31,10 +31,15 @@ class HomeScreenshotTest {
 
     @Test
     fun content_state_renders_and_screenshots() {
+        val outfit = previewTodayOutfit()
+        val base = outfit.recommendation.baseLayer
         composeRule.setContent {
             ShowMeOutfitTheme(darkTheme = false, dynamicColor = false) {
                 HomeScreen(
-                    state = HomeUiState.Content(outfit = previewTodayOutfit()),
+                    state = HomeUiState.Content(
+                        outfit = outfit,
+                        closetItemKeys = setOf(base.category to base.id)
+                    ),
                     onIntent = {},
                     onEffect = {}
                 )
@@ -58,6 +63,6 @@ class HomeScreenshotTest {
     }
 
     private companion object {
-        const val SCREENSHOT_NAME = "qa_s2-03_home.png"
+        const val SCREENSHOT_NAME = "qa_s6-06_home.png"
     }
 }

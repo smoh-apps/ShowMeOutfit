@@ -7,7 +7,6 @@ import com.smoh.showmeoutfit.domain.model.GarmentFit
 import com.smoh.showmeoutfit.domain.model.GarmentId
 import com.smoh.showmeoutfit.domain.model.HeadlineReason
 import com.smoh.showmeoutfit.domain.model.PriorityLevel
-import com.smoh.showmeoutfit.domain.model.SummaryData
 import com.smoh.showmeoutfit.domain.model.WeatherCode
 import com.smoh.showmeoutfit.ui.components.AccessoryPriority
 import com.smoh.showmeoutfit.ui.theme.WeatherConditionGroup
@@ -274,7 +273,7 @@ class GarmentTextMapperTest {
         )
     }
 
-    // --- Headline and summary -------------------------------------------------------------
+    // --- Headlines -------------------------------------------------------------------------
 
     @Test
     fun `every headline variant has copy`() {
@@ -319,64 +318,6 @@ class GarmentTextMapperTest {
         ).map { GarmentTextMapper.headline(it).resId }
 
         assertEquals(9, resources.distinct().size)
-    }
-
-    @Test
-    fun `summary picks the rain clause from the structured reason`() {
-        val base = SummaryData(
-            tempMinCelsius = 12.6,
-            tempMaxCelsius = 22.0,
-            hasLargeTempSwing = true,
-            rainReason = null,
-            peakUvIndex = 6.2
-        )
-
-        val dry = GarmentTextMapper.summary(base)
-        val window = GarmentTextMapper.summary(
-            base.copy(
-                rainReason = AccessoryReason.RainWindow(
-                    start = LocalTime.of(15, 0),
-                    end = LocalTime.of(17, 0)
-                )
-            )
-        )
-        val chance = GarmentTextMapper.summary(
-            base.copy(rainReason = AccessoryReason.RainProbability(peakPercent = 55))
-        )
-
-        assertEquals(listOf(isolated("13"), isolated("22")), dry.resolve(locale).toList())
-        assertEquals(listOf(isolated("13"), isolated("22"), isolated("15:00"), isolated("17:00")), window.resolve(locale).toList())
-        assertEquals(listOf(isolated("13"), isolated("22"), isolated("55")), chance.resolve(locale).toList())
-        assertEquals(3, setOf(dry.resId, window.resId, chance.resId).size)
-    }
-
-    @Test
-    fun `substituted values are direction-isolated so RTL cannot reorder them`() {
-        val locale = Locale.US
-        val window = GarmentTextMapper.summary(
-            SummaryData(
-                tempMinCelsius = 12.6,
-                tempMaxCelsius = 22.0,
-                hasLargeTempSwing = true,
-                rainReason = AccessoryReason.RainWindow(
-                    start = LocalTime.of(15, 0),
-                    end = LocalTime.of(17, 0)
-                ),
-                peakUvIndex = 6.2
-            )
-        )
-
-        val args = window.resolve(locale)
-
-        // U+2066 LRI … U+2069 PDI around every value: without it an RTL layout renders
-        // "17:00 and 15:00" and drags the sentence's full stop to the front.
-        assertTrue("each value must be isolated", args.all { it.toString().startsWith("\u2066") })
-        assertTrue("each isolate must be closed", args.all { it.toString().endsWith("\u2069") })
-        assertEquals(
-            "the template order must survive",
-            listOf(isolated("13"), isolated("22"), isolated("15:00"), isolated("17:00")),
-            args.toList()
-        )
     }
 }
 

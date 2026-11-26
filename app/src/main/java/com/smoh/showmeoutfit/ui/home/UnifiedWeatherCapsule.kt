@@ -21,7 +21,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,6 +41,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -102,6 +102,9 @@ fun UnifiedWeatherCapsule(
     val refreshLabel = stringResource(R.string.home_capsule_refresh)
     val toggleLabel = stringResource(
         if (expanded) R.string.home_capsule_timeline_hide else R.string.home_capsule_timeline_show
+    )
+    val timelineStateLabel = stringResource(
+        if (expanded) R.string.home_weather_state_expanded else R.string.home_weather_state_collapsed
     )
     // A city name is content: at 200% it may use two lines instead of being reduced to "Lisb…".
     val cityMaxLines = if (LocalDensity.current.fontScale >= LargeFontScale) 2 else 1
@@ -167,7 +170,7 @@ fun UnifiedWeatherCapsule(
                     modifier = Modifier.heightIn(min = DesignTokens.MinTouchTarget)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Refresh,
+                        painter = painterResource(R.drawable.ic_action_refresh),
                         contentDescription = refreshLabel,
                         tint = accentColor
                     )
@@ -178,6 +181,7 @@ fun UnifiedWeatherCapsule(
                     modifier = Modifier
                         .heightIn(min = DesignTokens.MinTouchTarget)
                         .testTag(HomeTestTags.TIMELINE_TOGGLE)
+                        .semantics { stateDescription = timelineStateLabel }
                 ) {
                     Icon(
                         imageVector = if (expanded) {
@@ -194,13 +198,16 @@ fun UnifiedWeatherCapsule(
             FlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .testTag(HomeTestTags.METRICS)
                     .padding(bottom = DesignTokens.Spacing.xxs),
                 horizontalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.sm),
                 verticalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.xs)
             ) {
                 Image(
                     painter = painterResource(WeatherVisualMapper.skyIconRes(current.weatherCode)),
-                    contentDescription = null,
+                    contentDescription = stringResource(
+                        GarmentTextMapper.conditionDescriptionRes(current.weatherCode)
+                    ),
                     modifier = Modifier.size(28.dp)
                 )
                 Text(

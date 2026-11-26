@@ -6,16 +6,21 @@ import com.smoh.showmeoutfit.domain.model.AgeBand
 import com.smoh.showmeoutfit.domain.model.CurrentCondition
 import com.smoh.showmeoutfit.domain.model.DailySummary
 import com.smoh.showmeoutfit.domain.model.DomainError
+import com.smoh.showmeoutfit.domain.model.GarmentFit
+import com.smoh.showmeoutfit.domain.model.GarmentId
 import com.smoh.showmeoutfit.domain.model.HourlyCondition
+import com.smoh.showmeoutfit.domain.model.LayerCategory
 import com.smoh.showmeoutfit.domain.model.LocationInfo
 import com.smoh.showmeoutfit.domain.model.TodayOutfit
 import com.smoh.showmeoutfit.domain.model.UserProfile
+import com.smoh.showmeoutfit.domain.model.WardrobeItem
 import com.smoh.showmeoutfit.domain.model.WeatherCode
 import com.smoh.showmeoutfit.domain.model.WeatherData
 import com.smoh.showmeoutfit.domain.model.WeatherOrigin
 import com.smoh.showmeoutfit.domain.model.WeatherSnapshot
 import com.smoh.showmeoutfit.domain.repository.LocationRepository
 import com.smoh.showmeoutfit.domain.repository.UserRepository
+import com.smoh.showmeoutfit.domain.repository.WardrobeRepository
 import com.smoh.showmeoutfit.domain.repository.WeatherRepository
 import com.smoh.showmeoutfit.domain.usecase.GetTodayOutfitRecommendationUseCase
 import kotlinx.coroutines.CompletableDeferred
@@ -23,6 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -44,6 +50,7 @@ class HomeViewModelTest {
     private val dispatcher = UnconfinedTestDispatcher()
     private lateinit var weatherRepository: FakeWeatherRepository
     private lateinit var userRepository: FakeUserRepository
+    private lateinit var wardrobeRepository: FakeWardrobeRepository
     private lateinit var locationRepository: FakeLocationRepository
 
     private val paris = LocationInfo(48.8566, 2.3522, "Paris", "France")
@@ -54,6 +61,7 @@ class HomeViewModelTest {
         Dispatchers.setMain(dispatcher)
         weatherRepository = FakeWeatherRepository()
         userRepository = FakeUserRepository(UserProfile(selectedLocation = paris))
+        wardrobeRepository = FakeWardrobeRepository()
         locationRepository = FakeLocationRepository()
     }
 
@@ -70,7 +78,26 @@ class HomeViewModelTest {
             engine = RuleBasedPresetEngine()
         ),
         userRepository = userRepository,
+        wardrobeRepository = wardrobeRepository,
         ioDispatcher = dispatcher
+    )
+
+    private fun HomeViewModel.closetKeys(): Set<Pair<LayerCategory, GarmentId>> =
+        (state.value as HomeUiState.Content).closetItemKeys
+
+    private fun wardrobeItem(
+        id: String,
+        category: LayerCategory,
+        garmentId: GarmentId,
+        fit: GarmentFit = GarmentFit.UNISEX,
+        name: String = "Closet item"
+    ): WardrobeItem = WardrobeItem(
+        id = id,
+        name = name,
+        category = category,
+        garmentId = garmentId,
+        fit = fit,
+        createdAtEpochMillis = 1L
     )
 
     private fun weatherData(
@@ -115,6 +142,158 @@ class HomeViewModelTest {
         assertTrue(state is HomeUiState.Content)
         assertEquals(WeatherOrigin.NETWORK, (state as HomeUiState.Content).outfit.weather.origin)
         assertEquals(1, weatherRepository.calls)
+    }
+
+    @Test
+    fun `initial closet items become exact category and garment keys`() = runTest {
+        wardrobeRepository.emit(
+            listOf(
+                wardrobeItem("base", LayerCategory.BASE, GarmentId.COTTON_TEE),
+                wardrobeItem("mid", LayerCategory.MID, GarmentId.COTTON_TEE)
+            )
+        )
+
+        val content = viewModel().state.value as HomeUiState.Content
+
+        assertEquals(
+            setOf(
+                LayerCategory.BASE to GarmentId.COTTON_TEE,
+                LayerCategory.MID to GarmentId.COTTON_TEE
+            ),
+            content.closetItemKeys
+        )
+    }
+
+    @Test
+    fun `closet keys deduplicate fits names and item ids`() = runTest {
+        wardrobeRepository.emit(
+            listOf(
+                wardrobeItem(
+                    id = "first",
+                    category = LayerCategory.BOTTOM,
+                    garmentId = GarmentId.JEANS,
+                    fit = GarmentFit.MEN,
+                    name = "Everyday jeans"
+                ),
+                wardrobeItem(
+                    id = "second",
+                    category = LayerCategory.BOTTOM,
+                    garmentId = GarmentId.JEANS,
+                    fit = GarmentFit.WOMEN,
+                    name = "Custom label"
+                )
+            )
+        )
+
+        val content = viewModel().state.value as HomeUiState.Content
+
+        assertEquals(setOf(LayerCategory.BOTTOM to GarmentId.JEANS), content.closetItemKeys)
+    }
+
+    @Test
+    fun `insert update and delete emissions change closet state without weather IO`() = runTest {
+        val vm = viewModel()
+        val callsAfterLoad = weatherRepository.calls
+        val inserted = wardrobeItem("jeans", LayerCategory.BOTTOM, GarmentId.JEANS)
+
+        wardrobeRepository.emit(listOf(inserted))
+        assertEquals(setOf(LayerCategory.BOTTOM to GarmentId.JEANS), vm.closetKeys())
+
+        wardrobeRepository.emit(
+            listOf(inserted.copy(name = "Renamed", fit = GarmentFit.WOMEN))
+        )
+        assertEquals(setOf(LayerCategory.BOTTOM to GarmentId.JEANS), vm.closetKeys())
+
+        wardrobeRepository.emit(emptyList())
+        assertEquals(emptySet<Pair<LayerCategory, GarmentId>>(), vm.closetKeys())
+        assertEquals(callsAfterLoad, weatherRepository.calls)
+        assertEquals(1, wardrobeRepository.observeCalls)
+    }
+
+    @Test
+    fun `closet changes during a successful refresh survive the new content`() = runTest {
+        val vm = viewModel()
+        wardrobeRepository.emit(
+            listOf(wardrobeItem("tee", LayerCategory.BASE, GarmentId.COTTON_TEE))
+        )
+        val gate = CompletableDeferred<Unit>()
+        weatherRepository.gate = gate
+
+        vm.onIntent(HomeIntent.Refresh)
+        wardrobeRepository.emit(
+            listOf(wardrobeItem("jacket", LayerCategory.OUTER, GarmentId.LIGHT_JACKET))
+        )
+        gate.complete(Unit)
+        runCurrent()
+
+        assertEquals(
+            setOf(LayerCategory.OUTER to GarmentId.LIGHT_JACKET),
+            vm.closetKeys()
+        )
+    }
+
+    @Test
+    fun `a failed refresh retains the latest closet keys`() = runTest {
+        val vm = viewModel()
+        wardrobeRepository.emit(
+            listOf(wardrobeItem("boots", LayerCategory.FOOTWEAR, GarmentId.WINTER_BOOTS))
+        )
+        weatherRepository.result = Result.failure(DomainError.Offline(IOException("offline")))
+
+        vm.onIntent(HomeIntent.Refresh)
+        runCurrent()
+
+        val content = vm.state.value as HomeUiState.Content
+        assertTrue(content.refreshFailed)
+        assertEquals(setOf(LayerCategory.FOOTWEAR to GarmentId.WINTER_BOOTS), content.closetItemKeys)
+    }
+
+    @Test
+    fun `closet emissions while initial weather is loading survive until content`() = runTest {
+        val gate = CompletableDeferred<Unit>()
+        weatherRepository.gate = gate
+        val vm = viewModel()
+        assertTrue(vm.state.value is HomeUiState.Loading)
+
+        wardrobeRepository.emit(
+            listOf(wardrobeItem("coat", LayerCategory.OUTER, GarmentId.WOOL_COAT))
+        )
+        gate.complete(Unit)
+        runCurrent()
+
+        assertEquals(setOf(LayerCategory.OUTER to GarmentId.WOOL_COAT), vm.closetKeys())
+    }
+
+    @Test
+    fun `closet emissions while the dashboard is empty survive the next successful load`() = runTest {
+        userRepository.setProfile(UserProfile(selectedLocation = null))
+        locationRepository.lastKnown = Result.failure(IOException("no fix"))
+        val vm = viewModel()
+        assertEquals(HomeUiState.Empty, vm.state.value)
+
+        wardrobeRepository.emit(
+            listOf(wardrobeItem("shorts", LayerCategory.BOTTOM, GarmentId.SHORTS))
+        )
+        userRepository.setProfile(UserProfile(selectedLocation = paris))
+        runCurrent()
+
+        assertEquals(setOf(LayerCategory.BOTTOM to GarmentId.SHORTS), vm.closetKeys())
+    }
+
+    @Test
+    fun `closet emissions while the dashboard is an error survive recovery`() = runTest {
+        weatherRepository.result = Result.failure(DomainError.Offline(IOException("offline")))
+        val vm = viewModel()
+        assertTrue(vm.state.value is HomeUiState.Error)
+
+        wardrobeRepository.emit(
+            listOf(wardrobeItem("sandals", LayerCategory.FOOTWEAR, GarmentId.SANDALS))
+        )
+        weatherRepository.result = Result.success(weatherData())
+        vm.onIntent(HomeIntent.Refresh)
+        runCurrent()
+
+        assertEquals(setOf(LayerCategory.FOOTWEAR to GarmentId.SANDALS), vm.closetKeys())
     }
 
     @Test
@@ -419,6 +598,32 @@ class HomeViewModelTest {
         }
 
         override suspend fun getCachedWeather(): WeatherData? = result.getOrNull()
+    }
+
+    private class FakeWardrobeRepository : WardrobeRepository {
+        private val items = MutableStateFlow<List<WardrobeItem>>(emptyList())
+        var observeCalls = 0
+            private set
+
+        fun emit(items: List<WardrobeItem>) {
+            this.items.value = items
+        }
+
+        override fun observeAll(): Flow<List<WardrobeItem>> {
+            observeCalls++
+            return items
+        }
+
+        override fun observeByCategory(category: LayerCategory): Flow<List<WardrobeItem>> =
+            items.map { all -> all.filter { it.category == category } }
+
+        override suspend fun upsert(item: WardrobeItem) {
+            items.value = items.value.filterNot { it.id == item.id } + item
+        }
+
+        override suspend fun delete(id: String) {
+            items.value = items.value.filterNot { it.id == id }
+        }
     }
 
     private class FakeUserRepository(initial: UserProfile) : UserRepository {

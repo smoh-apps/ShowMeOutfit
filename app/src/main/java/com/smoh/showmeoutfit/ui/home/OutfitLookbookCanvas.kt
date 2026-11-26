@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -27,6 +28,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,6 +37,8 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.smoh.showmeoutfit.domain.model.AccessoryAlert
 import com.smoh.showmeoutfit.domain.model.AccessoryType
+import com.smoh.showmeoutfit.domain.model.GarmentId
+import com.smoh.showmeoutfit.domain.model.LayerCategory
 import com.smoh.showmeoutfit.domain.model.OutfitRecommendation
 import com.smoh.showmeoutfit.ui.theme.DesignTokens
 import com.smoh.showmeoutfit.ui.theme.ShowMeOutfitTheme
@@ -198,6 +202,7 @@ private fun LookbookHotspot(
 fun OutfitLookbookChips(
     recommendation: OutfitRecommendation,
     modifier: Modifier = Modifier,
+    closetItemKeys: Set<Pair<LayerCategory, GarmentId>> = emptySet(),
     onGarmentClick: (OutfitTileUi) -> Unit = {},
     onAccessoryClick: (AccessoryAlert) -> Unit = {}
 ) {
@@ -217,6 +222,7 @@ fun OutfitLookbookChips(
             tiles.forEach { tile ->
                 OutfitGarmentChip(
                     tile = tile,
+                    closetItemKeys = closetItemKeys,
                     onClick = { onGarmentClick(tile) },
                     modifier = if (largeFont) Modifier.weight(1f) else Modifier
                 )
@@ -234,7 +240,8 @@ fun OutfitLookbookChips(
 private fun OutfitGarmentChip(
     tile: OutfitTileUi,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    closetItemKeys: Set<Pair<LayerCategory, GarmentId>> = emptySet()
 ) {
     Surface(
         modifier = modifier
@@ -246,14 +253,20 @@ private fun OutfitGarmentChip(
         contentColor = MaterialTheme.colorScheme.onSurface,
         border = BorderStroke(DesignTokens.Hairline, MaterialTheme.colorScheme.outlineVariant)
     ) {
-        Text(
-            text = tile.title,
-            style = MaterialTheme.typography.labelLarge,
+        Row(
             modifier = Modifier.padding(
                 horizontal = DesignTokens.Spacing.md,
                 vertical = DesignTokens.Spacing.sm
+            ),
+            horizontalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.xs),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = tile.title,
+                style = MaterialTheme.typography.labelLarge
             )
-        )
+            InClosetIndicator(visible = tile.garment.isInCloset(closetItemKeys))
+        }
     }
 }
 
