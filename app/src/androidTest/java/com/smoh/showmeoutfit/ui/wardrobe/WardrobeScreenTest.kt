@@ -89,6 +89,7 @@ class WardrobeScreenTest {
         composeRule.onNodeWithTag(WardrobeTestTags.garmentOption(GarmentId.CARDIGAN)).performClick()
         composeRule.onNodeWithTag(WardrobeTestTags.fit(GarmentFit.WOMEN)).performScrollTo().performClick()
         composeRule.onNodeWithTag(WardrobeTestTags.NAME_INPUT).performScrollTo()
+            .performTextClearance()
             .performTextInput("Rainy day cardigan")
         composeRule.onNodeWithTag(WardrobeTestTags.WATER_SWITCH).performScrollTo().performClick()
         composeRule.onNodeWithTag(WardrobeTestTags.SAVE).performScrollTo().performClick()
