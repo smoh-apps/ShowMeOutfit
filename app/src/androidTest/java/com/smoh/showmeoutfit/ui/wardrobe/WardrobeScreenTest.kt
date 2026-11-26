@@ -88,9 +88,10 @@ class WardrobeScreenTest {
         composeRule.onNodeWithTag(WardrobeTestTags.GARMENT_SELECTOR).performScrollTo().performClick()
         composeRule.onNodeWithTag(WardrobeTestTags.garmentOption(GarmentId.CARDIGAN)).performClick()
         composeRule.onNodeWithTag(WardrobeTestTags.fit(GarmentFit.WOMEN)).performScrollTo().performClick()
-        composeRule.onNodeWithTag(WardrobeTestTags.NAME_INPUT).performScrollTo()
-            .performTextClearance()
-            .performTextInput("Rainy day cardigan")
+        val nameInput = composeRule.onNodeWithTag(WardrobeTestTags.NAME_INPUT)
+            .performScrollTo()
+        nameInput.performTextClearance()
+        nameInput.performTextInput("Rainy day cardigan")
         composeRule.onNodeWithTag(WardrobeTestTags.WATER_SWITCH).performScrollTo().performClick()
         composeRule.onNodeWithTag(WardrobeTestTags.SAVE).performScrollTo().performClick()
 
@@ -106,7 +107,10 @@ class WardrobeScreenTest {
         composeRule.onAllNodesWithText(
             context.getString(com.smoh.showmeoutfit.R.string.wardrobe_category_mid)
         ).assertCountEquals(2) // Filter chip plus the saved card's category label.
-        composeRule.onNodeWithTag(WardrobeTestTags.waterBadge(saved.id)).assertIsDisplayed()
+        assertTrue(saved.isWaterResistant)
+        composeRule.onNodeWithTag(WardrobeTestTags.waterBadge(saved.id), useUnmergedTree = true)
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 
     @Test
