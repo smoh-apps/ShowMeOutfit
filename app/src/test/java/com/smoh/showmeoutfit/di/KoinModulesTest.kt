@@ -6,13 +6,17 @@ import com.smoh.showmeoutfit.domain.engine.IOutfitRecommendationEngine
 import com.smoh.showmeoutfit.domain.engine.RuleBasedPresetEngine
 import com.smoh.showmeoutfit.domain.repository.LocationRepository
 import com.smoh.showmeoutfit.domain.repository.UserRepository
+import com.smoh.showmeoutfit.domain.repository.WardrobeRepository
 import com.smoh.showmeoutfit.domain.repository.WeatherRepository
 import com.smoh.showmeoutfit.domain.usecase.GetTodayOutfitRecommendationUseCase
 import com.smoh.showmeoutfit.domain.usecase.ManageUserProfileUseCase
 import com.smoh.showmeoutfit.domain.usecase.SearchLocationUseCase
 import com.smoh.showmeoutfit.ui.home.HomeViewModel
 import com.smoh.showmeoutfit.ui.location.LocationSearchViewModel
+import com.smoh.showmeoutfit.ui.wardrobe.WardrobeViewModel
+import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.emptyFlow
 import org.junit.After
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -38,6 +42,12 @@ class KoinModulesTest : KoinTest {
             single<LocalWeatherDataSource> { mockk(relaxed = true) }
             single<WeatherRepository> { mockk(relaxed = true) }
             single<UserRepository> { mockk(relaxed = true) }
+            single<WardrobeRepository> {
+                mockk(relaxed = true) {
+                    every { observeAll() } returns emptyFlow()
+                    every { observeByCategory(any()) } returns emptyFlow()
+                }
+            }
             single<LocationRepository> { mockk(relaxed = true) }
         }
 
@@ -71,10 +81,11 @@ class KoinModulesTest : KoinTest {
     }
 
     @Test
-    fun `presentationModule resolves both view models from the dispatcher binding`() {
+    fun `presentationModule resolves wardrobe view model from the dispatcher binding`() {
         // viewModelOf injects every constructor parameter, including the dispatcher that used to
         // rely on a Kotlin default. This would fail at runtime if the binding were missing.
         assertNotNull(getKoin().get<HomeViewModel>())
         assertNotNull(getKoin().get<LocationSearchViewModel>())
+        assertNotNull(getKoin().get<WardrobeViewModel>())
     }
 }

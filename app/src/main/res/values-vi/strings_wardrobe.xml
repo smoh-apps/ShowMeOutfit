@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bản dịch tiếng Việt cho tủ đồ ảo (SMO-S6-05). -->
+<resources>
+    <string name="wardrobe_title">Tủ đồ của tôi</string>
+    <string name="wardrobe_back_action">Quay lại</string>
+    <string name="wardrobe_add_item">Thêm món đồ</string>
+
+    <string name="wardrobe_filter_all">Tất cả</string>
+    <string name="wardrobe_category_base">Lớp trong</string>
+    <string name="wardrobe_category_mid">Lớp giữa</string>
+    <string name="wardrobe_category_outer">Lớp ngoài</string>
+    <string name="wardrobe_category_bottom">Quần</string>
+    <string name="wardrobe_category_footwear">Giày dép</string>
+
+    <string name="wardrobe_empty_title">Tủ đồ của bạn đang trống</string>
+    <string name="wardrobe_empty_body">Hãy thêm món đồ đầu tiên để bắt đầu xây dựng tủ đồ cá nhân.</string>
+    <string name="wardrobe_empty_action">Thêm món đồ đầu tiên</string>
+    <string name="wardrobe_filter_empty_title">Chưa có món đồ nào trong danh mục này</string>
+    <string name="wardrobe_filter_empty_body">Hãy thêm một món đồ vào bộ sưu tập %1$s.</string>
+
+    <string name="wardrobe_loading">Đang tải tủ đồ</string>
+    <string name="wardrobe_load_error">Không thể tải tủ đồ của bạn.</string>
+    <string name="wardrobe_retry">Thử lại</string>
+    <string name="wardrobe_water_resistant">Chống nước</string>
+
+    <string name="wardrobe_editor_add_title">Thêm món đồ</string>
+    <string name="wardrobe_editor_edit_title">Chỉnh sửa món đồ</string>
+    <string name="wardrobe_editor_category_label">Danh mục</string>
+    <string name="wardrobe_editor_garment_label">Loại trang phục</string>
+    <string name="wardrobe_editor_fit_label">Kiểu dáng</string>
+    <string name="wardrobe_fit_unisex">Unisex</string>
+    <string name="wardrobe_fit_men">Nam</string>
+    <string name="wardrobe_fit_women">Nữ</string>
+    <string name="wardrobe_editor_name_label">Tên món đồ</string>
+    <string name="wardrobe_editor_name_helper">Để trống để dùng tên trang phục mặc định.</string>
+    <string name="wardrobe_editor_name_required">Cần có tên trang phục mặc định.</string>
+    <string name="wardrobe_editor_name_too_long">Tên không được vượt quá 80 ký tự.</string>
+    <string name="wardrobe_editor_water_label">Chống nước</string>
+    <string name="wardrobe_editor_save">Lưu</string>
+    <string name="wardrobe_editor_delete">Xóa</string>
+
+    <string name="wardrobe_effect_saved">Đã lưu món đồ</string>
+    <string name="wardrobe_effect_deleted">Đã xóa món đồ</string>
+    <string name="wardrobe_effect_load_failed">Không thể tải tủ đồ của bạn.</string>
+    <string name="wardrobe_effect_save_failed">Không thể lưu món đồ.</string>
+    <string name="wardrobe_effect_delete_failed">Không thể xóa món đồ.</string>
+</resources>

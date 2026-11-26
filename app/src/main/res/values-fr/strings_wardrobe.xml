@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Traduction française du vestiaire virtuel (SMO-S6-05). -->
+<resources>
+    <string name="wardrobe_title">Ma garde-robe</string>
+    <string name="wardrobe_back_action">Retour</string>
+    <string name="wardrobe_add_item">Ajouter un vêtement</string>
+
+    <string name="wardrobe_filter_all">Tout</string>
+    <string name="wardrobe_category_base">Sous-couche</string>
+    <string name="wardrobe_category_mid">Intermédiaire</string>
+    <string name="wardrobe_category_outer">Extérieur</string>
+    <string name="wardrobe_category_bottom">Bas</string>
+    <string name="wardrobe_category_footwear">Chaussures</string>
+
+    <string name="wardrobe_empty_title">Votre garde-robe est vide</string>
+    <string name="wardrobe_empty_body">Ajoutez votre premier vêtement pour commencer à constituer un vestiaire personnel.</string>
+    <string name="wardrobe_empty_action">Ajouter votre premier vêtement</string>
+    <string name="wardrobe_filter_empty_title">Aucun vêtement dans cette catégorie</string>
+    <string name="wardrobe_filter_empty_body">Ajoutez un vêtement à votre collection %1$s.</string>
+
+    <string name="wardrobe_loading">Chargement de votre garde-robe</string>
+    <string name="wardrobe_load_error">Impossible de charger votre garde-robe.</string>
+    <string name="wardrobe_retry">Réessayer</string>
+    <string name="wardrobe_water_resistant">Résistant à l’eau</string>
+
+    <string name="wardrobe_editor_add_title">Ajouter un vêtement</string>
+    <string name="wardrobe_editor_edit_title">Modifier le vêtement</string>
+    <string name="wardrobe_editor_category_label">Catégorie</string>
+    <string name="wardrobe_editor_garment_label">Vêtement</string>
+    <string name="wardrobe_editor_fit_label">Coupe</string>
+    <string name="wardrobe_fit_unisex">Unisexe</string>
+    <string name="wardrobe_fit_men">Homme</string>
+    <string name="wardrobe_fit_women">Femme</string>
+    <string name="wardrobe_editor_name_label">Nom du vêtement</string>
+    <string name="wardrobe_editor_name_helper">Laissez vide pour utiliser le nom par défaut du vêtement.</string>
+    <string name="wardrobe_editor_name_required">Un nom de vêtement par défaut est requis.</string>
+    <string name="wardrobe_editor_name_too_long">Le nom ne peut pas dépasser 80 caractères.</string>
+    <string name="wardrobe_editor_water_label">Résistant à l’eau</string>
+    <string name="wardrobe_editor_save">Enregistrer</string>
+    <string name="wardrobe_editor_delete">Supprimer</string>
+
+    <string name="wardrobe_effect_saved">Vêtement enregistré</string>
+    <string name="wardrobe_effect_deleted">Vêtement supprimé</string>
+    <string name="wardrobe_effect_load_failed">Impossible de charger votre garde-robe.</string>
+    <string name="wardrobe_effect_save_failed">Impossible d’enregistrer le vêtement.</string>
+    <string name="wardrobe_effect_delete_failed">Impossible de supprimer le vêtement.</string>
+</resources>

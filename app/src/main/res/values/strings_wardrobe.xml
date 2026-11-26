@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copy owned by the virtual closet (SMO-S6-05). -->
+<resources>
+    <string name="wardrobe_title">My wardrobe</string>
+    <string name="wardrobe_back_action">Back</string>
+    <string name="wardrobe_add_item">Add item</string>
+
+    <string name="wardrobe_filter_all">All</string>
+    <string name="wardrobe_category_base">Base</string>
+    <string name="wardrobe_category_mid">Mid</string>
+    <string name="wardrobe_category_outer">Outer</string>
+    <string name="wardrobe_category_bottom">Bottom</string>
+    <string name="wardrobe_category_footwear">Footwear</string>
+
+    <string name="wardrobe_empty_title">Your wardrobe is empty</string>
+    <string name="wardrobe_empty_body">Add your first item to start building a personal closet.</string>
+    <string name="wardrobe_empty_action">Add your first item</string>
+    <string name="wardrobe_filter_empty_title">Nothing in this category yet</string>
+    <string name="wardrobe_filter_empty_body">Add an item to your %1$s collection.</string>
+
+    <string name="wardrobe_loading">Loading your wardrobe</string>
+    <string name="wardrobe_load_error">Your wardrobe could not be loaded.</string>
+    <string name="wardrobe_retry">Try again</string>
+    <string name="wardrobe_water_resistant">Water-resistant</string>
+
+    <string name="wardrobe_editor_add_title">Add an item</string>
+    <string name="wardrobe_editor_edit_title">Edit item</string>
+    <string name="wardrobe_editor_category_label">Category</string>
+    <string name="wardrobe_editor_garment_label">Garment</string>
+    <string name="wardrobe_editor_fit_label">Fit</string>
+    <string name="wardrobe_fit_unisex">Unisex</string>
+    <string name="wardrobe_fit_men">Men</string>
+    <string name="wardrobe_fit_women">Women</string>
+    <string name="wardrobe_editor_name_label">Item name</string>
+    <string name="wardrobe_editor_name_helper">Leave blank to use the default garment name.</string>
+    <string name="wardrobe_editor_name_required">A default garment name is required.</string>
+    <string name="wardrobe_editor_name_too_long">The name cannot exceed 80 characters.</string>
+    <string name="wardrobe_editor_water_label">Water-resistant</string>
+    <string name="wardrobe_editor_save">Save</string>
+    <string name="wardrobe_editor_delete">Delete</string>
+
+    <string name="wardrobe_effect_saved">Item saved</string>
+    <string name="wardrobe_effect_deleted">Item deleted</string>
+    <string name="wardrobe_effect_load_failed">Could not load your wardrobe.</string>
+    <string name="wardrobe_effect_save_failed">The item could not be saved.</string>
+    <string name="wardrobe_effect_delete_failed">The item could not be deleted.</string>
+</resources>
