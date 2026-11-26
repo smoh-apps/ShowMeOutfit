@@ -92,6 +92,9 @@ class HomeScreenTest {
         assertEquals(null, outfit.recommendation.outerLayer)
 
         setState(HomeUiState.Content(outfit))
+        composeRule.onNodeWithText(text(R.string.home_outfit_view_grid))
+            .performScrollTo()
+            .performClick()
 
         composeRule.onNodeWithTag(HomeTestTags.OUTFIT_GRID).assertExists()
 
@@ -129,9 +132,9 @@ class HomeScreenTest {
 
         setState(HomeUiState.Content(outfit))
 
-        // The outfit grid only shows layers that exist: no filler tile and no placeholder copy for
-        // the missing layer (the old "not needed" strings went away with the bento grid rework).
-        composeRule.onNodeWithTag(HomeTestTags.outfitTile("outer")).assertDoesNotExist()
+        // The lookbook only shows layers that exist: no filler hotspot or chip for the missing
+        // layer (the old "not needed" strings went away with the bento grid rework).
+        composeRule.onNodeWithTag(LookbookTestTags.garment("outer")).assertDoesNotExist()
         composeRule.onNodeWithText(text(R.string.home_layer_outer)).assertDoesNotExist()
     }
 
@@ -140,6 +143,9 @@ class HomeScreenTest {
         val outfit = previewTodayOutfit()
         val base = requireNotNull(outfit.recommendation.baseLayer)
         setState(HomeUiState.Content(outfit))
+        composeRule.onNodeWithText(text(R.string.home_outfit_view_grid))
+            .performScrollTo()
+            .performClick()
 
         composeRule.onNodeWithTag(HomeTestTags.outfitTile("base"))
             .performScrollTo()
@@ -185,20 +191,27 @@ class HomeScreenTest {
     }
 
     @Test
-    fun content_renders_accessory_badges_with_their_reasons() {
+    fun content_renders_compact_accessory_chips_with_their_triggers() {
         val outfit = previewTodayOutfit()
         setState(HomeUiState.Content(outfit))
 
         outfit.recommendation.accessories.forEach { alert ->
-            composeRule.onNodeWithContentDescription(accessoryLabel(alert), substring = true)
-                .performScrollTo()
-                .assertExists()
+            val trigger = GarmentTextMapper.accessoryCompactTrigger(alert.reason)
+            val triggerText = context.getString(trigger.resId, *trigger.resolve(Locale.getDefault()))
+            val name = accessoryLabel(alert)
+            val label = context.getString(
+                R.string.home_accessory_trigger_format,
+                name,
+                triggerText
+            )
+            val description = context.getString(
+                R.string.home_accessory_trigger_content_description,
+                name,
+                triggerText
+            )
+            composeRule.onNodeWithText(label).performScrollTo().assertIsDisplayed()
+            composeRule.onNodeWithContentDescription(description).assertExists()
         }
-
-        // Each badge is followed by the structural reason the engine produced.
-        val reason = outfit.recommendation.accessories.first().reason
-        composeRule.onNodeWithText(expectedText(GarmentTextMapper.accessoryReason(reason)))
-            .assertExists()
     }
 
     @Test

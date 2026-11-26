@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -36,6 +37,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,13 +58,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.smoh.showmeoutfit.R
+import com.smoh.showmeoutfit.domain.model.AccessoryAlert
 import com.smoh.showmeoutfit.domain.model.CurrentCondition
 import com.smoh.showmeoutfit.domain.model.DomainError
 import com.smoh.showmeoutfit.domain.model.OutfitRecommendation
 import com.smoh.showmeoutfit.domain.model.TodayOutfit
 import com.smoh.showmeoutfit.domain.model.WeatherData
 import com.smoh.showmeoutfit.domain.model.WeatherOrigin
-import com.smoh.showmeoutfit.ui.components.AccessoryBadge
 import com.smoh.showmeoutfit.ui.components.OfflineBanner
 import com.smoh.showmeoutfit.ui.components.TimelinePoint
 import com.smoh.showmeoutfit.ui.theme.DesignTokens
@@ -86,6 +88,8 @@ object HomeTestTags {
     const val TIMELINE_TOGGLE = "home_timeline_toggle"
     const val METRICS = "home_metrics"
     const val OPEN_SETTINGS = "home_open_settings"
+    const val OUTFIT_VIEW_SWITCHER = "home_outfit_view_switcher"
+    const val OUTFIT_LOOKBOOK = "home_outfit_lookbook"
     const val OUTFIT_GRID = "home_outfit_grid"
     const val GARMENT_DETAIL_SHEET = "home_garment_detail_sheet"
 
@@ -116,6 +120,7 @@ fun HomeRoute(
     onOpenLocationSearch: () -> Unit,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    onAccessoryClick: (AccessoryAlert) -> Unit = {},
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -150,6 +155,7 @@ fun HomeRoute(
         onIntent = viewModel::onIntent,
         onEffect = onEffect,
         onOpenSettings = onOpenSettings,
+        onAccessoryClick = onAccessoryClick,
         snackbarHostState = snackbarHostState,
         modifier = modifier
     )
@@ -172,6 +178,7 @@ fun HomeScreen(
     onEffect: (HomeEffect) -> Unit,
     modifier: Modifier = Modifier,
     onOpenSettings: () -> Unit = {},
+    onAccessoryClick: (AccessoryAlert) -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
     Scaffold(
@@ -206,6 +213,7 @@ fun HomeScreen(
             is HomeUiState.Content -> HomeContentState(
                 state = state,
                 onIntent = onIntent,
+                onAccessoryClick = onAccessoryClick,
                 modifier = stateModifier
             )
 
@@ -232,6 +240,7 @@ fun HomeScreen(
 private fun HomeContentState(
     state: HomeUiState.Content,
     onIntent: (HomeIntent) -> Unit,
+    onAccessoryClick: (AccessoryAlert) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val outfit: TodayOutfit = state.outfit
@@ -249,6 +258,10 @@ private fun HomeContentState(
     // The detail sheet is transient presentation state: it owns no domain data and closes without
     // touching the recommendation, so it stays local to the content composable.
     var inspectedTile by remember { mutableStateOf<OutfitTileUi?>(null) }
+    var preferredViewMode by rememberSaveable { mutableStateOf(OutfitViewMode.LOOK) }
+    val largeFont = LocalDensity.current.fontScale >= LargeFontScale
+    // ADR-DESIGN-V2 D4: the collage gives way to the readable one-column grid at 150%+ text.
+    val viewMode = if (largeFont) OutfitViewMode.GRID else preferredViewMode
 
     PullToRefreshBox(
         isRefreshing = state.isRefreshing,
@@ -304,18 +317,53 @@ private fun HomeContentState(
                 )
             }
 
-            SectionHeading(title = stringResource(R.string.home_section_outfit))
-            // Outfit-first: only the layers that were actually recommended get a tile, so the grid
-            // never pads itself with "not needed" placeholders.
-            OutfitBentoGrid(
-                recommendation = recommendation,
-                accentColor = accent,
-                modifier = Modifier.testTag(HomeTestTags.OUTFIT_GRID),
-                onGarmentClick = { tile -> inspectedTile = tile }
-            )
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.md),
+                verticalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.sm)
+            ) {
+                SectionHeading(title = stringResource(R.string.home_section_outfit))
+                OutfitViewSwitcher(
+                    mode = viewMode,
+                    onModeChange = { preferredViewMode = it },
+                    lookEnabled = !largeFont
+                )
+            }
 
-            SectionHeading(title = stringResource(R.string.home_section_accessories))
-            AccessorySection(recommendation = recommendation)
+            when (viewMode) {
+                OutfitViewMode.LOOK -> Column(
+                    verticalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.md)
+                ) {
+                    OutfitLookbookCanvas(
+                        recommendation = recommendation,
+                        onGarmentClick = { tile -> inspectedTile = tile },
+                        onAccessoryClick = onAccessoryClick
+                    )
+                    // Chips are the single accessible inventory of the otherwise silent collage.
+                    OutfitLookbookChips(
+                        recommendation = recommendation,
+                        onGarmentClick = { tile -> inspectedTile = tile },
+                        onAccessoryClick = onAccessoryClick
+                    )
+                }
+
+                OutfitViewMode.GRID -> Column(
+                    verticalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.md)
+                ) {
+                    // Only active layers get tiles; no "not needed" placeholders are introduced.
+                    OutfitBentoGrid(
+                        recommendation = recommendation,
+                        accentColor = accent,
+                        modifier = Modifier.testTag(HomeTestTags.OUTFIT_GRID),
+                        onGarmentClick = { tile -> inspectedTile = tile }
+                    )
+                    SectionHeading(title = stringResource(R.string.home_section_accessories))
+                    AccessoryTriggerChips(
+                        alerts = recommendation.accessories,
+                        onAccessoryClick = onAccessoryClick
+                    )
+                }
+            }
 
             // Weather detail last: the peaks stay visible, the chart costs a tap. That is what keeps
             // the outfit above the fold on a phone.
@@ -430,36 +478,6 @@ internal fun SectionHeading(title: String) {
         style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.onSurface
     )
-}
-
-@Composable
-private fun AccessorySection(recommendation: OutfitRecommendation) {
-    if (recommendation.accessories.isEmpty()) {
-        Text(
-            text = stringResource(R.string.home_accessories_empty),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        return
-    }
-
-    Column(verticalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.md)) {
-        recommendation.accessories.forEach { alert ->
-            Column(verticalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.xxs)) {
-                AccessoryBadge(
-                    label = stringResource(GarmentTextMapper.accessoryNameRes(alert.type)),
-                    priority = GarmentTextMapper.accessoryPriority(alert.priority),
-                    iconRes = GarmentVisualMapper.accessoryDrawableRes(alert.type)
-                )
-                Text(
-                    text = localizedText(GarmentTextMapper.accessoryReason(alert.reason)),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = DesignTokens.Spacing.md)
-                )
-            }
-        }
-    }
 }
 
 // --- Loading -----------------------------------------------------------------------------

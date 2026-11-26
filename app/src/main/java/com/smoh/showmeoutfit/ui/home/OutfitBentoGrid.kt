@@ -4,7 +4,6 @@ import android.content.res.Configuration
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,10 +43,10 @@ import com.smoh.showmeoutfit.ui.theme.ShowMeOutfitTheme
 import com.smoh.showmeoutfit.ui.theme.WeatherConditionGroup
 
 /** Illustration edge used inside a grid tile. */
-private val TileIllustrationSize = 64.dp
+private val TileIllustrationSize = 104.dp
 
 /** Illustration edge used inside the detail sheet. */
-private val DetailIllustrationSize = 88.dp
+private val DetailIllustrationSize = 176.dp
 
 /**
  * One active outfit layer, resolved to display copy and artwork.
@@ -86,28 +84,7 @@ fun OutfitBentoGrid(
     modifier: Modifier = Modifier,
     onGarmentClick: (OutfitTileUi) -> Unit = {}
 ) {
-    val baseTile = garmentTile(
-        layerKey = "base",
-        layerLabelRes = R.string.home_layer_base,
-        garment = recommendation.baseLayer
-    )
-    val midTile = recommendation.midLayer?.let { garment ->
-        garmentTile(layerKey = "mid", layerLabelRes = R.string.home_layer_mid, garment = garment)
-    }
-    val outerTile = recommendation.outerLayer?.let { garment ->
-        garmentTile(layerKey = "outer", layerLabelRes = R.string.home_layer_outer, garment = garment)
-    }
-    val bottomTile = garmentTile(
-        layerKey = "bottom",
-        layerLabelRes = R.string.home_layer_bottom,
-        garment = recommendation.bottomLayer
-    )
-    val footwearTile = garmentTile(
-        layerKey = "footwear",
-        layerLabelRes = R.string.home_layer_footwear,
-        garment = recommendation.footwear
-    )
-    val tiles = listOfNotNull(baseTile, midTile, outerTile, bottomTile, footwearTile)
+    val tiles = recommendationTiles(recommendation)
 
     val itemsPerRow = if (LocalDensity.current.fontScale >= LargeFontScale) 1 else 2
 
@@ -176,8 +153,8 @@ fun OutfitVisualTile(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.sm),
             ) {
-                Image(
-                    painter = painterResource(tile.illustrationRes),
+                GarmentArtwork(
+                    source = GarmentVisualSource.Preset(tile.illustrationRes),
                     contentDescription = null,
                     modifier = Modifier.size(TileIllustrationSize)
                 )
@@ -241,8 +218,8 @@ fun GarmentDetailSheet(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.md),
         ) {
-            Image(
-                painter = painterResource(tile.illustrationRes),
+            GarmentArtwork(
+                source = GarmentVisualSource.Preset(tile.illustrationRes),
                 contentDescription = null,
                 modifier = Modifier.size(DetailIllustrationSize)
             )
@@ -263,6 +240,33 @@ fun GarmentDetailSheet(
             )
         }
     }
+}
+
+/** Active layers in anatomical order, shared by the grid and the lookbook. */
+@Composable
+internal fun recommendationTiles(recommendation: OutfitRecommendation): List<OutfitTileUi> {
+    val baseTile = garmentTile(
+        layerKey = "base",
+        layerLabelRes = R.string.home_layer_base,
+        garment = recommendation.baseLayer
+    )
+    val midTile = recommendation.midLayer?.let { garment ->
+        garmentTile(layerKey = "mid", layerLabelRes = R.string.home_layer_mid, garment = garment)
+    }
+    val outerTile = recommendation.outerLayer?.let { garment ->
+        garmentTile(layerKey = "outer", layerLabelRes = R.string.home_layer_outer, garment = garment)
+    }
+    val bottomTile = garmentTile(
+        layerKey = "bottom",
+        layerLabelRes = R.string.home_layer_bottom,
+        garment = recommendation.bottomLayer
+    )
+    val footwearTile = garmentTile(
+        layerKey = "footwear",
+        layerLabelRes = R.string.home_layer_footwear,
+        garment = recommendation.footwear
+    )
+    return listOfNotNull(baseTile, midTile, outerTile, bottomTile, footwearTile)
 }
 
 /** Resolves one recommended garment into a display-ready tile. */

@@ -21,6 +21,10 @@
     <string name="home_section_accessories">Don\'t forget</string>
     <string name="home_section_highlights">Today\'s peaks</string>
 
+    <!-- Outfit lookbook view switcher -->
+    <string name="home_outfit_view_look">Look</string>
+    <string name="home_outfit_view_grid">Grid</string>
+
     <!-- Layer labels -->
     <string name="home_layer_base">Base layer</string>
     <string name="home_layer_mid">Mid layer</string>
@@ -137,6 +141,17 @@
     <string name="home_reason_diurnal_swing">Temperature swings about %1$s° during the day.</string>
     <string name="home_reason_extreme_heat">Peaks at %1$s°. Drink water often and stay in the shade.</string>
     <string name="home_accessories_empty">No accessories needed today.</string>
+
+    <!-- Compact accessory trigger chips -->
+    <string name="home_accessory_trigger_format">%1$s · %2$s</string>
+    <string name="home_accessory_trigger_content_description">%1$s, %2$s</string>
+    <string name="home_compact_trigger_rain_window">%1$s–%2$s</string>
+    <string name="home_compact_trigger_rain_probability">Rain %1$s%%</string>
+    <string name="home_compact_trigger_freezing">Freezing</string>
+    <string name="home_compact_trigger_wind">Wind %1$s km/h</string>
+    <string name="home_compact_trigger_uv">UV %1$s</string>
+    <string name="home_compact_trigger_diurnal_swing">Δ %1$s °C</string>
+    <string name="home_compact_trigger_extreme_heat">Heat %1$s °C</string>
 
     <!-- Weather metric chips -->
     <string name="home_metric_rain_label">Rain</string>

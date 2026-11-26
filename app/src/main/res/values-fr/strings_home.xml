@@ -16,6 +16,10 @@
     <string name="home_section_accessories">À ne pas oublier</string>
     <string name="home_section_highlights">Les pics du jour</string>
 
+    <!-- Outfit lookbook view switcher -->
+    <string name="home_outfit_view_look">Vue</string>
+    <string name="home_outfit_view_grid">Grille</string>
+
     <!-- Layer labels -->
     <string name="home_layer_base">Sous-couche</string>
     <string name="home_layer_mid">Couche intermédiaire</string>
@@ -132,6 +136,17 @@
     <string name="home_reason_diurnal_swing">Écart d\'environ %1$s° au cours de la journée.</string>
     <string name="home_reason_extreme_heat">Pics à %1$s°. Buvez de l\'eau souvent et restez à l\'ombre.</string>
     <string name="home_accessories_empty">Aucun accessoire nécessaire aujourd\'hui.</string>
+
+    <!-- Compact accessory trigger chips -->
+    <string name="home_accessory_trigger_format">%1$s · %2$s</string>
+    <string name="home_accessory_trigger_content_description">%1$s, %2$s</string>
+    <string name="home_compact_trigger_rain_window">%1$s–%2$s</string>
+    <string name="home_compact_trigger_rain_probability">Pluie %1$s %%</string>
+    <string name="home_compact_trigger_freezing">Gel</string>
+    <string name="home_compact_trigger_wind">Vent %1$s km/h</string>
+    <string name="home_compact_trigger_uv">UV %1$s</string>
+    <string name="home_compact_trigger_diurnal_swing">Écart %1$s °C</string>
+    <string name="home_compact_trigger_extreme_heat">Chaleur %1$s °C</string>
 
     <!-- Weather metric chips -->
     <string name="home_metric_rain_label">Pluie</string>

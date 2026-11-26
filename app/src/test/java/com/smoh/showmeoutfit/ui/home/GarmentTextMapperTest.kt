@@ -1,5 +1,6 @@
 package com.smoh.showmeoutfit.ui.home
 
+import com.smoh.showmeoutfit.R
 import com.smoh.showmeoutfit.domain.model.AccessoryReason
 import com.smoh.showmeoutfit.domain.model.AccessoryType
 import com.smoh.showmeoutfit.domain.model.GarmentFit
@@ -178,6 +179,52 @@ class GarmentTextMapperTest {
             listOf(isolated("41")),
             GarmentTextMapper.accessoryReason(reasons[6]).resolve(locale).toList()
         )
+    }
+
+    @Test
+    fun `compact accessory triggers cover every reason with short locale-safe values`() {
+        val cases = listOf(
+            AccessoryReason.RainWindow(LocalTime.of(15, 0), LocalTime.of(17, 0)) to
+                R.string.home_compact_trigger_rain_window,
+            AccessoryReason.RainProbability(peakPercent = 55) to
+                R.string.home_compact_trigger_rain_probability,
+            AccessoryReason.FreezingConditions to R.string.home_compact_trigger_freezing,
+            AccessoryReason.Wind(speedKmh = 38) to R.string.home_compact_trigger_wind,
+            AccessoryReason.UvIndex(peakUv = 6.24) to R.string.home_compact_trigger_uv,
+            AccessoryReason.DiurnalSwing(deltaCelsius = 9.4) to
+                R.string.home_compact_trigger_diurnal_swing,
+            AccessoryReason.ExtremeHeat(tempCelsius = 41.4) to
+                R.string.home_compact_trigger_extreme_heat
+        )
+
+        assertEquals("all sealed variants must be covered", 7, cases.size)
+        cases.forEach { (reason, expectedRes) ->
+            val mapped = GarmentTextMapper.accessoryCompactTrigger(reason)
+            assertTrue("zero compact trigger for $reason", mapped.resId != 0)
+            assertEquals(expectedRes, mapped.resId)
+        }
+        assertEquals(
+            "each trigger keeps its own localized template",
+            cases.size,
+            cases.map { it.second }.distinct().size
+        )
+
+        val expectedArgs = listOf(
+            listOf(isolated("15:00"), isolated("17:00")),
+            listOf(isolated("55")),
+            emptyList(),
+            listOf(isolated("38")),
+            listOf(isolated("6")),
+            listOf(isolated("9")),
+            listOf(isolated("41"))
+        )
+        cases.forEachIndexed { index, (reason, _) ->
+            assertEquals(
+                "wrong compact arguments for $reason",
+                expectedArgs[index],
+                GarmentTextMapper.accessoryCompactTrigger(reason).resolve(locale).toList()
+            )
+        }
     }
 
     // --- Weather --------------------------------------------------------------------------
