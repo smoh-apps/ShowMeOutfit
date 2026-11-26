@@ -238,7 +238,7 @@ class OutfitLookbookTest {
             .map(LookbookTestTags::garment) +
             recommendation.accessories.map { LookbookTestTags.accessory(it.type) }
         garmentTags.forEach { tag ->
-            val node = composeRule.onNodeWithTag(tag).assertExists()
+            val node = composeRule.onNodeWithTag(tag, useUnmergedTree = true).assertExists()
             val bounds = node.fetchSemanticsNode().boundsInRoot
             val width = with(composeRule.density) { bounds.width.toDp() }
             val height = with(composeRule.density) { bounds.height.toDp() }
@@ -246,10 +246,14 @@ class OutfitLookbookTest {
             assertTrue("$tag is shorter than 64.dp: $height", height >= 64.dp)
         }
 
-        composeRule.onNodeWithTag(LookbookTestTags.garment("base")).performClick()
+        composeRule.onNodeWithTag(LookbookTestTags.garment("base"), useUnmergedTree = true)
+            .performClick()
         assertEquals("base", garment?.layerKey)
         val umbrella = recommendation.accessories.first { it.type == AccessoryType.UMBRELLA }
-        composeRule.onNodeWithTag(LookbookTestTags.accessory(AccessoryType.UMBRELLA)).performClick()
+        composeRule.onNodeWithTag(
+            LookbookTestTags.accessory(AccessoryType.UMBRELLA),
+            useUnmergedTree = true
+        ).performClick()
         assertEquals(umbrella, accessory)
     }
 
@@ -288,10 +292,13 @@ class OutfitLookbookTest {
     fun spatial_hotspots_remain_left_to_right_in_an_rtl_locale() {
         setCanvas(rtl = true)
 
-        val baseLeft = composeRule.onNodeWithTag(LookbookTestTags.garment("base"))
-            .fetchSemanticsNode().boundsInRoot.left
+        val baseLeft = composeRule.onNodeWithTag(
+            LookbookTestTags.garment("base"),
+            useUnmergedTree = true
+        ).fetchSemanticsNode().boundsInRoot.left
         val accessoryLeft = composeRule.onNodeWithTag(
-            LookbookTestTags.accessory(previewTodayOutfit().recommendation.accessories.first().type)
+            LookbookTestTags.accessory(previewTodayOutfit().recommendation.accessories.first().type),
+            useUnmergedTree = true
         ).fetchSemanticsNode().boundsInRoot.left
         assertTrue("RTL must not mirror the spatial collage", baseLeft < accessoryLeft)
     }

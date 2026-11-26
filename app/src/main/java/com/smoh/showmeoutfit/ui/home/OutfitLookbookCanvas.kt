@@ -2,6 +2,7 @@ package com.smoh.showmeoutfit.ui.home
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -22,11 +23,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -39,7 +40,7 @@ import com.smoh.showmeoutfit.ui.theme.DesignTokens
 import com.smoh.showmeoutfit.ui.theme.ShowMeOutfitTheme
 import java.util.Locale
 
-/** Tags for visual-only hotspots; their semantics are cleared for TalkBack. */
+/** Tags for visual-only hotspots with pointer input but no accessibility action. */
 internal object LookbookTestTags {
     const val HOTSPOT_PREFIX = "lookbook_hotspot_"
     fun garment(layerKey: String): String = HOTSPOT_PREFIX + layerKey.lowercase(Locale.ROOT)
@@ -55,8 +56,8 @@ private val AccessoryAreaWidth = 132.dp
  *
  * Garments occupy the left two-thirds and accessories form a two-column rail on the right. The
  * asymmetric placement reads as one outfit rather than a second card grid. Every piece remains
- * tappable for sighted users, while clear semantics make the chips below the only TalkBack stops.
- * Only this spatial subtree is forced LTR; headings and chip rows keep the ambient locale direction.
+ * tappable for sighted users through pointer input, while the chips below are the only TalkBack
+ * stops. Only this spatial subtree is forced LTR; headings and chips keep the ambient direction.
  */
 @Composable
 fun OutfitLookbookCanvas(
@@ -161,8 +162,7 @@ private fun LookbookHotspot(
         modifier = Modifier
             .offset(x = x, y = y)
             .size(size)
-            .clickable(role = Role.Button, onClick = onClick)
-            .clearAndSetSemantics {}
+            .pointerInput(onClick) { detectTapGestures { onClick() } }
             .testTag(tag)
     ) {
         GarmentArtwork(
