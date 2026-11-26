@@ -299,6 +299,46 @@ object GarmentTextMapper {
         )
     }
 
+    /**
+     * Short trigger printed inside an accessory chip, e.g. `14:00–17:00` or `UV 6`.
+     *
+     * The full [accessoryReason] sentence remains available to notification surfaces; this compact
+     * mapping deliberately drops prose so chips stay glanceable in all three locales.
+     */
+    fun accessoryCompactTrigger(reason: AccessoryReason): MappedText = when (reason) {
+        is AccessoryReason.RainWindow -> MappedText(
+            resId = R.string.home_compact_trigger_rain_window,
+            args = listOf(TextArg.Clock(reason.start), TextArg.Clock(reason.end))
+        )
+
+        is AccessoryReason.RainProbability -> MappedText(
+            resId = R.string.home_compact_trigger_rain_probability,
+            args = listOf(TextArg.Count(reason.peakPercent))
+        )
+
+        AccessoryReason.FreezingConditions -> MappedText(R.string.home_compact_trigger_freezing)
+
+        is AccessoryReason.Wind -> MappedText(
+            resId = R.string.home_compact_trigger_wind,
+            args = listOf(TextArg.Count(reason.speedKmh))
+        )
+
+        is AccessoryReason.UvIndex -> MappedText(
+            resId = R.string.home_compact_trigger_uv,
+            args = listOf(TextArg.Number(reason.peakUv, decimals = 0))
+        )
+
+        is AccessoryReason.DiurnalSwing -> MappedText(
+            resId = R.string.home_compact_trigger_diurnal_swing,
+            args = listOf(TextArg.Number(reason.deltaCelsius, decimals = 0))
+        )
+
+        is AccessoryReason.ExtremeHeat -> MappedText(
+            resId = R.string.home_compact_trigger_extreme_heat,
+            args = listOf(TextArg.Number(reason.tempCelsius, decimals = 0))
+        )
+    }
+
     // --- Weather --------------------------------------------------------------------------
 
     /** Reuses the design-system grouping so chips, badges and the timeline share one palette. */

@@ -84,14 +84,21 @@ fun StudioMatSurface(
     )
 }
 
+/**
+ * One artwork renderer for preset cutouts and future closet photos.
+ *
+ * [showStudioMat] is false only when the caller already provides the mat (the editorial lookbook
+ * canvas). Grid tiles and detail sheets keep the default framed presentation.
+ */
 @Composable
 fun GarmentArtwork(
     source: GarmentVisualSource,
     contentDescription: String?,
     modifier: Modifier = Modifier,
-    contentPadding: Dp = DesignTokens.Spacing.xs
+    contentPadding: Dp = DesignTokens.Spacing.xs,
+    showStudioMat: Boolean = true
 ) {
-    StudioMatSurface(modifier = modifier) {
+    val artwork: @Composable BoxScope.() -> Unit = {
         when (source) {
             is GarmentVisualSource.Preset -> Image(
                 painter = painterResource(source.drawableRes),
@@ -116,6 +123,11 @@ fun GarmentArtwork(
                 )
             }
         }
+    }
+    if (showStudioMat) {
+        StudioMatSurface(modifier = modifier, content = artwork)
+    } else {
+        Box(modifier = modifier, content = artwork)
     }
 }
 

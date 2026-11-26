@@ -71,6 +71,10 @@ class AccessibilityTest {
     fun outfit_layer_card_exposes_its_label_and_garment_as_one_node() {
         val outfit = previewTodayOutfit()
         showHome(HomeUiState.Content(outfit))
+        composeRule.onNodeWithText(context.getString(R.string.home_outfit_view_grid))
+            .performScrollTo()
+            .performClick()
+        composeRule.waitForIdle()
         val base = requireNotNull(outfit.recommendation.baseLayer)
 
         val layerLabel = context.getString(R.string.home_layer_base)
