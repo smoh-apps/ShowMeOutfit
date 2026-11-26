@@ -36,6 +36,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.smoh.showmeoutfit.R
 import com.smoh.showmeoutfit.domain.model.Garment
+import com.smoh.showmeoutfit.domain.model.GarmentId
+import com.smoh.showmeoutfit.domain.model.LayerCategory
 import com.smoh.showmeoutfit.domain.model.OutfitRecommendation
 import com.smoh.showmeoutfit.ui.theme.DesignTokens
 import com.smoh.showmeoutfit.ui.theme.LocalWeatherPalette
@@ -47,6 +49,23 @@ private val TileIllustrationSize = 104.dp
 
 /** Illustration edge used inside the detail sheet. */
 private val DetailIllustrationSize = 176.dp
+
+/** Exact closet membership: garment fit and a wardrobe item's custom name are intentionally absent. */
+internal fun Garment.isInCloset(
+    closetItemKeys: Set<Pair<LayerCategory, GarmentId>>
+): Boolean = (category to id) in closetItemKeys
+
+/** A separate text node keeps the garment title exact while remaining in its merged tile semantics. */
+@Composable
+internal fun InClosetIndicator(visible: Boolean) {
+    if (visible) {
+        Text(
+            text = stringResource(R.string.home_in_closet_indicator),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
 
 /**
  * One active outfit layer, resolved to display copy and artwork.
@@ -75,13 +94,14 @@ data class OutfitTileUi(
  * Two tiles per row at the default font scale, one per row once the system font reaches
  * [LargeFontScale], so a doubled title never clips (same breakpoint as the rest of the dashboard).
  * Tiles stay single, merged semantics nodes; the illustration is decorative and carries no
- * description of its own.
+ * description of its own. An in-closet indicator is a separate text child in that same node.
  */
 @Composable
 fun OutfitBentoGrid(
     recommendation: OutfitRecommendation,
     accentColor: Color,
     modifier: Modifier = Modifier,
+    closetItemKeys: Set<Pair<LayerCategory, GarmentId>> = emptySet(),
     onGarmentClick: (OutfitTileUi) -> Unit = {}
 ) {
     val tiles = recommendationTiles(recommendation)
@@ -98,6 +118,7 @@ fun OutfitBentoGrid(
             OutfitVisualTile(
                 tile = tile,
                 accentColor = accentColor,
+                isInCloset = tile.garment.isInCloset(closetItemKeys),
                 onClick = { onGarmentClick(tile) },
                 modifier = Modifier.weight(1f)
             )
@@ -122,7 +143,8 @@ fun OutfitVisualTile(
     tile: OutfitTileUi,
     accentColor: Color,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isInCloset: Boolean = false
 ) {
     // The clickable Surface overload keeps the indication clipped to `shape`, merges the content
     // into one button-role node and supplies the click semantics itself.
@@ -164,6 +186,7 @@ fun OutfitVisualTile(
                     style = MaterialTheme.typography.titleMedium,
                     textAlign = TextAlign.Center
                 )
+                InClosetIndicator(visible = isInCloset)
             }
         }
     }

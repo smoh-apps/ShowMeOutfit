@@ -20,17 +20,22 @@ import com.smoh.showmeoutfit.di.engineModule
 import com.smoh.showmeoutfit.di.presentationModule
 import com.smoh.showmeoutfit.di.useCaseModule
 import com.smoh.showmeoutfit.domain.model.DomainError
+import com.smoh.showmeoutfit.domain.model.LayerCategory
 import com.smoh.showmeoutfit.domain.model.LocationInfo
 import com.smoh.showmeoutfit.domain.model.UserProfile
+import com.smoh.showmeoutfit.domain.model.WardrobeItem
 import com.smoh.showmeoutfit.domain.model.WeatherData
 import com.smoh.showmeoutfit.domain.model.WeatherOrigin
 import com.smoh.showmeoutfit.domain.repository.LocationRepository
 import com.smoh.showmeoutfit.domain.repository.UserRepository
+import com.smoh.showmeoutfit.domain.repository.WardrobeRepository
 import com.smoh.showmeoutfit.domain.repository.WeatherRepository
 import com.smoh.showmeoutfit.ui.home.HomeTestTags
 import com.smoh.showmeoutfit.ui.home.previewTodayOutfit
+import com.smoh.showmeoutfit.ui.wardrobe.WardrobeTestTags
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -48,9 +53,9 @@ import java.time.Duration
  *
  * The activity is launched for real, so the test exercises [MainActivity] → [ShowMeOutfitApp] →
  * `NavHost` → `HomeRoute` → `HomeViewModel` → `GetTodayOutfitRecommendationUseCase` → repository,
- * plus the modal `LocationSearchSheet` and its own ViewModel. Only the three repository
- * interfaces are faked: everything between them and the screen is production code wired by the
- * real Koin modules.
+ * plus the modal `LocationSearchSheet`, wardrobe navigation, and their own ViewModels. Only the
+ * repository interfaces are faked: everything between them and the screen is production code
+ * wired by the real Koin modules.
  */
 @RunWith(AndroidJUnit4::class)
 class ShowMeOutfitAppTest {
@@ -64,6 +69,7 @@ class ShowMeOutfitAppTest {
 
     private val userRepository = FakeUserRepository()
     private val weatherRepository = FakeWeatherRepository()
+    private val wardrobeRepository = FakeWardrobeRepository()
     private val locationRepository = FakeLocationRepository()
 
     @Before
@@ -76,6 +82,7 @@ class ShowMeOutfitAppTest {
                 module {
                     single<UserRepository> { userRepository }
                     single<WeatherRepository> { weatherRepository }
+                    single<WardrobeRepository> { wardrobeRepository }
                     single<LocationRepository> { locationRepository }
                 },
                 dispatcherModule,
@@ -125,6 +132,25 @@ class ShowMeOutfitAppTest {
 
         // The network snapshot must not be dressed up as cached data.
         composeRule.onNodeWithTag(HomeTestTags.CACHE_BANNER).assertDoesNotExist()
+    }
+
+    @Test
+    fun hanger_opens_wardrobe_and_back_returns_to_home() {
+        userRepository.profile.value = UserProfile(isConfigured = true, selectedLocation = BERLIN)
+        composeRule.waitUntil(TIMEOUT_MILLIS) {
+            composeRule.onAllNodesWithTag(HomeTestTags.CONTENT).fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeRule.onNodeWithTag(HomeTestTags.OPEN_WARDROBE).performClick()
+        composeRule.waitUntil(TIMEOUT_MILLIS) {
+            composeRule.onAllNodesWithTag(WardrobeTestTags.SCREEN).fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeRule.onNodeWithTag(WardrobeTestTags.BACK).performClick()
+        composeRule.waitUntil(TIMEOUT_MILLIS) {
+            composeRule.onAllNodesWithTag(HomeTestTags.CONTENT).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag(HomeTestTags.OPEN_WARDROBE).assertIsDisplayed()
     }
 
     @Test
@@ -202,6 +228,23 @@ class ShowMeOutfitAppTest {
         }
 
         override suspend fun getCachedWeather(): WeatherData? = null
+    }
+
+    private class FakeWardrobeRepository : WardrobeRepository {
+        private val items = MutableStateFlow<List<WardrobeItem>>(emptyList())
+
+        override fun observeAll(): Flow<List<WardrobeItem>> = items
+
+        override fun observeByCategory(category: LayerCategory): Flow<List<WardrobeItem>> =
+            items.map { all -> all.filter { it.category == category } }
+
+        override suspend fun upsert(item: WardrobeItem) {
+            items.value = items.value.filterNot { it.id == item.id } + item
+        }
+
+        override suspend fun delete(id: String) {
+            items.value = items.value.filterNot { it.id == id }
+        }
     }
 
     private class FakeLocationRepository : LocationRepository {

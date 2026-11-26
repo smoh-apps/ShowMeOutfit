@@ -20,6 +20,7 @@ import com.smoh.showmeoutfit.ui.home.HomeRoute
 import com.smoh.showmeoutfit.ui.location.LocationSearchSheet
 import com.smoh.showmeoutfit.ui.onboarding.OnboardingRoute
 import com.smoh.showmeoutfit.ui.settings.SettingsRoute
+import com.smoh.showmeoutfit.ui.wardrobe.WardrobeRoute
 import org.koin.androidx.compose.koinViewModel
 
 /**
@@ -32,6 +33,7 @@ object AppRoutes {
     const val HOME = "home"
     const val ONBOARDING = "onboarding"
     const val SETTINGS = "settings"
+    const val WARDROBE = "wardrobe"
 }
 
 /**
@@ -86,8 +88,12 @@ fun ShowMeOutfitAppContent(
             composable(AppRoutes.HOME) {
                 HomeRoute(
                     onOpenLocationSearch = { showLocationSearch = true },
-                    onOpenSettings = { navController.navigate(AppRoutes.SETTINGS) }
+                    onOpenSettings = { navController.navigate(AppRoutes.SETTINGS) },
+                    onOpenWardrobe = { navController.navigate(AppRoutes.WARDROBE) }
                 )
+            }
+            composable(AppRoutes.WARDROBE) {
+                WardrobeRoute(onBack = { navController.popBackStack() })
             }
             composable(AppRoutes.SETTINGS) {
                 SettingsRoute(onBack = { navController.popBackStack() })

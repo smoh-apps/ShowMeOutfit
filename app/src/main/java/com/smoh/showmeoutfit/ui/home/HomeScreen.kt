@@ -5,13 +5,13 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -52,14 +53,12 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.smoh.showmeoutfit.R
 import com.smoh.showmeoutfit.domain.model.AccessoryAlert
-import com.smoh.showmeoutfit.domain.model.CurrentCondition
 import com.smoh.showmeoutfit.domain.model.DomainError
 import com.smoh.showmeoutfit.domain.model.OutfitRecommendation
 import com.smoh.showmeoutfit.domain.model.TodayOutfit
@@ -87,6 +86,7 @@ object HomeTestTags {
     const val TIMELINE = "home_timeline"
     const val TIMELINE_TOGGLE = "home_timeline_toggle"
     const val METRICS = "home_metrics"
+    const val OPEN_WARDROBE = "home_open_wardrobe"
     const val OPEN_SETTINGS = "home_open_settings"
     const val OUTFIT_VIEW_SWITCHER = "home_outfit_view_switcher"
     const val OUTFIT_LOOKBOOK = "home_outfit_lookbook"
@@ -119,6 +119,7 @@ internal const val LargeFontScale = 1.5f
 fun HomeRoute(
     onOpenLocationSearch: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenWardrobe: () -> Unit,
     modifier: Modifier = Modifier,
     onAccessoryClick: (AccessoryAlert) -> Unit = {},
     viewModel: HomeViewModel = koinViewModel()
@@ -155,6 +156,7 @@ fun HomeRoute(
         onIntent = viewModel::onIntent,
         onEffect = onEffect,
         onOpenSettings = onOpenSettings,
+        onOpenWardrobe = onOpenWardrobe,
         onAccessoryClick = onAccessoryClick,
         snackbarHostState = snackbarHostState,
         modifier = modifier
@@ -178,6 +180,7 @@ fun HomeScreen(
     onEffect: (HomeEffect) -> Unit,
     modifier: Modifier = Modifier,
     onOpenSettings: () -> Unit = {},
+    onOpenWardrobe: () -> Unit = {},
     onAccessoryClick: (AccessoryAlert) -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
@@ -187,6 +190,17 @@ fun HomeScreen(
             TopAppBar(
                 title = { Text(text = stringResource(R.string.app_name)) },
                 actions = {
+                    IconButton(
+                        onClick = onOpenWardrobe,
+                        modifier = Modifier
+                            .size(DesignTokens.MinTouchTarget)
+                            .testTag(HomeTestTags.OPEN_WARDROBE)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_nav_wardrobe),
+                            contentDescription = stringResource(R.string.home_open_wardrobe)
+                        )
+                    }
                     IconButton(
                         onClick = onOpenSettings,
                         modifier = Modifier
@@ -259,6 +273,7 @@ private fun HomeContentState(
     // touching the recommendation, so it stays local to the content composable.
     var inspectedTile by remember { mutableStateOf<OutfitTileUi?>(null) }
     var preferredViewMode by rememberSaveable { mutableStateOf(OutfitViewMode.LOOK) }
+    var timelineExpanded by rememberSaveable { mutableStateOf(false) }
     val largeFont = LocalDensity.current.fontScale >= LargeFontScale
     // ADR-DESIGN-V2 D4: the collage gives way to the readable one-column grid at 150%+ text.
     val viewMode = if (largeFont) OutfitViewMode.GRID else preferredViewMode
@@ -277,10 +292,16 @@ private fun HomeContentState(
         ) {
             Spacer(modifier = Modifier.height(DesignTokens.Spacing.sm))
 
-            HomeHeader(
-                current = weather.snapshot.current,
+            UnifiedWeatherCapsule(
                 cityName = weather.snapshot.location.cityName,
+                current = weather.snapshot.current,
+                highlights = recommendation.weatherHighlights,
+                points = points,
+                accentColor = accent,
                 isRefreshing = state.isRefreshing,
+                expanded = timelineExpanded,
+                onToggleTimeline = { timelineExpanded = !timelineExpanded },
+                onLocationClick = { onIntent(HomeIntent.OpenLocationSearch) },
                 onRefresh = { onIntent(HomeIntent.Refresh) }
             )
 
@@ -305,17 +326,10 @@ private fun HomeContentState(
                 CacheProvenanceBanner(origin = weather.origin, cacheAge = weather.cacheAge)
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.xs)) {
-                Text(
-                    text = localizedText(GarmentTextMapper.headline(recommendation.headline)),
-                    style = MaterialTheme.typography.headlineSmall
-                )
-                Text(
-                    text = localizedText(GarmentTextMapper.summary(recommendation.summary)),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            Text(
+                text = localizedText(GarmentTextMapper.headline(recommendation.headline)),
+                style = MaterialTheme.typography.headlineSmall
+            )
 
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
@@ -342,6 +356,7 @@ private fun HomeContentState(
                     // Chips are the single accessible inventory of the otherwise silent collage.
                     OutfitLookbookChips(
                         recommendation = recommendation,
+                        closetItemKeys = state.closetItemKeys,
                         onGarmentClick = { tile -> inspectedTile = tile },
                         onAccessoryClick = onAccessoryClick
                     )
@@ -353,6 +368,7 @@ private fun HomeContentState(
                     // Only active layers get tiles; no "not needed" placeholders are introduced.
                     OutfitBentoGrid(
                         recommendation = recommendation,
+                        closetItemKeys = state.closetItemKeys,
                         accentColor = accent,
                         modifier = Modifier.testTag(HomeTestTags.OUTFIT_GRID),
                         onGarmentClick = { tile -> inspectedTile = tile }
@@ -365,13 +381,6 @@ private fun HomeContentState(
                 }
             }
 
-            // Weather detail last: the peaks stay visible, the chart costs a tap. That is what keeps
-            // the outfit above the fold on a phone.
-            CollapsibleWeatherDrawer(
-                recommendation = recommendation,
-                points = points
-            )
-
             Spacer(modifier = Modifier.height(DesignTokens.Spacing.lg))
         }
     }
@@ -382,52 +391,6 @@ private fun HomeContentState(
             tile = tile,
             onDismissRequest = { inspectedTile = null }
         )
-    }
-}
-
-@Composable
-private fun HomeHeader(
-    current: CurrentCondition,
-    cityName: String,
-    isRefreshing: Boolean,
-    onRefresh: () -> Unit
-) {
-    val locale = Locale.getDefault()
-    // A city name is content, not decoration: at 200% text size it may wrap instead of being
-    // truncated to "Lisb…". The normal font scale keeps the single-line header.
-    val maxCityLines = if (LocalDensity.current.fontScale >= LargeFontScale) 2 else 1
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.sm),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = cityName,
-                style = MaterialTheme.typography.titleLarge,
-                maxLines = maxCityLines,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = stringResource(
-                    R.string.home_header_conditions,
-                    TextArg.Number(current.temperatureCelsius, decimals = 0).format(locale),
-                    stringResource(
-                        GarmentTextMapper.conditionDescriptionRes(current.weatherCode)
-                    ),
-                    TextArg.Number(current.apparentTemperatureCelsius, decimals = 0).format(locale)
-                ),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        TextButton(
-            onClick = onRefresh,
-            enabled = !isRefreshing,
-            modifier = Modifier.heightIn(min = DesignTokens.MinTouchTarget)
-        ) {
-            Text(text = stringResource(R.string.home_header_refresh))
-        }
     }
 }
 

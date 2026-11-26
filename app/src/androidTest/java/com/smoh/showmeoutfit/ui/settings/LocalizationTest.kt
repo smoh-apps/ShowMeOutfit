@@ -29,6 +29,8 @@ class LocalizationTest {
         assertEquals("Your outfit", context.getString(R.string.home_section_outfit))
         assertEquals("Trang phục của bạn", vi.getString(R.string.home_section_outfit))
         assertEquals("Đừng quên", vi.getString(R.string.home_section_accessories))
+        assertEquals("Mở tủ đồ", vi.getString(R.string.home_open_wardrobe))
+        assertEquals("Có trong tủ đồ", vi.getString(R.string.home_in_closet_indicator))
         assertEquals("Trời quang", vi.getString(R.string.home_condition_clear_sky))
         assertEquals("Ngôn ngữ", vi.getString(R.string.settings_section_language))
         assertEquals("Tiếng Việt", vi.getString(R.string.settings_language_vietnamese))
@@ -42,6 +44,8 @@ class LocalizationTest {
         assertEquals("Your outfit", context.getString(R.string.home_section_outfit))
         assertEquals("Votre tenue", fr.getString(R.string.home_section_outfit))
         assertEquals("À ne pas oublier", fr.getString(R.string.home_section_accessories))
+        assertEquals("Ouvrir la garde-robe", fr.getString(R.string.home_open_wardrobe))
+        assertEquals("Dans la garde-robe", fr.getString(R.string.home_in_closet_indicator))
         assertEquals("Ciel dégagé", fr.getString(R.string.home_condition_clear_sky))
         assertEquals("Langue", fr.getString(R.string.settings_section_language))
         assertEquals("Français", fr.getString(R.string.settings_language_french))
@@ -56,6 +60,8 @@ class LocalizationTest {
         listOf(
             R.string.home_section_outfit,
             R.string.home_section_accessories,
+            R.string.home_open_wardrobe,
+            R.string.home_in_closet_indicator,
             R.string.settings_section_language,
             R.string.home_empty_title
         ).forEach { id ->

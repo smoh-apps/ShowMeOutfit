@@ -6,15 +6,13 @@
     <string name="home_loading_body">Nous vérifions la météo du jour et composons votre tenue.</string>
     <string name="home_loading_content_description">Chargement de la recommandation de tenue du jour.</string>
 
-    <!-- Header -->
-    <string name="home_header_conditions">%1$s° · %2$s · ressenti %3$s°</string>
-    <string name="home_header_refresh">Actualiser</string>
+    <!-- Home navigation and closet membership -->
+    <string name="home_open_wardrobe">Ouvrir la garde-robe</string>
+    <string name="home_in_closet_indicator">Dans la garde-robe</string>
 
     <!-- Section headings -->
-    <string name="home_section_timeline">Au fil de la journée</string>
     <string name="home_section_outfit">Votre tenue</string>
     <string name="home_section_accessories">À ne pas oublier</string>
-    <string name="home_section_highlights">Les pics du jour</string>
 
     <!-- Outfit lookbook view switcher -->
     <string name="home_outfit_view_look">Vue</string>
@@ -148,16 +146,7 @@
     <string name="home_compact_trigger_diurnal_swing">Écart %1$s °C</string>
     <string name="home_compact_trigger_extreme_heat">Chaleur %1$s °C</string>
 
-    <!-- Weather metric chips -->
-    <string name="home_metric_rain_label">Pluie</string>
-    <string name="home_metric_uv_label">UV</string>
-    <string name="home_metric_wind_label">Vent</string>
-    <string name="home_metric_percent_unit" formatted="false">%</string>
-    <string name="home_metric_wind_unit">km/h</string>
-
-    <!-- Collapsible weather drawer (toggle action + spoken state) -->
-    <string name="home_weather_expand_timeline">Afficher la courbe horaire</string>
-    <string name="home_weather_collapse_timeline">Masquer la courbe horaire</string>
+    <!-- Weather capsule (spoken timeline state) -->
     <string name="home_weather_state_expanded">Développé</string>
     <string name="home_weather_state_collapsed">Réduit</string>
 
@@ -183,11 +172,6 @@
     <string name="home_headline_warm">Doux et agréable</string>
     <string name="home_headline_chilly">Il fait frais dehors</string>
     <string name="home_headline_mild">Doux et facile</string>
-
-    <!-- Summary sentence -->
-    <string name="home_summary_plain">%1$s° à %2$s° aujourd\'hui, sans pluie prévue.</string>
-    <string name="home_summary_rain_window">%1$s° à %2$s° aujourd\'hui, avec de la pluie probable entre %3$s et %4$s.</string>
-    <string name="home_summary_rain_chance">%1$s° à %2$s° aujourd\'hui, avec jusqu\'à %3$s%% de risque de pluie.</string>
 
     <!-- Cache provenance -->
     <plurals name="home_cache_age_hours">
