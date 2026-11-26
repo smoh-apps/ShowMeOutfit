@@ -146,6 +146,18 @@
     <string name="home_weather_state_expanded">Développé</string>
     <string name="home_weather_state_collapsed">Réduit</string>
 
+    <!-- Icon-first weather capsule (SMO-S6-03) -->
+    <string name="home_capsule_change_location">Changer de lieu : %1$s</string>
+    <string name="home_capsule_temp_current">%1$s°</string>
+    <string name="home_capsule_temp_range">%1$s° – %2$s°</string>
+    <string name="home_capsule_rain_value">%1$s %%</string>
+    <string name="home_capsule_rain_peak">Pic de pluie : %1$s pour cent</string>
+    <string name="home_capsule_uv_peak">Indice UV maximal : %1$s</string>
+    <string name="home_capsule_wind_peak">Vent jusqu\'à %1$s km/h</string>
+    <string name="home_capsule_refresh">Actualiser</string>
+    <string name="home_capsule_timeline_show">Afficher la courbe horaire</string>
+    <string name="home_capsule_timeline_hide">Masquer la courbe horaire</string>
+
     <!-- Headlines -->
     <string name="home_headline_frost">Gel intense — habillez-vous chaudement</string>
     <string name="home_headline_heatwave">Canicule — restez léger et bien hydraté</string>
