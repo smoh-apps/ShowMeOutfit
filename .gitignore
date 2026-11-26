@@ -1,5 +1,6 @@
 *.iml
 .gradle
+.kotlin/
 /local.properties
 
 # Sprint Actions & Operational Planning (kept outside git tracking)
@@ -7,14 +8,7 @@
 sprint-planning/
 .qoder/
 
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-/.idea/deploymentTargetSelector.xml
-/.idea/deviceManager.xml
+.idea/
 .DS_Store
 /build
 /captures
