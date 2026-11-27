@@ -1,12 +1,12 @@
 package com.smoh.showmeoutfit.ui.home
 
+import com.smoh.showmeoutfit.R
 import com.smoh.showmeoutfit.domain.model.AccessoryReason
 import com.smoh.showmeoutfit.domain.model.AccessoryType
 import com.smoh.showmeoutfit.domain.model.GarmentFit
 import com.smoh.showmeoutfit.domain.model.GarmentId
 import com.smoh.showmeoutfit.domain.model.HeadlineReason
 import com.smoh.showmeoutfit.domain.model.PriorityLevel
-import com.smoh.showmeoutfit.domain.model.SummaryData
 import com.smoh.showmeoutfit.domain.model.WeatherCode
 import com.smoh.showmeoutfit.ui.components.AccessoryPriority
 import com.smoh.showmeoutfit.ui.theme.WeatherConditionGroup
@@ -180,6 +180,52 @@ class GarmentTextMapperTest {
         )
     }
 
+    @Test
+    fun `compact accessory triggers cover every reason with short locale-safe values`() {
+        val cases = listOf(
+            AccessoryReason.RainWindow(LocalTime.of(15, 0), LocalTime.of(17, 0)) to
+                R.string.home_compact_trigger_rain_window,
+            AccessoryReason.RainProbability(peakPercent = 55) to
+                R.string.home_compact_trigger_rain_probability,
+            AccessoryReason.FreezingConditions to R.string.home_compact_trigger_freezing,
+            AccessoryReason.Wind(speedKmh = 38) to R.string.home_compact_trigger_wind,
+            AccessoryReason.UvIndex(peakUv = 6.24) to R.string.home_compact_trigger_uv,
+            AccessoryReason.DiurnalSwing(deltaCelsius = 9.4) to
+                R.string.home_compact_trigger_diurnal_swing,
+            AccessoryReason.ExtremeHeat(tempCelsius = 41.4) to
+                R.string.home_compact_trigger_extreme_heat
+        )
+
+        assertEquals("all sealed variants must be covered", 7, cases.size)
+        cases.forEach { (reason, expectedRes) ->
+            val mapped = GarmentTextMapper.accessoryCompactTrigger(reason)
+            assertTrue("zero compact trigger for $reason", mapped.resId != 0)
+            assertEquals(expectedRes, mapped.resId)
+        }
+        assertEquals(
+            "each trigger keeps its own localized template",
+            cases.size,
+            cases.map { it.second }.distinct().size
+        )
+
+        val expectedArgs = listOf(
+            listOf(isolated("15:00"), isolated("17:00")),
+            listOf(isolated("55")),
+            emptyList(),
+            listOf(isolated("38")),
+            listOf(isolated("6")),
+            listOf(isolated("9")),
+            listOf(isolated("41"))
+        )
+        cases.forEachIndexed { index, (reason, _) ->
+            assertEquals(
+                "wrong compact arguments for $reason",
+                expectedArgs[index],
+                GarmentTextMapper.accessoryCompactTrigger(reason).resolve(locale).toList()
+            )
+        }
+    }
+
     // --- Weather --------------------------------------------------------------------------
 
     @Test
@@ -227,7 +273,7 @@ class GarmentTextMapperTest {
         )
     }
 
-    // --- Headline and summary -------------------------------------------------------------
+    // --- Headlines -------------------------------------------------------------------------
 
     @Test
     fun `every headline variant has copy`() {
@@ -272,64 +318,6 @@ class GarmentTextMapperTest {
         ).map { GarmentTextMapper.headline(it).resId }
 
         assertEquals(9, resources.distinct().size)
-    }
-
-    @Test
-    fun `summary picks the rain clause from the structured reason`() {
-        val base = SummaryData(
-            tempMinCelsius = 12.6,
-            tempMaxCelsius = 22.0,
-            hasLargeTempSwing = true,
-            rainReason = null,
-            peakUvIndex = 6.2
-        )
-
-        val dry = GarmentTextMapper.summary(base)
-        val window = GarmentTextMapper.summary(
-            base.copy(
-                rainReason = AccessoryReason.RainWindow(
-                    start = LocalTime.of(15, 0),
-                    end = LocalTime.of(17, 0)
-                )
-            )
-        )
-        val chance = GarmentTextMapper.summary(
-            base.copy(rainReason = AccessoryReason.RainProbability(peakPercent = 55))
-        )
-
-        assertEquals(listOf(isolated("13"), isolated("22")), dry.resolve(locale).toList())
-        assertEquals(listOf(isolated("13"), isolated("22"), isolated("15:00"), isolated("17:00")), window.resolve(locale).toList())
-        assertEquals(listOf(isolated("13"), isolated("22"), isolated("55")), chance.resolve(locale).toList())
-        assertEquals(3, setOf(dry.resId, window.resId, chance.resId).size)
-    }
-
-    @Test
-    fun `substituted values are direction-isolated so RTL cannot reorder them`() {
-        val locale = Locale.US
-        val window = GarmentTextMapper.summary(
-            SummaryData(
-                tempMinCelsius = 12.6,
-                tempMaxCelsius = 22.0,
-                hasLargeTempSwing = true,
-                rainReason = AccessoryReason.RainWindow(
-                    start = LocalTime.of(15, 0),
-                    end = LocalTime.of(17, 0)
-                ),
-                peakUvIndex = 6.2
-            )
-        )
-
-        val args = window.resolve(locale)
-
-        // U+2066 LRI … U+2069 PDI around every value: without it an RTL layout renders
-        // "17:00 and 15:00" and drags the sentence's full stop to the front.
-        assertTrue("each value must be isolated", args.all { it.toString().startsWith("\u2066") })
-        assertTrue("each isolate must be closed", args.all { it.toString().endsWith("\u2069") })
-        assertEquals(
-            "the template order must survive",
-            listOf(isolated("13"), isolated("22"), isolated("15:00"), isolated("17:00")),
-            args.toList()
-        )
     }
 }
 

@@ -15,16 +15,20 @@ import com.smoh.showmeoutfit.di.engineModule
 import com.smoh.showmeoutfit.di.presentationModule
 import com.smoh.showmeoutfit.di.useCaseModule
 import com.smoh.showmeoutfit.domain.model.DomainError
+import com.smoh.showmeoutfit.domain.model.LayerCategory
 import com.smoh.showmeoutfit.domain.model.LocationInfo
 import com.smoh.showmeoutfit.domain.model.UserProfile
+import com.smoh.showmeoutfit.domain.model.WardrobeItem
 import com.smoh.showmeoutfit.domain.model.WeatherData
 import com.smoh.showmeoutfit.domain.repository.LocationRepository
 import com.smoh.showmeoutfit.domain.repository.UserRepository
+import com.smoh.showmeoutfit.domain.repository.WardrobeRepository
 import com.smoh.showmeoutfit.domain.repository.WeatherRepository
 import com.smoh.showmeoutfit.ui.home.HomeTestTags
 import com.smoh.showmeoutfit.ui.onboarding.OnboardingTestTags
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -62,6 +66,7 @@ class OnboardingNavigationTest {
                 module {
                     single<UserRepository> { userRepository }
                     single<WeatherRepository> { FakeWeatherRepository() }
+                    single<WardrobeRepository> { FakeWardrobeRepository() }
                     single<LocationRepository> { FakeLocationRepository() }
                 },
                 dispatcherModule,
@@ -136,6 +141,23 @@ class OnboardingNavigationTest {
         ): Result<WeatherData> = Result.failure(DomainError.Offline())
 
         override suspend fun getCachedWeather(): WeatherData? = null
+    }
+
+    private class FakeWardrobeRepository : WardrobeRepository {
+        private val items = MutableStateFlow<List<WardrobeItem>>(emptyList())
+
+        override fun observeAll(): Flow<List<WardrobeItem>> = items
+
+        override fun observeByCategory(category: LayerCategory): Flow<List<WardrobeItem>> =
+            items.map { all -> all.filter { it.category == category } }
+
+        override suspend fun upsert(item: WardrobeItem) {
+            items.value = items.value.filterNot { it.id == item.id } + item
+        }
+
+        override suspend fun delete(id: String) {
+            items.value = items.value.filterNot { it.id == id }
+        }
     }
 
     private class FakeLocationRepository : LocationRepository {

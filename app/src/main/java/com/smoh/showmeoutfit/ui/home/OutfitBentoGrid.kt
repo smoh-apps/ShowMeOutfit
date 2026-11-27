@@ -4,7 +4,6 @@ import android.content.res.Configuration
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,13 +30,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.smoh.showmeoutfit.R
 import com.smoh.showmeoutfit.domain.model.Garment
+import com.smoh.showmeoutfit.domain.model.GarmentId
+import com.smoh.showmeoutfit.domain.model.LayerCategory
 import com.smoh.showmeoutfit.domain.model.OutfitRecommendation
 import com.smoh.showmeoutfit.ui.theme.DesignTokens
 import com.smoh.showmeoutfit.ui.theme.LocalWeatherPalette
@@ -45,10 +45,27 @@ import com.smoh.showmeoutfit.ui.theme.ShowMeOutfitTheme
 import com.smoh.showmeoutfit.ui.theme.WeatherConditionGroup
 
 /** Illustration edge used inside a grid tile. */
-private val TileIllustrationSize = 64.dp
+private val TileIllustrationSize = 104.dp
 
 /** Illustration edge used inside the detail sheet. */
-private val DetailIllustrationSize = 88.dp
+private val DetailIllustrationSize = 176.dp
+
+/** Exact closet membership: garment fit and a wardrobe item's custom name are intentionally absent. */
+internal fun Garment.isInCloset(
+    closetItemKeys: Set<Pair<LayerCategory, GarmentId>>
+): Boolean = (category to id) in closetItemKeys
+
+/** A separate text node keeps the garment title exact while remaining in its merged tile semantics. */
+@Composable
+internal fun InClosetIndicator(visible: Boolean) {
+    if (visible) {
+        Text(
+            text = stringResource(R.string.home_in_closet_indicator),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
 
 /**
  * One active outfit layer, resolved to display copy and artwork.
@@ -77,37 +94,17 @@ data class OutfitTileUi(
  * Two tiles per row at the default font scale, one per row once the system font reaches
  * [LargeFontScale], so a doubled title never clips (same breakpoint as the rest of the dashboard).
  * Tiles stay single, merged semantics nodes; the illustration is decorative and carries no
- * description of its own.
+ * description of its own. An in-closet indicator is a separate text child in that same node.
  */
 @Composable
 fun OutfitBentoGrid(
     recommendation: OutfitRecommendation,
     accentColor: Color,
     modifier: Modifier = Modifier,
+    closetItemKeys: Set<Pair<LayerCategory, GarmentId>> = emptySet(),
     onGarmentClick: (OutfitTileUi) -> Unit = {}
 ) {
-    val baseTile = garmentTile(
-        layerKey = "base",
-        layerLabelRes = R.string.home_layer_base,
-        garment = recommendation.baseLayer
-    )
-    val midTile = recommendation.midLayer?.let { garment ->
-        garmentTile(layerKey = "mid", layerLabelRes = R.string.home_layer_mid, garment = garment)
-    }
-    val outerTile = recommendation.outerLayer?.let { garment ->
-        garmentTile(layerKey = "outer", layerLabelRes = R.string.home_layer_outer, garment = garment)
-    }
-    val bottomTile = garmentTile(
-        layerKey = "bottom",
-        layerLabelRes = R.string.home_layer_bottom,
-        garment = recommendation.bottomLayer
-    )
-    val footwearTile = garmentTile(
-        layerKey = "footwear",
-        layerLabelRes = R.string.home_layer_footwear,
-        garment = recommendation.footwear
-    )
-    val tiles = listOfNotNull(baseTile, midTile, outerTile, bottomTile, footwearTile)
+    val tiles = recommendationTiles(recommendation)
 
     val itemsPerRow = if (LocalDensity.current.fontScale >= LargeFontScale) 1 else 2
 
@@ -121,6 +118,7 @@ fun OutfitBentoGrid(
             OutfitVisualTile(
                 tile = tile,
                 accentColor = accentColor,
+                isInCloset = tile.garment.isInCloset(closetItemKeys),
                 onClick = { onGarmentClick(tile) },
                 modifier = Modifier.weight(1f)
             )
@@ -145,7 +143,8 @@ fun OutfitVisualTile(
     tile: OutfitTileUi,
     accentColor: Color,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isInCloset: Boolean = false
 ) {
     // The clickable Surface overload keeps the indication clipped to `shape`, merges the content
     // into one button-role node and supplies the click semantics itself.
@@ -176,8 +175,8 @@ fun OutfitVisualTile(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.sm),
             ) {
-                Image(
-                    painter = painterResource(tile.illustrationRes),
+                GarmentArtwork(
+                    source = GarmentVisualSource.Preset(tile.illustrationRes),
                     contentDescription = null,
                     modifier = Modifier.size(TileIllustrationSize)
                 )
@@ -187,6 +186,7 @@ fun OutfitVisualTile(
                     style = MaterialTheme.typography.titleMedium,
                     textAlign = TextAlign.Center
                 )
+                InClosetIndicator(visible = isInCloset)
             }
         }
     }
@@ -241,8 +241,8 @@ fun GarmentDetailSheet(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.md),
         ) {
-            Image(
-                painter = painterResource(tile.illustrationRes),
+            GarmentArtwork(
+                source = GarmentVisualSource.Preset(tile.illustrationRes),
                 contentDescription = null,
                 modifier = Modifier.size(DetailIllustrationSize)
             )
@@ -263,6 +263,33 @@ fun GarmentDetailSheet(
             )
         }
     }
+}
+
+/** Active layers in anatomical order, shared by the grid and the lookbook. */
+@Composable
+internal fun recommendationTiles(recommendation: OutfitRecommendation): List<OutfitTileUi> {
+    val baseTile = garmentTile(
+        layerKey = "base",
+        layerLabelRes = R.string.home_layer_base,
+        garment = recommendation.baseLayer
+    )
+    val midTile = recommendation.midLayer?.let { garment ->
+        garmentTile(layerKey = "mid", layerLabelRes = R.string.home_layer_mid, garment = garment)
+    }
+    val outerTile = recommendation.outerLayer?.let { garment ->
+        garmentTile(layerKey = "outer", layerLabelRes = R.string.home_layer_outer, garment = garment)
+    }
+    val bottomTile = garmentTile(
+        layerKey = "bottom",
+        layerLabelRes = R.string.home_layer_bottom,
+        garment = recommendation.bottomLayer
+    )
+    val footwearTile = garmentTile(
+        layerKey = "footwear",
+        layerLabelRes = R.string.home_layer_footwear,
+        garment = recommendation.footwear
+    )
+    return listOfNotNull(baseTile, midTile, outerTile, bottomTile, footwearTile)
 }
 
 /** Resolves one recommended garment into a display-ready tile. */

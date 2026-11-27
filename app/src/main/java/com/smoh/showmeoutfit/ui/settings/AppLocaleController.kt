@@ -59,7 +59,7 @@ class AndroidAppLocaleController(context: Context) : AppLocaleController {
         } else {
             val targetLocale = language.tag
                 ?.let(Locale::forLanguageTag)
-                ?: systemDefaultLocale
+                ?: systemDefaultLocale()
             Locale.setDefault(targetLocale)
         }
     }
@@ -73,7 +73,7 @@ class AndroidAppLocaleController(context: Context) : AppLocaleController {
 
         val tag = storedTag()
         val targetLocale = if (tag.isNullOrBlank()) {
-            systemDefaultLocale
+            systemDefaultLocale()
         } else {
             Locale.forLanguageTag(tag)
         }
@@ -90,6 +90,6 @@ class AndroidAppLocaleController(context: Context) : AppLocaleController {
     private companion object {
         const val PREFERENCES_NAME = "app_locale"
         const val KEY_LANGUAGE_TAG = "language_tag"
-        val systemDefaultLocale: Locale = Locale.getDefault()
+        fun systemDefaultLocale(): Locale = Locale.getDefault()
     }
 }

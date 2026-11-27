@@ -1,10 +1,12 @@
 package com.smoh.showmeoutfit.ui.onboarding
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.smoh.showmeoutfit.domain.model.AgeBand
@@ -48,7 +50,10 @@ class OnboardingScreenTest {
 
         composeRule.onNodeWithTag(OnboardingTestTags.AGE_INPUT).performTextInput("34")
         composeRule.onNodeWithTag(OnboardingTestTags.AGE_BAND).assertIsDisplayed()
-        composeRule.onNodeWithTag(OnboardingTestTags.CONTINUE).performClick()
+        composeRule.onNodeWithTag(OnboardingTestTags.CONTINUE)
+            .performScrollTo()
+            .assertIsEnabled()
+            .performClick()
 
         composeRule.waitUntil(5_000) { completed }
         assertEquals(AgeBand.ADULT_20_39, userRepository.profile.value.ageBand)

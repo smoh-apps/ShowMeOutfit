@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Wind swoosh metric glyph (SMO-S6-03). Black, so Compose Icon can tint it. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:strokeColor="#FF000000" android:strokeWidth="1.8" android:strokeLineCap="round" android:pathData="M2.8,8.4L13.6,8.4A2.6,2.6 0 1,0 11,5.8M2.8,12.4L18,12.4A2.6,2.6 0 1,1 15.4,15M2.8,16.4L9.8,16.4"/>
+</vector>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Circular refresh arrow (SMO-S6-03). Black, so Compose Icon can tint it. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:strokeColor="#FF000000" android:strokeWidth="2" android:strokeLineCap="round" android:pathData="M20.4,12A8.4,8.4 0 1,1 12,3.6"/>
+    <path android:fillColor="#FF000000" android:pathData="M9.4,1.4L14.6,3.6L9.4,5.8Z"/>
+</vector>

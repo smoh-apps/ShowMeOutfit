@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Rain-drop metric glyph (SMO-S6-03). Black fill so Compose Icon can tint it. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FF000000" android:pathData="M12,2.4C12,2.4 5.8,9.4 5.8,13.9C5.8,17.3 8.6,20.1 12,20.1C15.4,20.1 18.2,17.3 18.2,13.9C18.2,9.4 12,2.4 12,2.4Z"/>
+</vector>

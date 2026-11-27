@@ -23,6 +23,7 @@ import com.smoh.showmeoutfit.ui.home.HomeScreen
 import com.smoh.showmeoutfit.ui.home.HomeTestTags
 import com.smoh.showmeoutfit.ui.home.HomeTimelineMapper
 import com.smoh.showmeoutfit.ui.home.HomeUiState
+import com.smoh.showmeoutfit.ui.home.TextArg
 import com.smoh.showmeoutfit.ui.home.previewTodayOutfit
 import com.smoh.showmeoutfit.ui.settings.SettingsScreen
 import com.smoh.showmeoutfit.ui.settings.SettingsTestTags
@@ -33,6 +34,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 /**
  * TalkBack and font-scale gate for SMO-S4-04.
@@ -55,7 +57,7 @@ class AccessibilityTest {
     fun timeline_reads_as_one_summary_and_does_not_announce_its_tick_labels() {
         val outfit = previewTodayOutfit()
         showHome(HomeUiState.Content(outfit))
-        // The chart lives in the collapsed drawer, so the drawer has to be opened first.
+        // The chart lives in the collapsed capsule, so the capsule has to be opened first.
         expandTimeline()
 
         composeRule.onNodeWithContentDescription(expectedTimelineDescription(outfit)).assertExists()
@@ -71,6 +73,10 @@ class AccessibilityTest {
     fun outfit_layer_card_exposes_its_label_and_garment_as_one_node() {
         val outfit = previewTodayOutfit()
         showHome(HomeUiState.Content(outfit))
+        composeRule.onNodeWithText(context.getString(R.string.home_outfit_view_grid))
+            .performScrollTo()
+            .performClick()
+        composeRule.waitForIdle()
         val base = requireNotNull(outfit.recommendation.baseLayer)
 
         val layerLabel = context.getString(R.string.home_layer_base)
@@ -88,15 +94,10 @@ class AccessibilityTest {
         val outfit = previewTodayOutfit()
         showHome(HomeUiState.Content(outfit))
 
-        listOf(
-            R.string.home_metric_rain_label,
-            R.string.home_metric_uv_label,
-            R.string.home_metric_wind_label
-        ).forEach { labelRes ->
-            composeRule.onNodeWithContentDescription(
-                "${context.getString(labelRes)}: ",
-                substring = true
-            ).performScrollTo().assertIsDisplayed()
+        peakDescriptions(outfit).forEach { description ->
+            composeRule.onNodeWithContentDescription(description)
+                .performScrollTo()
+                .assertIsDisplayed()
         }
     }
 
@@ -109,16 +110,11 @@ class AccessibilityTest {
 
         composeRule.onNodeWithTag(HomeTestTags.METRICS).assertExists()
 
-        // Full-width stacked chips: every label/value pair is fully on screen.
-        listOf(
-            R.string.home_metric_rain_label,
-            R.string.home_metric_uv_label,
-            R.string.home_metric_wind_label
-        ).forEach { labelRes ->
-            composeRule.onNodeWithContentDescription(
-                "${context.getString(labelRes)}: ",
-                substring = true
-            ).performScrollTo().assertIsDisplayed()
+        // The FlowRow wraps instead of clipping; every spoken peak remains fully on screen.
+        peakDescriptions(outfit).forEach { description ->
+            composeRule.onNodeWithContentDescription(description)
+                .performScrollTo()
+                .assertIsDisplayed()
         }
     }
 
@@ -156,7 +152,7 @@ class AccessibilityTest {
 
     // --- Helpers ----------------------------------------------------------------------------
 
-    /** Opens the collapsible weather drawer; the chart is folded away by default. */
+    /** Opens the capsule timeline; the chart is folded away by default. */
     private fun expandTimeline() {
         composeRule.onNodeWithTag(HomeTestTags.TIMELINE_TOGGLE)
             .performScrollTo()
@@ -199,6 +195,19 @@ class AccessibilityTest {
         isNotificationEnabled = false,
         morningNotificationTime = LocalTime.of(7, 0)
     )
+
+    private fun peakDescriptions(outfit: TodayOutfit): List<String> {
+        val highlights = outfit.recommendation.weatherHighlights
+        val locale = Locale.getDefault()
+        val rain = TextArg.Count(highlights.maxPrecipitationProb).format(locale)
+        val uv = TextArg.Number(highlights.maxUvIndex, decimals = 0).format(locale)
+        val wind = TextArg.Number(highlights.maxWindSpeedKmh, decimals = 0).format(locale)
+        return listOf(
+            context.getString(R.string.home_capsule_rain_peak, rain),
+            context.getString(R.string.home_capsule_uv_peak, uv),
+            context.getString(R.string.home_capsule_wind_peak, wind)
+        )
+    }
 
     private fun expectedTimelineDescription(outfit: TodayOutfit): String {
         val points = HomeTimelineMapper.points(outfit.weather.snapshot.hourlyForecast) { time ->

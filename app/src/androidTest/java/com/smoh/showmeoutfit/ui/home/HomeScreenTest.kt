@@ -8,21 +8,32 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertWidthIsAtLeast
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.smoh.showmeoutfit.R
 import com.smoh.showmeoutfit.domain.model.AccessoryAlert
 import com.smoh.showmeoutfit.domain.model.DomainError
 import com.smoh.showmeoutfit.domain.model.Garment
+import com.smoh.showmeoutfit.domain.model.GarmentFit
+import com.smoh.showmeoutfit.domain.model.LayerCategory
+import com.smoh.showmeoutfit.domain.model.TodayOutfit
 import com.smoh.showmeoutfit.domain.model.WeatherOrigin
+import com.smoh.showmeoutfit.ui.theme.DesignTokens
 import com.smoh.showmeoutfit.ui.theme.ShowMeOutfitTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -51,11 +62,17 @@ class HomeScreenTest {
     private fun setState(
         state: HomeUiState,
         onIntent: (HomeIntent) -> Unit = {},
-        onEffect: (HomeEffect) -> Unit = {}
+        onEffect: (HomeEffect) -> Unit = {},
+        onOpenWardrobe: () -> Unit = {}
     ) {
         composeRule.setContent {
             ShowMeOutfitTheme(darkTheme = false, dynamicColor = false) {
-                HomeScreen(state = state, onIntent = onIntent, onEffect = onEffect)
+                HomeScreen(
+                    state = state,
+                    onIntent = onIntent,
+                    onEffect = onEffect,
+                    onOpenWardrobe = onOpenWardrobe
+                )
             }
         }
     }
@@ -69,10 +86,23 @@ class HomeScreenTest {
     private fun accessoryLabel(alert: AccessoryAlert): String =
         context.getString(GarmentTextMapper.accessoryNameRes(alert.type))
 
+    private fun peakDescriptions(outfit: TodayOutfit): List<String> {
+        val highlights = outfit.recommendation.weatherHighlights
+        val locale = Locale.getDefault()
+        val rain = TextArg.Count(highlights.maxPrecipitationProb).format(locale)
+        val uv = TextArg.Number(highlights.maxUvIndex, decimals = 0).format(locale)
+        val wind = TextArg.Number(highlights.maxWindSpeedKmh, decimals = 0).format(locale)
+        return listOf(
+            text(R.string.home_capsule_rain_peak, rain),
+            text(R.string.home_capsule_uv_peak, uv),
+            text(R.string.home_capsule_wind_peak, wind)
+        )
+    }
+
     // --- Content ---------------------------------------------------------------------------
 
     @Test
-    fun content_renders_headline_summary_and_location() {
+    fun content_renders_headline_location_and_capsule_sky_description() {
         val outfit = previewTodayOutfit()
         setState(HomeUiState.Content(outfit))
 
@@ -80,9 +110,136 @@ class HomeScreenTest {
         composeRule.onNodeWithText(
             expectedText(GarmentTextMapper.headline(outfit.recommendation.headline))
         ).assertIsDisplayed()
-        composeRule.onNodeWithText(
-            expectedText(GarmentTextMapper.summary(outfit.recommendation.summary))
+        composeRule.onNodeWithContentDescription(
+            context.getString(
+                GarmentTextMapper.conditionDescriptionRes(outfit.weather.snapshot.current.weatherCode)
+            )
         ).assertExists()
+    }
+
+    @Test
+    fun hanger_action_is_localized_meets_touch_target_and_opens_wardrobe() {
+        var opened = false
+        setState(HomeUiState.Content(previewTodayOutfit()), onOpenWardrobe = { opened = true })
+
+        composeRule.onNodeWithTag(HomeTestTags.OPEN_WARDROBE)
+            .assertIsDisplayed()
+            .assertHeightIsAtLeast(DesignTokens.MinTouchTarget)
+            .assertWidthIsAtLeast(DesignTokens.MinTouchTarget)
+        composeRule.onNodeWithContentDescription(text(R.string.home_open_wardrobe))
+            .assertIsDisplayed()
+        composeRule.onNodeWithTag(HomeTestTags.OPEN_WARDROBE).performClick()
+
+        assertTrue(opened)
+    }
+
+    @Test
+    fun capsule_city_and_refresh_actions_dispatch_home_intents() {
+        val outfit = previewTodayOutfit()
+        var intent: HomeIntent? = null
+        setState(HomeUiState.Content(outfit), onIntent = { intent = it })
+
+        composeRule.onNodeWithContentDescription(
+            text(R.string.home_capsule_change_location, outfit.weather.snapshot.location.cityName)
+        ).performScrollTo().performClick()
+        assertEquals(HomeIntent.OpenLocationSearch, intent)
+
+        composeRule.onNodeWithContentDescription(text(R.string.home_capsule_refresh))
+            .performScrollTo()
+            .performClick()
+        assertEquals(HomeIntent.Refresh, intent)
+    }
+
+    @Test
+    fun lookbook_badge_is_separate_text_inside_the_merged_garment_chip() {
+        val outfit = previewTodayOutfit()
+        val base = outfit.recommendation.baseLayer
+        val name = garmentName(base)
+        val indicator = text(R.string.home_in_closet_indicator)
+        setState(
+            HomeUiState.Content(
+                outfit = outfit,
+                closetItemKeys = setOf(base.category to base.id)
+            )
+        )
+
+        composeRule.onNode(hasText(name) and hasText(indicator))
+            .performScrollTo()
+            .assertIsDisplayed()
+        // The indicator must not be concatenated into the garment's own title node.
+        composeRule.onAllNodesWithText(name).assertCountEquals(1)
+    }
+
+    @Test
+    fun grid_badge_requires_the_exact_category_for_the_same_garment_id() {
+        val outfit = previewTodayOutfit()
+        val base = outfit.recommendation.baseLayer
+        val wrongCategory = if (base.category == LayerCategory.MID) {
+            LayerCategory.BASE
+        } else {
+            LayerCategory.MID
+        }
+        setState(
+            HomeUiState.Content(
+                outfit = outfit,
+                closetItemKeys = setOf(wrongCategory to base.id)
+            )
+        )
+        composeRule.onNodeWithText(text(R.string.home_outfit_view_grid))
+            .performScrollTo()
+            .performClick()
+
+        composeRule.onNodeWithTag(HomeTestTags.outfitTile("base"))
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeRule.onAllNodesWithText(text(R.string.home_in_closet_indicator))
+            .assertCountEquals(0)
+    }
+
+    @Test
+    fun grid_badge_matches_the_catalog_identity_independently_of_fit() {
+        val outfit = previewTodayOutfit()
+        val base = outfit.recommendation.baseLayer.copy(fit = GarmentFit.WOMEN)
+        val womenOutfit = outfit.copy(
+            recommendation = outfit.recommendation.copy(baseLayer = base)
+        )
+        val name = garmentName(base)
+        val indicator = text(R.string.home_in_closet_indicator)
+        setState(
+            HomeUiState.Content(
+                outfit = womenOutfit,
+                closetItemKeys = setOf(base.category to base.id)
+            )
+        )
+        composeRule.onNodeWithText(text(R.string.home_outfit_view_grid))
+            .performScrollTo()
+            .performClick()
+
+        composeRule.onNode(
+            hasTestTag(HomeTestTags.outfitTile("base")) and hasText(name) and hasText(indicator)
+        ).performScrollTo().assertIsDisplayed()
+        composeRule.onAllNodesWithText(name).assertCountEquals(1)
+    }
+
+    @Test
+    fun closet_indicators_appear_only_on_owned_garments_not_accessories() {
+        val outfit = previewTodayOutfit()
+        val garments = listOfNotNull(
+            outfit.recommendation.baseLayer,
+            outfit.recommendation.midLayer,
+            outfit.recommendation.outerLayer,
+            outfit.recommendation.bottomLayer,
+            outfit.recommendation.footwear
+        )
+        setState(
+            HomeUiState.Content(
+                outfit = outfit,
+                closetItemKeys = garments.map { it.category to it.id }.toSet()
+            )
+        )
+
+        composeRule.onAllNodesWithText(text(R.string.home_in_closet_indicator))
+            .assertCountEquals(garments.size)
     }
 
     @Test
@@ -92,6 +249,9 @@ class HomeScreenTest {
         assertEquals(null, outfit.recommendation.outerLayer)
 
         setState(HomeUiState.Content(outfit))
+        composeRule.onNodeWithText(text(R.string.home_outfit_view_grid))
+            .performScrollTo()
+            .performClick()
 
         composeRule.onNodeWithTag(HomeTestTags.OUTFIT_GRID).assertExists()
 
@@ -129,9 +289,9 @@ class HomeScreenTest {
 
         setState(HomeUiState.Content(outfit))
 
-        // The outfit grid only shows layers that exist: no filler tile and no placeholder copy for
-        // the missing layer (the old "not needed" strings went away with the bento grid rework).
-        composeRule.onNodeWithTag(HomeTestTags.outfitTile("outer")).assertDoesNotExist()
+        // The lookbook only shows layers that exist: no filler hotspot or chip for the missing
+        // layer (the old "not needed" strings went away with the bento grid rework).
+        composeRule.onNodeWithTag(LookbookTestTags.garment("outer")).assertDoesNotExist()
         composeRule.onNodeWithText(text(R.string.home_layer_outer)).assertDoesNotExist()
     }
 
@@ -140,6 +300,9 @@ class HomeScreenTest {
         val outfit = previewTodayOutfit()
         val base = requireNotNull(outfit.recommendation.baseLayer)
         setState(HomeUiState.Content(outfit))
+        composeRule.onNodeWithText(text(R.string.home_outfit_view_grid))
+            .performScrollTo()
+            .performClick()
 
         composeRule.onNodeWithTag(HomeTestTags.outfitTile("base"))
             .performScrollTo()
@@ -185,27 +348,35 @@ class HomeScreenTest {
     }
 
     @Test
-    fun content_renders_accessory_badges_with_their_reasons() {
+    fun content_renders_compact_accessory_chips_with_their_triggers() {
         val outfit = previewTodayOutfit()
         setState(HomeUiState.Content(outfit))
 
         outfit.recommendation.accessories.forEach { alert ->
-            composeRule.onNodeWithContentDescription(accessoryLabel(alert), substring = true)
-                .performScrollTo()
-                .assertExists()
+            val trigger = GarmentTextMapper.accessoryCompactTrigger(alert.reason)
+            val triggerText = context.getString(trigger.resId, *trigger.resolve(Locale.getDefault()))
+            val name = accessoryLabel(alert)
+            val label = context.getString(
+                R.string.home_accessory_trigger_format,
+                name,
+                triggerText
+            )
+            val description = context.getString(
+                R.string.home_accessory_trigger_content_description,
+                name,
+                triggerText
+            )
+            composeRule.onNodeWithText(label).performScrollTo().assertIsDisplayed()
+            composeRule.onNodeWithContentDescription(description).assertExists()
         }
-
-        // Each badge is followed by the structural reason the engine produced.
-        val reason = outfit.recommendation.accessories.first().reason
-        composeRule.onNodeWithText(expectedText(GarmentTextMapper.accessoryReason(reason)))
-            .assertExists()
     }
 
     @Test
-    fun content_renders_timeline_and_metric_chips() {
-        setState(HomeUiState.Content(previewTodayOutfit()))
+    fun content_renders_timeline_and_peak_chips() {
+        val outfit = previewTodayOutfit()
+        setState(HomeUiState.Content(outfit))
 
-        // The peaks are always on screen; the chart needs the drawer opened first.
+        // The peaks are always on screen; the chart needs the capsule opened first.
         composeRule.onNodeWithTag(HomeTestTags.METRICS).performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithTag(HomeTestTags.TIMELINE).assertDoesNotExist()
 
@@ -213,21 +384,16 @@ class HomeScreenTest {
 
         composeRule.onNodeWithTag(HomeTestTags.TIMELINE).assertExists()
 
-        // WeatherMetricChip exposes "<label>: <value>" as one content description; the visible
-        // label is cleared from the merged tree by the component's clearAndSetSemantics.
-        listOf(
-            R.string.home_metric_rain_label,
-            R.string.home_metric_uv_label,
-            R.string.home_metric_wind_label
-        ).forEach { labelRes ->
-            composeRule.onNodeWithContentDescription("${text(labelRes)}: ", substring = true)
+        // Each PeakChip exposes one complete spoken sentence and hides its bare number.
+        peakDescriptions(outfit).forEach { description ->
+            composeRule.onNodeWithContentDescription(description)
                 .performScrollTo()
                 .assertIsDisplayed()
         }
     }
 
     @Test
-    fun the_hourly_timeline_is_hidden_until_the_drawer_is_opened() {
+    fun the_hourly_timeline_is_hidden_until_the_capsule_is_opened() {
         setState(HomeUiState.Content(previewTodayOutfit()))
 
         composeRule.onNodeWithTag(HomeTestTags.TIMELINE).assertDoesNotExist()
@@ -249,18 +415,14 @@ class HomeScreenTest {
     }
 
     @Test
-    fun the_peak_metric_chips_are_readable_without_opening_the_drawer() {
-        setState(HomeUiState.Content(previewTodayOutfit()))
+    fun the_peak_chips_are_readable_without_opening_the_timeline() {
+        val outfit = previewTodayOutfit()
+        setState(HomeUiState.Content(outfit))
 
         composeRule.onNodeWithTag(HomeTestTags.METRICS).performScrollTo().assertIsDisplayed()
 
-        listOf(
-            R.string.home_metric_rain_label,
-            R.string.home_metric_uv_label,
-            R.string.home_metric_wind_label
-        ).forEach { labelRes ->
-            composeRule.onNodeWithContentDescription("${text(labelRes)}: ", substring = true)
-                .assertIsDisplayed()
+        peakDescriptions(outfit).forEach { description ->
+            composeRule.onNodeWithContentDescription(description).assertIsDisplayed()
         }
     }
 
@@ -276,7 +438,7 @@ class HomeScreenTest {
                     text(R.string.home_weather_state_collapsed)
                 )
             )
-        composeRule.onNodeWithContentDescription(text(R.string.home_weather_expand_timeline))
+        composeRule.onNodeWithContentDescription(text(R.string.home_capsule_timeline_show))
             .assertIsDisplayed()
 
         composeRule.onNodeWithTag(HomeTestTags.TIMELINE_TOGGLE).performScrollTo().performClick()
@@ -288,7 +450,7 @@ class HomeScreenTest {
                     text(R.string.home_weather_state_expanded)
                 )
             )
-        composeRule.onNodeWithContentDescription(text(R.string.home_weather_collapse_timeline))
+        composeRule.onNodeWithContentDescription(text(R.string.home_capsule_timeline_hide))
             .assertExists()
     }
 

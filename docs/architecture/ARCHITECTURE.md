@@ -3,7 +3,7 @@
 | Attribute | Specification Details |
 | :--- | :--- |
 | **Document ID** | `SMO-ARCH-SPEC` |
-| **Document Version** | `1.1.0` |
+| **Document Version** | `2.0.0` |
 | **Status** | `APPROVED` |
 | **Target Platform** | Android (Min SDK 26, Target SDK 35/37) |
 | **Primary Language** | Kotlin 2.2+ |
@@ -20,6 +20,7 @@
 | :--- | :--- | :--- | :--- |
 | **v1.0.0** | Oct 2026 | Senior Android Architect | Initial approved baseline architecture: Clean Architecture design, diurnal recommendation engine, standalone offline-first strategy, and battery-compliant morning scheduling. |
 | **v1.1.0** | Nov 2026 | Senior Android Architect | Post-MVP UX & Localization Evolution: Outfit-first visual hierarchy (`OutfitBentoGrid`, collapsible weather drawer), styled multi-color clothing vector illustrations (`GarmentVisualMapper`), and end-to-end multi-language architecture (`EN`, `VI`, `FR`) with Android 13+ per-app locale support and localized geocoding. |
+| **v2.0.0** | Nov 2026 | Principal Architect & Lead UX Designer | Realistic Lookbook, Icon-First Weather & Virtual Closet Inventory (`v2.0.0` in Sprint 6): 45 photorealistic studio flat-lay WebP cutouts + `GarmentVisualSource`, 13-vector duotone weather/metric icon pack with `UnifiedWeatherCapsule` (~72dp inline expandable timeline), `OutfitLookbookCanvas` spatial flat-lay style board + `[Look ⇄ Grid]` switcher, and Room DB `v2` (`wardrobe_items`) catalog-backed Virtual Closet Inventory (`WardrobeScreen`), with on-device media capture & `PersonalWardrobeEngine` staged for `v2.1.0`. |
 
 ---
 
@@ -331,4 +332,39 @@ To keep the primary focus on **clothing and accessory recommendations** rather t
    - Full resource translations under `res/values-vi/` and `res/values-fr/` across all 8 modular string files (`strings*.xml`), using natural, culturally idiomatic garment names and plural rules.
 3. **Locale-Aware Geocoding (`OpenMeteoDataSource`):**
    - `geocodeLocation(query, languageCode)` dynamically forwards the active locale language code (`en`, `vi`, `fr`) to the Open-Meteo Geocoding REST API so city and country names match the user's selected language.
+
+---
+
+## 9. v2.0.0 & v2.1.0 Architecture Evolution: Realistic Flat-Lay Lookbook, Icon-First Weather & Virtual Closet
+
+Following post-`v1.1.0` user feedback and Milestone 2 scoping (see [`docs/design/lookbook_v2/DESIGN_DECISION_V2.md`](../design/lookbook_v2/DESIGN_DECISION_V2.md)), **Milestone 2 (`v2.0.0` — Sprint 6)** ships the three visual/UX upgrades alongside the **Virtual Closet Inventory**, while **Milestone 2.1 (`v2.1.0` — Sprint 7)** adds on-device camera/gallery WebP media and the `PersonalWardrobeEngine` matcher—preserving 100% `domain/` purity throughout:
+
+### 9.1 Unified `GarmentVisualSource` & Photorealistic Studio Flat-Lay Pack (`v2.0.0`)
+- **Preset Studio Flat-Lay Cutouts (`drawable-nodpi/*.webp`):** Replaces the 5–7 path flat geometric vectors with **45 `512×512` lossless-alpha WebP studio flat-lay cutouts** (`29` base garments + `8` women's fit silhouettes matching `GarmentTextMapper.fitSensitiveNames` + `8` accessories, `~750 KB` total APK delta).
+- **Unified Presentation Contract (`ui/home/`):**
+  ```kotlin
+  sealed interface GarmentVisualSource {
+      data class Preset(val drawableRes: Int) : GarmentVisualSource
+      data class UserClosetPhoto(val filePath: String, val fallbackRes: Int) : GarmentVisualSource
+  }
+  ```
+- **Theme-Safe Studio Matting:** A single `GarmentArtwork` composable renders `Preset` via `painterResource` in `v2.0.0` and `UserClosetPhoto` via **Coil 3** (`AsyncImage`) in `v2.1.0`, framed on a dedicated studio mat (`#FAF8F5` warm alabaster in Light mode; elevated `#2B2930` with a `7%` white radial studio backlight in Dark mode) so dark navy/charcoal items maintain `>= 3:1` silhouette contrast in both themes.
+
+### 9.2 Icon-First Minimal Weather (`UnifiedWeatherCapsule` — `v2.0.0`)
+- **Custom 13-Vector Duotone Weather & Metric Pack (`< 12 KB`):** Maps all 28 WMO `WeatherCode` values to 9 duotone sky icons (`sunny`, `partly_cloudy`, `cloudy`, `fog`, `drizzle`, `rain`, `snow`, `thunderstorm`, `unknown`) plus 4 micro-metric/nav icons (`rain_drop`, `uv_sun`, `wind`, `wardrobe_hanger`), avoiding `material-icons-extended` bloat.
+- **Single Top Capsule (`~72.dp` Collapsed):** Consolidates `[📍 City ▾]`, duotone sky icon + current/min–max temperature, icon-only peak chips (`💧 %`, `☀️ UV`, `💨 km/h`), and an icon refresh action into one top bar. Tapping unfolds `DiurnalTimelineBar` inline, eliminating both the multi-sentence weather summary block and the separate bottom `CollapsibleWeatherDrawer`.
+- **Compact Accessory Trigger Chips:** Replaces indented full-sentence accessory reasons with inline icon+trigger badges (`[☂️ Umbrella · 14:00–17:00]`, `[🕶️ Sunglasses · UV 6]`).
+
+### 9.3 Complete Outfit Composition (`OutfitLookbookCanvas` + `[Look ⇄ Grid]` Switcher — `v2.0.0`)
+- **Editorial Flat-Lay Style Board (`OutfitLookbookCanvas`):** Default hero view arranging active `Base`, `Mid`, `Outer`, `Bottom`, `Footwear`, and `Accessories` spatially as one cohesive look with zero text inside the collage (preventing `EN`/`VI`/`FR` text collisions), paired with tappable piece & accessory chips directly below and a `[✨ Look ⇄ ⊞ Grid]` `SingleChoiceSegmentedButtonRow` switcher.
+- **Accessibility & RTL Guarantees:** Canvas visual hotspots apply `clearAndSetSemantics {}` so TalkBack traverses each garment **once** in anatomical order via the pill buttons (`>= 48.dp` touch targets); the spatial flat-lay canvas pins `LayoutDirection.Ltr` while headers and chip rows follow ambient locale direction; `fontScale >= 1.5f` automatically switches to the 1-column `OutfitBentoGrid` (`104.dp` art; `176.dp` in `GarmentDetailSheet`).
+
+### 9.4 Virtual Closet Inventory (`v2.0.0`) → On-Device Media & Smart Closet Engine (`v2.1.0`)
+- **Phase A — Virtual Closet Inventory (`v2.0.0`, Sprint 6):**
+  - **Pure Domain Contract:** `WardrobeItem` (`id`, `name`, `category: LayerCategory`, `garmentId: GarmentId`, `fit: GarmentFit`, `isWaterResistant: Boolean`, `photoRelativePath: String? = null`, `createdAtEpochMillis: Long`) and `WardrobeRepository` (`observeItems`, `upsertItem`, `deleteItem`) in `domain/`.
+  - **Room DB `v1 → v2` Migration (`MIGRATION_1_2`):** Adds the `wardrobe_items` SQLite table non-destructively alongside `weather_snapshots`.
+  - **Catalog-Backed `WardrobeScreen` (`ui/wardrobe/`):** Reachable from the `HomeScreen` TopAppBar hanger action; lets users add, edit, filter (by `LayerCategory`), and delete personal wardrobe items backed immediately by the 45 photorealistic preset flat-lay silhouettes (`photoRelativePath = null` in `v2.0.0`), fully localized in `EN`, `VI`, and `FR`.
+- **Phase B — On-Device Media & `PersonalWardrobeEngine` (`v2.1.0`, Sprint 7):**
+  - **Local Media Pipeline:** Camera/gallery capture, EXIF rotation normalization, and `512×512` WebP compression stored privately under `Context.filesDir/wardrobe/` populating `WardrobeItem.photoRelativePath`.
+  - **Smart Closet Matcher (`PersonalWardrobeEngine : IOutfitRecommendationEngine`):** Matches registered `wardrobe_items` against diurnal temperature swings, precipitation windows, and wind thresholds, falling back per missing layer to `RuleBasedPresetEngine`.
 

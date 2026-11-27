@@ -6,15 +6,17 @@
     <string name="home_loading_body">Đang kiểm tra thời tiết hôm nay và phối đồ cho bạn.</string>
     <string name="home_loading_content_description">Đang tải gợi ý trang phục hôm nay.</string>
 
-    <!-- Header -->
-    <string name="home_header_conditions">%1$s° · %2$s · cảm giác như %3$s°</string>
-    <string name="home_header_refresh">Làm mới</string>
+    <!-- Home navigation and closet membership -->
+    <string name="home_open_wardrobe">Mở tủ đồ</string>
+    <string name="home_in_closet_indicator">✓ Có trong tủ đồ</string>
 
     <!-- Section headings -->
-    <string name="home_section_timeline">Diễn biến trong ngày</string>
     <string name="home_section_outfit">Trang phục của bạn</string>
     <string name="home_section_accessories">Đừng quên</string>
-    <string name="home_section_highlights">Đỉnh điểm hôm nay</string>
+
+    <!-- Outfit lookbook view switcher -->
+    <string name="home_outfit_view_look">Bố cục</string>
+    <string name="home_outfit_view_grid">Lưới</string>
 
     <!-- Layer labels -->
     <string name="home_layer_base">Lớp trong cùng</string>
@@ -133,18 +135,32 @@
     <string name="home_reason_extreme_heat">Cao nhất %1$s°. Uống nước thường xuyên và ở trong bóng mát.</string>
     <string name="home_accessories_empty">Hôm nay không cần phụ kiện.</string>
 
-    <!-- Weather metric chips -->
-    <string name="home_metric_rain_label">Mưa</string>
-    <string name="home_metric_uv_label">UV</string>
-    <string name="home_metric_wind_label">Gió</string>
-    <string name="home_metric_percent_unit" formatted="false">%</string>
-    <string name="home_metric_wind_unit">km/h</string>
+    <!-- Compact accessory trigger chips -->
+    <string name="home_accessory_trigger_format">%1$s · %2$s</string>
+    <string name="home_accessory_trigger_content_description">%1$s, %2$s</string>
+    <string name="home_compact_trigger_rain_window">%1$s–%2$s</string>
+    <string name="home_compact_trigger_rain_probability">Mưa %1$s%%</string>
+    <string name="home_compact_trigger_freezing">Giá lạnh</string>
+    <string name="home_compact_trigger_wind">Gió %1$s km/h</string>
+    <string name="home_compact_trigger_uv">UV %1$s</string>
+    <string name="home_compact_trigger_diurnal_swing">Chênh %1$s °C</string>
+    <string name="home_compact_trigger_extreme_heat">Nóng %1$s °C</string>
 
-    <!-- Collapsible weather drawer (toggle action + spoken state) -->
-    <string name="home_weather_expand_timeline">Hiện biểu đồ theo giờ</string>
-    <string name="home_weather_collapse_timeline">Ẩn biểu đồ theo giờ</string>
+    <!-- Weather capsule (spoken timeline state) -->
     <string name="home_weather_state_expanded">Đang mở rộng</string>
     <string name="home_weather_state_collapsed">Đang thu gọn</string>
+
+    <!-- Icon-first weather capsule (SMO-S6-03) -->
+    <string name="home_capsule_change_location">Đổi vị trí: %1$s</string>
+    <string name="home_capsule_temp_current">%1$s°</string>
+    <string name="home_capsule_temp_range">%1$s°–%2$s°</string>
+    <string name="home_capsule_rain_value">%1$s%%</string>
+    <string name="home_capsule_rain_peak">Mưa cao nhất %1$s phần trăm</string>
+    <string name="home_capsule_uv_peak">Chỉ số UV cao nhất %1$s</string>
+    <string name="home_capsule_wind_peak">Gió mạnh tới %1$s km/h</string>
+    <string name="home_capsule_refresh">Làm mới</string>
+    <string name="home_capsule_timeline_show">Hiện biểu đồ theo giờ</string>
+    <string name="home_capsule_timeline_hide">Ẩn biểu đồ theo giờ</string>
 
     <!-- Headlines -->
     <string name="home_headline_frost">Giá buốt — mặc thật ấm</string>
@@ -156,11 +172,6 @@
     <string name="home_headline_warm">Ấm áp và dễ chịu</string>
     <string name="home_headline_chilly">Trời se lạnh</string>
     <string name="home_headline_mild">Ôn hòa và nhẹ nhàng</string>
-
-    <!-- Summary sentence -->
-    <string name="home_summary_plain">%1$s° đến %2$s° hôm nay, không có mưa.</string>
-    <string name="home_summary_rain_window">%1$s° đến %2$s° hôm nay, có khả năng mưa từ %3$s đến %4$s.</string>
-    <string name="home_summary_rain_chance">%1$s° đến %2$s° hôm nay, khả năng mưa lên tới %3$s%%.</string>
 
     <!-- Cache provenance -->
     <!-- Vietnamese has a single plural form; the "one" item is kept for key parity with the base. -->
