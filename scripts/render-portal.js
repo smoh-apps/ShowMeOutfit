@@ -30,7 +30,7 @@ const baseUrl = (process.env.PAGES_URL || DEFAULT_PAGES_URL).replace(/\/+$/, "")
 const commit = (process.env.COMMIT || "").trim();
 const version = (process.env.VERSION || "").trim() ||
   (commit ? `alpha-${commit.slice(0, 7)}` : "alpha-local");
-const releaseVersion = (process.env.RELEASE_VERSION || "v1.0.0").trim();
+const releaseVersion = (process.env.RELEASE_VERSION || "").trim() || readGradleReleaseVersion();
 const buildTime = (process.env.BUILD_TIME || "").trim() || utcNow();
 
 const alphaApkPath = process.env.APK_PATH || path.join(ROOT, "app/build/outputs/apk/debug/app-debug.apk");
@@ -94,6 +94,20 @@ fs.writeFileSync(path.join(OUTPUT_DIR, "index.html"), html);
 console.log(`portal: ${path.join(OUTPUT_DIR, "index.html")}`);
 console.log(`release apk: ${baseUrl}${RELEASE_APK_NAME} (${releaseApkSize})`);
 console.log(`alpha apk: ${baseUrl}${ALPHA_APK_NAME} (${alphaApkSize})`);
+
+function readGradleReleaseVersion() {
+  try {
+    const gradleFile = fs.readFileSync(path.join(ROOT, "app/build.gradle.kts"), "utf8");
+    const match = gradleFile.match(/versionName\s*=\s*"([^"]+)"/);
+    if (match && match[1]) {
+      const raw = match[1].trim();
+      return raw.startsWith("v") ? raw : `v${raw}`;
+    }
+  } catch (_) {
+    // Fall back if build.gradle.kts cannot be read
+  }
+  return "v2.0.0";
+}
 
 function formatMegabytes(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;

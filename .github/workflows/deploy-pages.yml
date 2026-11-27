@@ -125,6 +125,7 @@ jobs:
         env:
           # Tags publish their own name; branch builds get `alpha-<short sha>` from the script.
           VERSION: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+          RELEASE_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
           COMMIT: ${{ github.sha }}
           PAGES_URL: https://smoh-apps.github.io/ShowMeOutfit/
         run: |
